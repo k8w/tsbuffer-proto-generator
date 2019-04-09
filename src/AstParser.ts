@@ -15,9 +15,58 @@ export default class AstParser {
     }
 
     /** 解析顶层imports */
-    static parseImports(src: ts.SourceFile): ScriptImportPaths {
-        // TODO
-        return {};
+    static getScriptImports(src: ts.SourceFile): ScriptImports {
+        let output: ScriptImports = {};
+
+        src.forEachChild(v => {
+            if (v.kind !== ts.SyntaxKind.ImportDeclaration) {
+                return;
+            }
+
+            let node = v as ts.ImportDeclaration;
+
+            // 仅支持从字符串路径import
+            if (node.moduleSpecifier.kind !== ts.SyntaxKind.StringLiteral) {
+                return;
+            }
+            let importPath = (node.moduleSpecifier as ts.StringLiteral).text;
+
+            // import from 'xxx'
+            if (!node.importClause) {
+                return;
+            }
+
+            // default: import A from 'xxx'
+            if (node.importClause.name) {
+                output[node.importClause.name.text] = {
+                    path: importPath,
+                    targetName: 'default'
+                }
+            }
+
+            // elements
+            if (node.importClause.namedBindings && node.importClause.namedBindings.kind === ts.SyntaxKind.NamedImports && node.importClause.namedBindings.elements) {
+                node.importClause.namedBindings.elements.forEach(elem => {
+                    // import { A as B } from 'xxx'
+                    if (elem.propertyName) {
+                        output[elem.name.text] = {
+                            path: importPath,
+                            targetName: elem.propertyName.text
+                        }
+                    }
+                    // import { A } from 'xxx'
+                    else {
+                        output[elem.name.text] = {
+                            path: importPath,
+                            targetName: elem.name.text
+                        }
+                    }
+                })
+                // 暂不支持：import * as A from 'xxx'
+            }
+        })
+
+        return output;
     }
 
     /**
@@ -106,6 +155,12 @@ export default class AstParser {
             // export default
             else if (v.kind === ts.SyntaxKind.ExportAssignment) {
                 let _v = v as ts.ExportAssignment;
+
+                // 暂不支持 export = XXX
+                if (_v.isExportEquals) {
+                    return;
+                }
+
                 output['default'] = {
                     node: ts.createTypeAliasDeclaration(undefined, undefined, 'default', undefined,
                         ts.createTypeReferenceNode(_v.name ? _v.name.text : '', undefined)
@@ -125,13 +180,17 @@ export default class AstParser {
         return output;
     }
 
-    static node2schema(node: ts.Node, imports: ScriptImportPaths): TSBufferSchema {
+    static node2schema(node: ts.Node, imports: ScriptImports): TSBufferSchema {
         throw new Error('TODO')
     }
 
 }
 
-export interface ScriptImportPaths {
-    // symbolName -> path
-    [name: string]: string
+export interface ScriptImports {
+    // import { A as B } A为asName
+    [asName: string]: {
+        path: string,
+        // import { A as B } A为targetName
+        targetName: string
+    }
 }
