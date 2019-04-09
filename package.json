@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test/**/*.test.ts"
+    "test": "mocha test/**/*.test.ts",
+    "us": "npm i tsbuffer-schema@*"
   },
   "author": "",
   "license": "ISC",
@@ -12,7 +13,7 @@
     "@types/node": "^11.13.2",
     "@types/typescript": "^2.0.0",
     "k8w-extend-native": "^1.1.0",
-    "tsbuffer-schema": "^0.3.1",
+    "tsbuffer-schema": "^0.3.3",
     "typescript": "^3.4.2"
   },
   "devDependencies": {

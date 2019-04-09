@@ -289,6 +289,42 @@ export default class AstParser {
             }
         }
 
+        // EnumType
+        if (ts.isEnumDeclaration(node)) {
+            let initializer = 0;
+            return {
+                type: 'Enum',
+                members: node.members.map((v, i) => {
+                    if (v.initializer) {
+                        if (ts.isStringLiteral(v.initializer)) {
+                            initializer = NaN;
+                            return {
+                                id: i,
+                                value: v.initializer.text
+                            }
+                        }
+                        else if (ts.isNumericLiteral(v.initializer)) {
+                            initializer = parseFloat(v.initializer.text);
+                            return {
+                                id: i,
+                                value: initializer++
+                            }
+                        }
+                        else {
+                            console.log('initializer', v.initializer);
+                            throw new Error('Enum initializer type error: ' + ts.SyntaxKind[v.initializer.kind]);
+                        }
+                    }
+                    else {
+                        return {
+                            id: i,
+                            value: initializer++
+                        }
+                    }
+                })
+            }
+        }
+
         console.log(node);
         throw new Error('Unresolveable type: ' + ts.SyntaxKind[node.kind]);
     }
