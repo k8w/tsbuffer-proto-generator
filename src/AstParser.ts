@@ -210,13 +210,10 @@ export default class AstParser {
             }
         }
         // Scalar value types
-        if (node.kind === ts.SyntaxKind.TypeReference
-            && (node as ts.TypeReferenceNode).typeName.kind === ts.SyntaxKind.Identifier
-            && SCALAR_TYPES.binarySearch(((node as ts.TypeReferenceNode).typeName as ts.Identifier).text) > -1
-        ) {
+        if (ts.isTypeReferenceNode(node) && ts.isIdentifier(node.typeName) && SCALAR_TYPES.binarySearch(node.typeName.text) > -1) {
             return {
                 type: 'Number',
-                scalarType: ((node as ts.TypeReferenceNode).typeName as ts.Identifier).text as typeof SCALAR_TYPES[number]
+                scalarType: node.typeName.text as typeof SCALAR_TYPES[number]
             }
         }
 
@@ -226,21 +223,27 @@ export default class AstParser {
         }
 
         // ArrayType: xxx[]
-        if (node.kind === ts.SyntaxKind.ArrayType) {
+        if (ts.isArrayTypeNode(node)) {
             return {
                 type: 'Array',
-                elementType: this.node2schema((node as ts.ArrayTypeNode).elementType, imports)
+                elementType: this.node2schema(node.elementType, imports)
             }
         }
         // ArrayType: Array<T>
-        if (node.kind === ts.SyntaxKind.TypeReference) {
+        if (ts.isTypeReferenceNode(node) && ts.isIdentifier(node.typeName) && node.typeName.text === 'Array' && node.typeArguments) {
             let _node = node as ts.TypeReferenceNode;
-            if (_node.typeArguments && _node.typeName.kind === ts.SyntaxKind.Identifier && _node.typeName.text === 'Array') {
-                return {
-                    type: 'Array',
-                    elementType: this.node2schema(_node.typeArguments[0], imports)
-                }
-            }            
+            return {
+                type: 'Array',
+                elementType: this.node2schema(node.typeArguments[0], imports)
+            }
+        }
+
+        // TupleType
+        if (ts.isTupleTypeNode(node)) {
+            return {
+                type: 'Tuple',
+                elementTypes: node.elementTypes.map(v => this.node2schema(v, imports))
+            }
         }
 
         throw new Error('Unresolveable type');

@@ -67,4 +67,38 @@ describe('AstParser.node2schema', function () {
             }
         })
     })
+
+    it('Tuple', function () {
+        let src = CreateSource(`type Test = [number,  boolean[], Array<string[]>, [number, number]]`);
+        assert.deepStrictEqual(AstParser.node2schema(
+            AstParser.getFlattenNodes(src)['Test'].node, {}
+        ), {
+                type: 'Tuple',
+                elementTypes: [
+                    { type: 'Number' },
+                    {
+                        type: 'Array',
+                        elementType: {
+                            type: 'Boolean'
+                        }
+                    },
+                    {
+                        type: 'Array',
+                        elementType: {
+                            type: 'Array',
+                            elementType: {
+                                type: 'String'
+                            }
+                        }
+                    },
+                    {
+                        type: 'Tuple',
+                        elementTypes: [
+                            { type: 'Number' },
+                            { type: 'Number' }
+                        ]
+                    }
+                ]
+            })
+    })
 })
