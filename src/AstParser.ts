@@ -1,5 +1,20 @@
 import { TSBufferSchema } from "tsbuffer-schema";
 import * as ts from "typescript";
+import NumberTypeSchema from "tsbuffer-schema/src/schemas/NumberTypeSchema";
+
+const SCALAR_TYPES = [
+    'int8' as const,
+    'int16' as const,
+    'int32' as const,
+    'int64' as const,
+    'uint8' as const,
+    'uint16' as const,
+    'uint32' as const,
+    'uint64' as const,
+    'float32' as const,
+    'float64' as const
+].orderBy(v => v);
+
 /**
  * 提取出有用的AST
  */
@@ -101,7 +116,7 @@ export default class AstParser {
                 let _isExportDefault = _isExport && _v.modifiers!.findIndex(v1 => v1.kind === ts.SyntaxKind.DefaultKeyword) > -1
 
                 output[_v.name.text] = {
-                    node: _v,
+                    node: v.kind===ts.SyntaxKind.TypeAliasDeclaration ? (_v as ts.TypeAliasDeclaration).type : _v,
                     // export default的情况，本体作为不isExport，取而代之生成一个名为default的TypeReference来export
                     isExport: _isExport && !_isExportDefault
                 };
@@ -181,7 +196,31 @@ export default class AstParser {
     }
 
     static node2schema(node: ts.Node, imports: ScriptImports): TSBufferSchema {
-        throw new Error('TODO')
+        // BooleanType
+        if (node.kind === ts.SyntaxKind.BooleanKeyword) {
+            return {
+                type: 'Boolean'
+            }
+        }
+
+        // NumberType
+        if (node.kind === ts.SyntaxKind.NumberKeyword) {
+            return {
+                type: 'Number'
+            }
+        }
+        // Scalar value types
+        if (node.kind === ts.SyntaxKind.TypeReference
+            && (node as ts.TypeReferenceNode).typeName.kind === ts.SyntaxKind.Identifier
+            && SCALAR_TYPES.binarySearch(((node as ts.TypeReferenceNode).typeName as ts.Identifier).text) > -1
+        ) {
+            return {
+                type: 'Number',
+                scalarType: ((node as ts.TypeReferenceNode).typeName as ts.Identifier).text as typeof SCALAR_TYPES[number]
+            }
+        }
+
+        throw new Error('Unresolveable type');
     }
 
 }
