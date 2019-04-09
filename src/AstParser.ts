@@ -246,7 +246,51 @@ export default class AstParser {
             }
         }
 
-        throw new Error('Unresolveable type');
+        // LiteralType
+        // LiteralType: string | number | boolean
+        if (ts.isLiteralTypeNode(node)) {
+            if (ts.isStringLiteral(node.literal)) {
+                return {
+                    type: 'Literal',
+                    literal: node.literal.text
+                }
+            }
+            else if (ts.isNumericLiteral(node.literal)) {
+                return {
+                    type: 'Literal',
+                    literal: parseFloat(node.literal.text)
+                }
+            }
+            else if (node.literal.kind === ts.SyntaxKind.TrueKeyword) {
+                return {
+                    type: 'Literal',
+                    literal: true
+                }
+            }
+            else if (node.literal.kind === ts.SyntaxKind.FalseKeyword) {
+                return {
+                    type: 'Literal',
+                    literal: false
+                }
+            }
+        }
+        // Literal: null
+        else if (node.kind === ts.SyntaxKind.NullKeyword) {
+            return {
+                type: 'Literal',
+                literal: null
+            }
+        }
+        // Literal: undefined
+        else if (node.kind === ts.SyntaxKind.UndefinedKeyword) {
+            return {
+                type: 'Literal',
+                literal: undefined
+            }
+        }
+
+        console.log(node);
+        throw new Error('Unresolveable type: ' + ts.SyntaxKind[node.kind]);
     }
 
 }
