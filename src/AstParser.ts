@@ -15,8 +15,9 @@ export default class AstParser {
     }
 
     /** 解析顶层imports */
-    static parseImports(src: ts.SourceFile) {
+    static parseImports(src: ts.SourceFile): ScriptImportPaths {
         // TODO
+        return {};
     }
 
     /**
@@ -31,6 +32,9 @@ export default class AstParser {
         }
     } {
         let output: ReturnType<typeof AstParser.getFlattenNodes> = {};
+
+        // 检测到ExportDeclaration的项目，会在最后统一设为isExport
+        let exportNames: { [name: string]: null } = {};
 
         node.forEachChild(v => {
             // 类型定义
@@ -56,7 +60,9 @@ export default class AstParser {
                 // 生成TypeReference
                 if (_isExportDefault) {
                     output['default'] = {
-                        node: ts.createTypeReferenceNode('default', undefined),
+                        node: ts.createTypeAliasDeclaration(undefined, undefined, 'default', undefined,
+                            ts.createTypeReferenceNode(_v.name, undefined)
+                        ),
                         isExport: true
                     };
                 }
@@ -80,19 +86,52 @@ export default class AstParser {
             }
             // export
             else if (v.kind === ts.SyntaxKind.ExportDeclaration) {
-                // TODO
+                let _v = v as ts.ExportDeclaration;
+                _v.exportClause && _v.exportClause.elements.forEach(elem => {
+                    // export { A as B }
+                    if (elem.propertyName) {
+                        output[elem.name.text] = {
+                            node: ts.createTypeAliasDeclaration(undefined, undefined, elem.name.text, undefined,
+                                ts.createTypeReferenceNode(elem.propertyName.text, undefined)
+                            ),
+                            isExport: true
+                        };
+                    }
+                    // export { A }
+                    else {
+                        exportNames[elem.name.text] = null;
+                    }
+                })
             }
             // export default
             else if (v.kind === ts.SyntaxKind.ExportAssignment) {
-                // TODO
+                let _v = v as ts.ExportAssignment;
+                output['default'] = {
+                    node: ts.createTypeAliasDeclaration(undefined, undefined, 'default', undefined,
+                        ts.createTypeReferenceNode(_v.name ? _v.name.text : '', undefined)
+                    ),
+                    isExport: true
+                };
+            }
+        });
+
+        // exportNames
+        Object.keys(exportNames).forEach(v => {
+            if (output[v]) {
+                output[v].isExport = true
             }
         });
 
         return output;
     }
 
-    static node2schema(node: ts.Node): TSBufferSchema {
+    static node2schema(node: ts.Node, imports: ScriptImportPaths): TSBufferSchema {
         throw new Error('TODO')
     }
 
+}
+
+export interface ScriptImportPaths {
+    // symbolName -> path
+    [name: string]: string
 }
