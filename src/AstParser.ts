@@ -116,7 +116,7 @@ export default class AstParser {
                 let _isExportDefault = _isExport && _v.modifiers!.findIndex(v1 => v1.kind === ts.SyntaxKind.DefaultKeyword) > -1
 
                 output[_v.name.text] = {
-                    node: v.kind===ts.SyntaxKind.TypeAliasDeclaration ? (_v as ts.TypeAliasDeclaration).type : _v,
+                    node: v.kind === ts.SyntaxKind.TypeAliasDeclaration ? (_v as ts.TypeAliasDeclaration).type : _v,
                     // export default的情况，本体作为不isExport，取而代之生成一个名为default的TypeReference来export
                     isExport: _isExport && !_isExportDefault
                 };
@@ -218,6 +218,29 @@ export default class AstParser {
                 type: 'Number',
                 scalarType: ((node as ts.TypeReferenceNode).typeName as ts.Identifier).text as typeof SCALAR_TYPES[number]
             }
+        }
+
+        // StringType
+        if (node.kind === ts.SyntaxKind.StringKeyword) {
+            return { type: 'String' }
+        }
+
+        // ArrayType: xxx[]
+        if (node.kind === ts.SyntaxKind.ArrayType) {
+            return {
+                type: 'Array',
+                elementType: this.node2schema((node as ts.ArrayTypeNode).elementType, imports)
+            }
+        }
+        // ArrayType: Array<T>
+        if (node.kind === ts.SyntaxKind.TypeReference) {
+            let _node = node as ts.TypeReferenceNode;
+            if (_node.typeArguments && _node.typeName.kind === ts.SyntaxKind.Identifier && _node.typeName.text === 'Array') {
+                return {
+                    type: 'Array',
+                    elementType: this.node2schema(_node.typeArguments[0], imports)
+                }
+            }            
         }
 
         throw new Error('Unresolveable type');

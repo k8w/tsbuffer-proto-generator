@@ -12,3 +12,13 @@ export default function GetSourceFile(filename: string) {
         ts.ScriptKind.TS
     )
 }
+
+export function CreateSource(source: string) {
+    return ts.createSourceFile(
+        'xxx.ts',
+        source,
+        ts.ScriptTarget.ES3,
+        true,
+        ts.ScriptKind.TS
+    );
+}
