@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as ts from "typescript";
 import { Test } from "mocha";
+import { namespace } from './getFlattenNodes.test';
 
 export default function GetSourceFile(filename: string) {
     return ts.createSourceFile(
