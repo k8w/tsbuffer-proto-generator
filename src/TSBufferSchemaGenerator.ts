@@ -1,6 +1,6 @@
 import { TSBufferSchema } from 'tsbuffer-schema';
 import * as fs from "fs";
-import * as typescript from "typescript";
+import * as ts from "typescript";
 
 export interface TSBufferSchemaGeneratorOptions {
     baseDir: string;

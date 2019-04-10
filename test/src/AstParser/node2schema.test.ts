@@ -203,4 +203,49 @@ enum Test3 {a=1,b,c,d=100,e,f}
             ]
         });
     })
+
+    it('ReferenceType', function () {
+        let src = CreateSource(`
+        import A, {B, C as D} from 'abcd';
+        import { E } from './eee';
+        type TestA = A;
+        type TestAA = A.A;
+        type TestB = B;
+        type TestD = D;
+        type TestDD = D.D;
+        type Inside = TestA;
+        `);
+        let imports = AstParser.getScriptImports(src);
+        let nodes = AstParser.getFlattenNodes(src);
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['TestA'].node, imports), {
+            type: 'Reference',
+            path: 'abcd',
+            targetName: 'default'
+        });
+        assert.deepStrictEqual(AstParser.node2schema(nodes['TestAA'].node, imports), {
+            type: 'Reference',
+            path: 'abcd',
+            targetName: 'default.A'
+        });
+        assert.deepStrictEqual(AstParser.node2schema(nodes['TestB'].node, imports), {
+            type: 'Reference',
+            path: 'abcd',
+            targetName: 'B'
+        });
+        assert.deepStrictEqual(AstParser.node2schema(nodes['TestD'].node, imports), {
+            type: 'Reference',
+            path: 'abcd',
+            targetName: 'C'
+        });
+        assert.deepStrictEqual(AstParser.node2schema(nodes['TestDD'].node, imports), {
+            type: 'Reference',
+            path: 'abcd',
+            targetName: 'C.D'
+        });
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Inside'].node, imports), {
+            type: 'Reference',
+            targetName: 'TestA'
+        });
+    })
 })

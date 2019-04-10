@@ -1,6 +1,6 @@
 import { TSBufferSchema } from "tsbuffer-schema";
 import * as ts from "typescript";
-import NumberTypeSchema from "tsbuffer-schema/src/schemas/NumberTypeSchema";
+import ReferenceTypeSchema from "tsbuffer-schema/src/schemas/ReferenceTypeSchema";
 
 const SCALAR_TYPES = [
     'int8' as const,
@@ -325,8 +325,73 @@ export default class AstParser {
             }
         }
 
+        // ReferenceType
+        if (ts.isTypeReferenceNode(node)) {
+            return this._getImportReference(node.typeName, imports);
+        }
+
+        // InterfaceType
+        // if (ts.isInterfaceDeclaration(node) || ts.isTypeLiteralNode(node)) {
+        //     let extendsInterface: ReferenceTypeSchema[] | undefined;
+        //     if (ts.isInterfaceDeclaration(node) && node.heritageClauses) {
+        //         extendsInterface = [];
+        //         node.heritageClauses.forEach(v => {
+        //             v.types.forEach(type => {
+        //                 extendsInterface!.push(this._getImportReference(type.getText(), imports));
+        //             })
+        //         })
+        //     }
+
+        //     // TODO: properties
+
+        //     // TODO: indexSignature
+
+        //     // return {
+        //     //     type: 'Interface'
+        //     // }
+        // }
+
         console.log(node);
         throw new Error('Unresolveable type: ' + ts.SyntaxKind[node.kind]);
+    }
+
+    /**
+     * A -> A
+     * A.B -> A.B
+     * @param name 
+     */
+    private static _typeNameToString(name: ts.Identifier | ts.QualifiedName): string {
+        if (ts.isIdentifier(name)) {
+            return name.text;
+        }
+        else {
+            let left = ts.isIdentifier(name.left) ? name.left.text : this._typeNameToString(name.left);
+            return left + '.' + name.right.text;
+        }
+    }
+
+    private static _getImportReference(name: string | ts.Identifier | ts.QualifiedName, imports: ScriptImports): ReferenceTypeSchema {
+        if (typeof name !== 'string') {
+            name = this._typeNameToString(name);
+        }
+
+        let arrName = name.split('.');
+        let importItem = imports[arrName[0]];
+        if (importItem) {
+            let importName = arrName.slice();
+            importName[0] = importItem.targetName;
+            return {
+                type: 'Reference',
+                path: importItem.path,
+                targetName: importName.join('.')
+            }
+        }
+        else {
+            return {
+                type: 'Reference',
+                targetName: name
+            }
+        }
     }
 
 }
