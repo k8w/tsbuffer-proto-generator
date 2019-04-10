@@ -1,6 +1,7 @@
 import { TSBufferSchema } from "tsbuffer-schema";
 import * as ts from "typescript";
 import ReferenceTypeSchema from "tsbuffer-schema/src/schemas/ReferenceTypeSchema";
+import InterfaceTypeSchema from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
 
 const SCALAR_TYPES = [
     'int8' as const,
@@ -331,25 +332,60 @@ export default class AstParser {
         }
 
         // InterfaceType
-        // if (ts.isInterfaceDeclaration(node) || ts.isTypeLiteralNode(node)) {
-        //     let extendsInterface: ReferenceTypeSchema[] | undefined;
-        //     if (ts.isInterfaceDeclaration(node) && node.heritageClauses) {
-        //         extendsInterface = [];
-        //         node.heritageClauses.forEach(v => {
-        //             v.types.forEach(type => {
-        //                 extendsInterface!.push(this._getImportReference(type.getText(), imports));
-        //             })
-        //         })
-        //     }
+        if (ts.isInterfaceDeclaration(node) || ts.isTypeLiteralNode(node)) {
+            // extends
+            let extendsInterface: ReferenceTypeSchema[] | undefined;
+            if (ts.isInterfaceDeclaration(node) && node.heritageClauses) {
+                extendsInterface = [];
+                node.heritageClauses.forEach(v => {
+                    v.types.forEach(type => {
+                        extendsInterface!.push(this._getImportReference(type.getText(), imports));
+                    })
+                })
+            }
 
-        //     // TODO: properties
+            let properties: Omit<InterfaceTypeSchema['properties'][number], 'id'>[] = [];
+            let indexSignature: InterfaceTypeSchema['indexSignature'];
 
-        //     // TODO: indexSignature
+            node.members.forEach(member => {
+                // properties
+                if (ts.isPropertySignature(member)) {
+                    if (ts.isComputedPropertyName(member.name)) {
+                        throw new Error('ComputedPropertyName is not supported at now')
+                    }
+                    if (!member.type) {
+                        throw new Error(`Field must have a type: ${member.name.text}`);
+                    }
 
-        //     // return {
-        //     //     type: 'Interface'
-        //     // }
-        // }
+                    if (member.questionToken) {
+                        // TODO
+                        // | undefined
+                    }
+
+                    properties.push({
+                        name: member.name.text,
+                        type: this.node2schema(member.type, imports)
+                    })
+                }
+                // indexSignature
+                else if (ts.isIndexSignatureDeclaration(member)) {
+                    // TODO
+                }
+            })
+
+            // output
+            let output: InterfaceTypeSchema = {
+                type: 'Interface',
+                properties: properties.map((v, i) => ({ id: i, ...v }))
+            };
+            if (extendsInterface) {
+                output.extends = extendsInterface;
+            }
+            if (indexSignature) {
+                output.indexSignature = indexSignature;
+            }
+            return output;
+        }
 
         console.log(node);
         throw new Error('Unresolveable type: ' + ts.SyntaxKind[node.kind]);

@@ -253,4 +253,115 @@ enum Test3 {a=1,b,c,d=100,e,f}
             targetName: 'TestA.TestB'
         });
     })
+
+    it('InterfaceType', function () {
+        let src = CreateSource(`
+        import Ptl, {Req,FuckReq} from 'proto';
+
+        export interface XXPtl extends Ptl {
+
+        }
+
+        interface BaseReq extends Req, FuckReq{
+            url: string
+        }
+
+        export interface XXReq extends BaseReq{
+            a: string,
+            b?: number,
+            c: {
+                c1: {value: string}[],
+                c2: [number, boolean]
+            }
+        }
+        `);
+        let imports = AstParser.getScriptImports(src);
+        let nodes = AstParser.getFlattenNodes(src);
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['XXPtl'].node, imports), {
+            type: 'Interface',
+            extends: [{
+                type: 'Reference',
+                path: 'proto',
+                targetName: 'default'
+            }],
+            properties: []
+        });
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['BaseReq'].node, imports), {
+            type: 'Interface',
+            extends: [{
+                type: 'Reference',
+                path: 'proto',
+                targetName: 'Req'
+            },
+            {
+                type: 'Reference',
+                path: 'proto',
+                targetName: 'FuckReq'
+            }],
+            properties: [{
+                id: 0,
+                name: 'url',
+                type: {
+                    type: 'String'
+                }
+            }]
+        });
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['XXReq'].node, imports), {
+            type: 'Interface',
+            extends: [{
+                type: 'Reference',
+                targetName: 'BaseReq'
+            }],
+            properties: [{
+                id: 0,
+                name: 'a',
+                type: {
+                    type: 'String'
+                }
+            }, {
+                id: 1,
+                name: 'b',
+                type: {
+                    type: 'Number'
+                }
+            }, {
+                id: 2,
+                name: 'c',
+                type: {
+                    type: 'Interface',
+                    properties: [{
+                        id: 0,
+                        name: 'c1',
+                        type: {
+                            type: 'Array',
+                            elementType: {
+                                type: 'Interface',
+                                properties: [{
+                                    id: 0,
+                                    name: 'value',
+                                    type: {
+                                        type: 'String'
+                                    }
+                                }]
+                            }
+                        }
+                    }, {
+                        id: 1,
+                        name: 'c2',
+                        type: {
+                            type: 'Tuple',
+                            elementTypes: [{
+                                type: 'Number'
+                            }, {
+                                type: 'Boolean'
+                            }]
+                        }
+                    }]
+                }
+            }]
+        });
+    })
 })
