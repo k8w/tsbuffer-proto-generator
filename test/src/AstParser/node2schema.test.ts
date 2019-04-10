@@ -214,6 +214,7 @@ enum Test3 {a=1,b,c,d=100,e,f}
         type TestD = D;
         type TestDD = D.D;
         type Inside = TestA;
+        type Inside2 = TestA.TestB;
         `);
         let imports = AstParser.getScriptImports(src);
         let nodes = AstParser.getFlattenNodes(src);
@@ -246,6 +247,10 @@ enum Test3 {a=1,b,c,d=100,e,f}
         assert.deepStrictEqual(AstParser.node2schema(nodes['Inside'].node, imports), {
             type: 'Reference',
             targetName: 'TestA'
+        });
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Inside2'].node, imports), {
+            type: 'Reference',
+            targetName: 'TestA.TestB'
         });
     })
 })
