@@ -1,6 +1,5 @@
 import { TSBufferSchema } from 'tsbuffer-schema';
 import * as fs from "fs";
-import * as ts from "typescript";
 
 export interface TSBufferSchemaGeneratorOptions {
     baseDir: string;
@@ -18,9 +17,9 @@ export default class TSBufferSchemaGenerator {
         };
     }
 
-    private _fileCache: {
-        [filepath: string]: FileSchema
-    } = {};
+    // private _fileCache: {
+    //     [filepath: string]: FileSchema
+    // } = {};
 
     /**
      * 读取一个文件，并解析内部所有类型定义

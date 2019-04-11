@@ -278,7 +278,6 @@ export default class AstParser {
         }
         // ArrayType: Array<T>
         if (ts.isTypeReferenceNode(node) && ts.isIdentifier(node.typeName) && node.typeName.text === 'Array' && node.typeArguments) {
-            let _node = node as ts.TypeReferenceNode;
             return {
                 type: 'Array',
                 elementType: this.node2schema(node.typeArguments[0], imports)
