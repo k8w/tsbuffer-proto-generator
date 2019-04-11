@@ -108,7 +108,7 @@ describe('AstParser.node2schema', function () {
         })
     })
 
-    it('Tuple', function () {
+    it('TupleType', function () {
         let src = CreateSource(`type Test = [number,  boolean[], Array<string[]>, [number, number]]`);
         assert.deepStrictEqual(AstParser.node2schema(
             AstParser.getFlattenNodes(src)['Test'].node, {}
@@ -142,7 +142,7 @@ describe('AstParser.node2schema', function () {
             })
     })
 
-    it('Literal: String', function () {
+    it('LiteralType: String', function () {
         let src = CreateSource(`type Test = 'Hahaha';
         type Test1 = "haha111";`);
         let nodes = AstParser.getFlattenNodes(src);
@@ -157,7 +157,7 @@ describe('AstParser.node2schema', function () {
         })
     })
 
-    it('Literal: Number', function () {
+    it('LiteralType: Number', function () {
         let src = CreateSource(`type Test = 123;
         type Test1 = 1.234;
         type Test2 = 1e23`);
@@ -177,7 +177,7 @@ describe('AstParser.node2schema', function () {
         })
     })
 
-    it('Literal: Boolean', function () {
+    it('LiteralType: Boolean', function () {
         let src = CreateSource(`type Test = true;
         type Test1 = false;`);
         let nodes = AstParser.getFlattenNodes(src);
@@ -192,7 +192,7 @@ describe('AstParser.node2schema', function () {
         })
     })
 
-    it('Literal: null/undefined', function () {
+    it('LiteralType: null/undefined', function () {
         let src = CreateSource(`type Test = null;
         type Test1 = undefined;`);
         let nodes = AstParser.getFlattenNodes(src);
@@ -294,7 +294,7 @@ enum Test3 {a=1,b,c,d=100,e,f}
         });
     })
 
-    it('InterfaceType', function () {
+    it('InterfaceType: interface', function () {
         let src = CreateSource(`
         import Ptl, {Req,FuckReq} from 'proto';
 
@@ -405,7 +405,7 @@ enum Test3 {a=1,b,c,d=100,e,f}
         });
     })
 
-    it('TypeLiteral', function () {
+    it('InterfaceType: TypeLiteral', function () {
         let src = CreateSource(`
         type Test = {
             a: string,
