@@ -53,7 +53,7 @@ describe('AstParser.node2schema', function () {
         })
     });
 
-    it('NumberType', function () {
+    it('NumberType: number', function () {
         let src = CreateSource(`type Test = number;`);
         let nodes = AstParser.getFlattenNodes(src);
         let schema = AstParser.node2schema(nodes['Test'].node, {});
@@ -83,7 +83,7 @@ describe('AstParser.node2schema', function () {
         })
     })
 
-    it('Array: string[]', function () {
+    it('ArrayType: string[]', function () {
         let src = CreateSource(`type Test = string[];`);
         let nodes = AstParser.getFlattenNodes(src);
         let schema = AstParser.node2schema(nodes['Test'].node, {});
@@ -95,7 +95,7 @@ describe('AstParser.node2schema', function () {
         })
     })
 
-    it('Array: Array<uint64>', function () {
+    it('ArrayType: Array<uint64>', function () {
         let src = CreateSource(`type Test = Array<uint64>;`);
         let nodes = AstParser.getFlattenNodes(src);
         let schema = AstParser.node2schema(nodes['Test'].node, {});
