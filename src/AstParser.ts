@@ -403,7 +403,7 @@ export default class AstParser {
                         throw new Error(`Field must have a type: ${member.name.text}`);
                     }
 
-                    let property: InterfaceTypeSchema['properties'][number] = {
+                    let property: NonNullable<InterfaceTypeSchema['properties']>[number] = {
                         id: i,
                         name: member.name.text,
                         type: this.node2schema(member.type, imports)
