@@ -2,6 +2,7 @@ import * as assert from 'assert';
 import * as ts from "typescript";
 import AstParser from '../../../src/AstParser';
 import { CreateSource } from './GetSourceFile';
+import InterfaceTypeSchema from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
 
 describe('AstParser.node2schema', function () {
     it('AnyType', function () {
@@ -50,6 +51,15 @@ describe('AstParser.node2schema', function () {
         let schema = AstParser.node2schema(nodes['Test'].node, {});
         assert.deepStrictEqual(schema, {
             type: 'Boolean'
+        })
+    });
+
+    it('NonPrimitiveType', function () {
+        let src = CreateSource(`type Test = object;`);
+        let nodes = AstParser.getFlattenNodes(src);
+        let schema = AstParser.node2schema(nodes['Test'].node, {});
+        assert.deepStrictEqual(schema, {
+            type: 'NonPrimitive'
         })
     });
 
@@ -314,6 +324,10 @@ enum Test3 {a=1,b,c,d=100,e,f}
                 c2: [number, boolean]
             }
         }
+
+        interface Empty{};
+
+        type Empty2 = {};
         `);
         let imports = AstParser.getScriptImports(src);
         let nodes = AstParser.getFlattenNodes(src);
@@ -324,8 +338,7 @@ enum Test3 {a=1,b,c,d=100,e,f}
                 type: 'Reference',
                 path: 'proto',
                 targetName: 'default'
-            }],
-            properties: []
+            }]
         });
 
         assert.deepStrictEqual(AstParser.node2schema(nodes['BaseReq'].node, imports), {
@@ -404,6 +417,14 @@ enum Test3 {a=1,b,c,d=100,e,f}
                 }
             }]
         });
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Empty'].node, imports), {
+            type: 'Interface'
+        });
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Empty2'].node, imports), {
+            type: 'Interface'
+        });
     })
 
     it('InterfaceType: TypeLiteral', function () {
@@ -443,4 +464,29 @@ enum Test3 {a=1,b,c,d=100,e,f}
             }]
         });
     })
+
+    // it('Interface: IndexSignature', function () {
+    //     let src = CreateSource(`
+    //     type Test = {
+    //         [key: string]: number;
+    //     }
+
+    //     interface Test2 {
+    //         a: {valueA: string},
+    //         b: {valueB: string},
+    //         [key: string]: {valueA?: string, valueB?: string}
+    //     }
+    //     `);
+    //     let imports = AstParser.getScriptImports(src);
+    //     let nodes = AstParser.getFlattenNodes(src);
+
+    //     assert.deepStrictEqual(AstParser.node2schema(nodes['Test'].node, imports), <InterfaceTypeSchema>{
+    //         type: 'Interface',
+    //         indexSignature: {
+    //             type: 'Number'
+    //         }
+    //     });
+
+
+    // });
 })

@@ -243,6 +243,13 @@ export default class AstParser {
             }
         }
 
+        // NonPrimitiveType
+        if (node.kind === ts.SyntaxKind.ObjectKeyword) {
+            return {
+                type: 'NonPrimitive'
+            }
+        }
+
         // NumberType
         if (node.kind === ts.SyntaxKind.NumberKeyword) {
             return {
@@ -383,7 +390,7 @@ export default class AstParser {
                 })
             }
 
-            let properties: InterfaceTypeSchema['properties'][number][] = [];
+            let properties: NonNullable<InterfaceTypeSchema['properties']>[number][] = [];
             let indexSignature: InterfaceTypeSchema['indexSignature'];
 
             node.members.forEach((member, i) => {
@@ -417,11 +424,13 @@ export default class AstParser {
 
             // output
             let output: InterfaceTypeSchema = {
-                type: 'Interface',
-                properties: properties
+                type: 'Interface'
             };
             if (extendsInterface) {
                 output.extends = extendsInterface;
+            }
+            if (properties.length) {
+                output.properties = properties;
             }
             if (indexSignature) {
                 output.indexSignature = indexSignature;
