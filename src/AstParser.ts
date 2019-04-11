@@ -452,6 +452,40 @@ export default class AstParser {
             return output;
         }
 
+        // IndexedAccessType
+        if (ts.isIndexedAccessTypeNode(node)) {
+            // A['a']
+            if (ts.isLiteralTypeNode(node.indexType)) {
+                let index: string;
+                if (ts.isStringLiteral(node.indexType.literal) || ts.isNumericLiteral(node.indexType.literal)) {
+                    index = node.indexType.literal.text;
+                }
+                else if (node.indexType.literal.kind === ts.SyntaxKind.TrueKeyword
+                    || node.indexType.literal.kind === ts.SyntaxKind.FalseKeyword
+                    || node.indexType.literal.kind === ts.SyntaxKind.NullKeyword
+                    || node.indexType.literal.kind === ts.SyntaxKind.UndefinedKeyword
+                ) {
+                    index = node.indexType.literal.getText();
+                }
+                else {
+                    throw new Error(`Error indexType literal: ${node.getText()}`)
+                }
+
+                return {
+                    type: 'IndexedAccess',
+                    index: index,
+                    objectType: this.node2schema(node.objectType, imports)
+                }
+            }
+            // A['a' | 'b']
+            else if (ts.isUnionTypeNode(node.indexType)) {
+                // TODO UnionType
+            }
+            else {
+                throw new Error(`Error IndexedAccessType indexType: ${node.getText()}`);
+            }
+        }
+
         console.log(node);
         throw new Error('Unresolveable type: ' + ts.SyntaxKind[node.kind]);
     }

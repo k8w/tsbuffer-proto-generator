@@ -3,6 +3,7 @@ import * as ts from "typescript";
 import AstParser from '../../../src/AstParser';
 import { CreateSource } from './GetSourceFile';
 import InterfaceTypeSchema from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
+import IndexedAccessTypeSchema from 'tsbuffer-schema/src/schemas/IndexedAccessTypeSchema';
 
 describe('AstParser.node2schema', function () {
     it('AnyType', function () {
@@ -543,4 +544,51 @@ enum Test3 {a=1,b,c,d=100,e,f}
             }
         });
     });
+
+    it('IndexAccessType', function () {
+        let src = CreateSource(`
+        type Test1 = A['B'];
+        type Test2 = A['B']['C'];
+        type Test3 = {a:string}['a'];
+        `);
+        let imports = AstParser.getScriptImports(src);
+        let nodes = AstParser.getFlattenNodes(src);
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, imports), <IndexedAccessTypeSchema>{
+            type: 'IndexedAccess',
+            objectType: {
+                type: 'Reference',
+                targetName: 'A'
+            },
+            index: 'B'
+        });
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Test2'].node, imports), <IndexedAccessTypeSchema>{
+            type: 'IndexedAccess',
+            objectType: {
+                type: 'IndexedAccess',
+                objectType: {
+                    type: 'Reference',
+                    targetName: 'A'
+                },
+                index: 'B'
+            },
+            index: 'C'
+        });
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Test3'].node, imports), <IndexedAccessTypeSchema>{
+            type: 'IndexedAccess',
+            objectType: {
+                type: 'Interface',
+                properties: [{
+                    id: 0,
+                    name: 'a',
+                    type: {
+                        type: 'String'
+                    }
+                }]
+            },
+            index: 'a'
+        });
+    })
 })
