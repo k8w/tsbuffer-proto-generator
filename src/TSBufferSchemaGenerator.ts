@@ -26,19 +26,19 @@ export default class TSBufferSchemaGenerator {
      * @param filepath 
      * @param options 
      */
-    async parseFile(filepath: string, options: GetSchemasOptions = {}): Promise<FileSchema> {
-        // typescript.createSourceFile
-        throw new Error('TODO')
-    }
+    // async parseFile(filepath: string, options: GetSchemasOptions = {}): Promise<FileSchema> {
+    //     // typescript.createSourceFile
+    //     throw new Error('TODO')
+    // }
 
     /**
      * 从一个文件路径中，解析指定的Schema
      * @param filepath 
      * @param symbollName 
      */
-    async getSchema(filepath: string, symbollName: string): Promise<TSBufferSchema> {
-        throw new Error('TODO');
-    }
+    // async getSchema(filepath: string, symbollName: string): Promise<TSBufferSchema> {
+    //     throw new Error('TODO');
+    // }
 
 }
 

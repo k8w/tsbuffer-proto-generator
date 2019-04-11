@@ -36,14 +36,14 @@ const BUFFER_TYPES = [
  */
 export default class AstParser {
 
-    static parseSourceFile(path: string, content: string): {
-        [name: string]: TSBufferSchema
-    } {
-        throw new Error('TODO');
-        // 1. get flatten nodes
-        // 2. parse imports
-        // 3. node2schema
-    }
+    // static parseSourceFile(path: string, content: string): {
+    //     [name: string]: TSBufferSchema
+    // } {
+    //     throw new Error('TODO');
+    //     // 1. get flatten nodes
+    //     // 2. parse imports
+    //     // 3. node2schema
+    // }
 
     /** 解析顶层imports */
     static getScriptImports(src: ts.SourceFile): ScriptImports {
