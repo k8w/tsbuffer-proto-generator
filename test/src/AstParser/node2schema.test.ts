@@ -364,6 +364,7 @@ enum Test3 {a=1,b,c,d=100,e,f}
             }, {
                 id: 1,
                 name: 'b',
+                optional: true,
                 type: {
                     type: 'Number'
                 }
@@ -428,6 +429,7 @@ enum Test3 {a=1,b,c,d=100,e,f}
             }, {
                 id: 1,
                 name: 'b',
+                optional: true,
                 type: {
                     type: 'Interface',
                     properties: [{

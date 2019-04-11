@@ -222,7 +222,7 @@ export default class AstParser {
         // BufferType
         if (ts.isTypeReferenceNode(node)) {
             let ref = this._getReferenceTypeSchema(node.typeName, imports);
-            if (!ref.path && BUFFER_TYPES.binarySearch(ref.targetName) > -1) {                
+            if (!ref.path && BUFFER_TYPES.binarySearch(ref.targetName) > -1) {
                 let output: BufferTypeSchema = {
                     type: 'Buffer'
                 };
@@ -383,10 +383,10 @@ export default class AstParser {
                 })
             }
 
-            let properties: Omit<InterfaceTypeSchema['properties'][number], 'id'>[] = [];
+            let properties: InterfaceTypeSchema['properties'][number][] = [];
             let indexSignature: InterfaceTypeSchema['indexSignature'];
 
-            node.members.forEach(member => {
+            node.members.forEach((member, i) => {
                 // properties
                 if (ts.isPropertySignature(member)) {
                     if (ts.isComputedPropertyName(member.name)) {
@@ -396,15 +396,18 @@ export default class AstParser {
                         throw new Error(`Field must have a type: ${member.name.text}`);
                     }
 
-                    if (member.questionToken) {
-                        // TODO
-                        // | undefined
-                    }
-
-                    properties.push({
+                    let property: InterfaceTypeSchema['properties'][number] = {
+                        id: i,
                         name: member.name.text,
                         type: this.node2schema(member.type, imports)
-                    })
+                    }
+
+                    // optional
+                    if (member.questionToken) {
+                        property.optional = true;
+                    }
+
+                    properties.push(property)
                 }
                 // indexSignature
                 else if (ts.isIndexSignatureDeclaration(member)) {
@@ -415,7 +418,7 @@ export default class AstParser {
             // output
             let output: InterfaceTypeSchema = {
                 type: 'Interface',
-                properties: properties.map((v, i) => ({ id: i, ...v }))
+                properties: properties
             };
             if (extendsInterface) {
                 output.extends = extendsInterface;
