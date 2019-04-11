@@ -3,6 +3,7 @@ import * as ts from "typescript";
 import ReferenceTypeSchema from "tsbuffer-schema/src/schemas/ReferenceTypeSchema";
 import InterfaceTypeSchema from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
 import BufferTypeSchema from 'tsbuffer-schema/src/schemas/BufferTypeSchema';
+import UnionTypeSchema from 'tsbuffer-schema/src/schemas/UnionTypeSchema';
 
 const SCALAR_TYPES = [
     'int8' as const,
@@ -212,6 +213,11 @@ export default class AstParser {
     }
 
     static node2schema(node: ts.Node, imports: ScriptImports): TSBufferSchema {
+        // 去除外层括弧
+        while (ts.isParenthesizedTypeNode(node)) {
+            node = node.type;
+        }
+
         // AnyType
         if (node.kind === ts.SyntaxKind.AnyKeyword) {
             return {
@@ -483,6 +489,28 @@ export default class AstParser {
             }
             else {
                 throw new Error(`Error IndexedAccessType indexType: ${node.getText()}`);
+            }
+        }
+
+        // UnionType
+        if (ts.isUnionTypeNode(node)) {
+            return {
+                type: 'Union',
+                members: node.types.map((v, i) => ({
+                    id: i,
+                    type: this.node2schema(v, imports)
+                }))
+            }
+        }
+
+        // IntersectionType
+        if (ts.isIntersectionTypeNode(node)) {
+            return {
+                type: 'Intersection',
+                members: node.types.map((v, i) => ({
+                    id: i,
+                    type: this.node2schema(v, imports)
+                }))
             }
         }
 

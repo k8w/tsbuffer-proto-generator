@@ -4,6 +4,8 @@ import AstParser from '../../../src/AstParser';
 import { CreateSource } from './GetSourceFile';
 import InterfaceTypeSchema from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
 import IndexedAccessTypeSchema from 'tsbuffer-schema/src/schemas/IndexedAccessTypeSchema';
+import UnionTypeSchema from 'tsbuffer-schema/src/schemas/UnionTypeSchema';
+import IntersectionTypeSchema from 'tsbuffer-schema/src/schemas/IntersectionTypeSchema';
 
 describe('AstParser.node2schema', function () {
     it('AnyType', function () {
@@ -589,6 +591,209 @@ enum Test3 {a=1,b,c,d=100,e,f}
                 }]
             },
             index: 'a'
+        });
+    })
+
+    it('UnionType', function () {
+        let src = CreateSource(`
+        type Test1 = A | B;
+        type Test2 = string | number | boolean;
+        `);
+        let imports = AstParser.getScriptImports(src);
+        let nodes = AstParser.getFlattenNodes(src);
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, imports), <UnionTypeSchema>{
+            type: 'Union',
+            members: [
+                {
+                    id: 0,
+                    type: {
+                        type: 'Reference',
+                        targetName: 'A'
+                    }
+                },
+                {
+                    id: 1,
+                    type: {
+                        type: 'Reference',
+                        targetName: 'B'
+                    }
+                }
+            ]
+        });
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Test2'].node, imports), <UnionTypeSchema>{
+            type: 'Union',
+            members: [
+                {
+                    id: 0,
+                    type: {
+                        type: 'String'
+                    }
+                },
+                {
+                    id: 1,
+                    type: {
+                        type: 'Number'
+                    }
+                },
+                {
+                    id: 2,
+                    type: {
+                        type: 'Boolean'
+                    }
+                }
+            ]
+        });
+    })
+
+    it('IntersectionType', function () {
+        let src = CreateSource(`
+        type Test1 = A & B;
+        type Test2 = string & number & boolean;
+        `);
+        let imports = AstParser.getScriptImports(src);
+        let nodes = AstParser.getFlattenNodes(src);
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, imports), <IntersectionTypeSchema>{
+            type: 'Intersection',
+            members: [
+                {
+                    id: 0,
+                    type: {
+                        type: 'Reference',
+                        targetName: 'A'
+                    }
+                },
+                {
+                    id: 1,
+                    type: {
+                        type: 'Reference',
+                        targetName: 'B'
+                    }
+                }
+            ]
+        });
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Test2'].node, imports), <IntersectionTypeSchema>{
+            type: 'Intersection',
+            members: [
+                {
+                    id: 0,
+                    type: {
+                        type: 'String'
+                    }
+                },
+                {
+                    id: 1,
+                    type: {
+                        type: 'Number'
+                    }
+                },
+                {
+                    id: 2,
+                    type: {
+                        type: 'Boolean'
+                    }
+                }
+            ]
+        });
+    })
+
+    it('UnionType & IntersectionType', function () {
+        let src = CreateSource(`
+        type Test1 = A & B | C & D;
+        type Test2 = (A | B) & (C | D);
+        `);
+        let imports = AstParser.getScriptImports(src);
+        let nodes = AstParser.getFlattenNodes(src);
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, imports), {
+            type: 'Union',
+            members: [
+                {
+                    id: 0,
+                    type: {
+                        type: 'Intersection',
+                        members: [{
+                            id: 0,
+                            type: {
+                                type: 'Reference',
+                                targetName: 'A'
+                            }
+                        }, {
+                            id: 1,
+                            type: {
+                                type: 'Reference',
+                                targetName: 'B'
+                            }
+                        }]
+                    }
+                },
+                {
+                    id: 1,
+                    type: {
+                        type: 'Intersection',
+                        members: [{
+                            id: 0,
+                            type: {
+                                type: 'Reference',
+                                targetName: 'C'
+                            }
+                        }, {
+                            id: 1,
+                            type: {
+                                type: 'Reference',
+                                targetName: 'D'
+                            }
+                        }]
+                    }
+                }
+            ]
+        });
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Test2'].node, imports), {
+            type: 'Intersection',
+            members: [
+                {
+                    id: 0,
+                    type: {
+                        type: 'Union',
+                        members: [{
+                            id: 0,
+                            type: {
+                                type: 'Reference',
+                                targetName: 'A'
+                            }
+                        }, {
+                            id: 1,
+                            type: {
+                                type: 'Reference',
+                                targetName: 'B'
+                            }
+                        }]
+                    }
+                },
+                {
+                    id: 1,
+                    type: {
+                        type: 'Union',
+                        members: [{
+                            id: 0,
+                            type: {
+                                type: 'Reference',
+                                targetName: 'C'
+                            }
+                        }, {
+                            id: 1,
+                            type: {
+                                type: 'Reference',
+                                targetName: 'D'
+                            }
+                        }]
+                    }
+                }
+            ]
         });
     })
 })
