@@ -4,6 +4,8 @@ import ReferenceTypeSchema from "tsbuffer-schema/src/schemas/ReferenceTypeSchema
 import InterfaceTypeSchema from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
 import BufferTypeSchema from 'tsbuffer-schema/src/schemas/BufferTypeSchema';
 import UnionTypeSchema from 'tsbuffer-schema/src/schemas/UnionTypeSchema';
+import PickTypeSchema from 'tsbuffer-schema/src/schemas/PickTypeSchema';
+import OmitTypeSchema from 'tsbuffer-schema/src/schemas/OmitTypeSchema';
 
 const SCALAR_TYPES = [
     'int8' as const,
@@ -283,7 +285,7 @@ export default class AstParser {
             }
         }
         // ArrayType: Array<T>
-        if (ts.isTypeReferenceNode(node) && ts.isIdentifier(node.typeName) && node.typeName.text === 'Array' && node.typeArguments) {
+        if (this._isLocalReference(node, imports, 'Array') && node.typeArguments) {
             return {
                 type: 'Array',
                 elementType: this.node2schema(node.typeArguments[0], imports)
@@ -375,11 +377,6 @@ export default class AstParser {
                     }
                 })
             }
-        }
-
-        // ReferenceType
-        if (ts.isTypeReferenceNode(node)) {
-            return this._getReferenceTypeSchema(node.typeName, imports);
         }
 
         // InterfaceType
@@ -514,6 +511,72 @@ export default class AstParser {
             }
         }
 
+        // PickType & OmitType
+        if (this._isLocalReference(node, imports, ['Pick', 'Omit'])) {
+            let nodeName = node.typeName.getText();
+
+            if (!node.typeArguments || node.typeArguments.length != 2) {
+                throw new Error(`Illeagle ${nodeName}Type: ` + node.getText());
+            }
+
+            let target = this.node2schema(node.typeArguments[0], imports);
+            if (target.type !== 'Interface' && target.type !== 'Reference') {
+                throw new Error(`Illeagle ${nodeName}Type: ` + node.getText())
+            }
+
+            let output: PickTypeSchema | OmitTypeSchema = Object.assign({
+                target: target,
+                keys: this._getPickKeys(this.node2schema(node.typeArguments[1], imports))
+            }, nodeName === 'Pick' ? { type: 'Pick' } : { type: 'Omit' })
+
+            return output;
+        }
+
+        // PartialType
+        if (this._isLocalReference(node, imports, 'Partial')) {
+            if (!node.typeArguments || node.typeArguments.length != 1) {
+                throw new Error('Illeagle PartialType: ' + node.getText());
+            }
+
+            let target = this.node2schema(node.typeArguments[0], imports);
+            if (target.type !== 'Interface' && target.type !== 'Reference') {
+                throw new Error('Illeagle PartialType: ' + node.getText())
+            }
+
+            return {
+                type: 'Partial',
+                target: target
+            }
+        }
+
+        // OverwriteType
+        if (this._isLocalReference(node, imports, 'Overwrite')) {
+            if (!node.typeArguments || node.typeArguments.length != 2) {
+                throw new Error(`Illeagle OverwriteType: ` + node.getText());
+            }
+
+            let target = this.node2schema(node.typeArguments[0], imports);
+            if (target.type !== 'Interface' && target.type !== 'Reference') {
+                throw new Error(`Illeagle OverwriteType: ` + node.getText())
+            }
+
+            let overwrite = this.node2schema(node.typeArguments[1], imports);
+            if (overwrite.type !== 'Interface' && overwrite.type !== 'Reference') {
+                throw new Error(`Illeagle OverwriteType: ` + node.getText())
+            }
+
+            return {
+                type: 'Overwrite',
+                target: target,
+                overwrite: overwrite
+            };
+        }
+
+        // ReferenceType放最后（因为很多其它类型，如Pick等，都解析为ReferenceNode）
+        if (ts.isTypeReferenceNode(node)) {
+            return this._getReferenceTypeSchema(node.typeName, imports);
+        }
+
         console.log(node);
         throw new Error('Unresolveable type: ' + ts.SyntaxKind[node.kind]);
     }
@@ -557,6 +620,40 @@ export default class AstParser {
         }
     }
 
+    private static _isLocalReference(node: ts.Node, imports: ScriptImports, referenceName: string | string[]): node is ts.TypeReferenceNode {
+        if (!ts.isTypeReferenceNode(node)) {
+            return false;
+        }
+
+        if (typeof referenceName === 'string') {
+            referenceName = [referenceName];
+        }
+
+        let ref = this._getReferenceTypeSchema(node.typeName, imports);
+        for (let name of referenceName) {
+            if (!ref.path && ref.targetName === name) {
+                return name as any;
+            }
+        }
+
+        return false;
+    }
+
+    private static _getPickKeys(schema: TSBufferSchema): string[] {
+        if (schema.type === 'Union') {
+            return schema.members.map(v => this._getPickKeys(v.type)).reduce((prev, next) => prev.concat(next), []).distinct();
+        }
+        else if (schema.type === 'Intersection') {
+            return schema.members.map(v => this._getPickKeys(v.type)).reduce((prev, next) => prev.filter(v => next.indexOf(v) > -1));
+        }
+        else if (schema.type === 'Literal') {
+            return ['' + schema.literal];
+        }
+        else {
+            console.log('Illeagle Pick keys:', schema);
+            throw new Error('Illeagle Pick keys: ' + JSON.stringify(schema, null, 2));
+        }
+    }
 }
 
 export interface ScriptImports {

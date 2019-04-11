@@ -796,4 +796,82 @@ enum Test3 {a=1,b,c,d=100,e,f}
             ]
         });
     })
+
+    it('PickType & OmitType', function () {
+        ['Pick', 'Omit'].forEach(v=>{
+            let src = CreateSource(`
+        type Test1 = ${v}<AA, 'a'|'b'|'c'>;
+        type Test2 = ${v}<{}, ('a'|'b'|'c') & ('b'|'c'|'d');
+        `);
+        let imports = AstParser.getScriptImports(src);
+        let nodes = AstParser.getFlattenNodes(src);
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, imports), {
+            type: v,
+            target: {
+                type: 'Reference',
+                targetName: 'AA'
+            },
+            keys: ['a','b','c']
+        });
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Test2'].node, imports), {
+            type: v,
+            target: {
+                type: 'Interface'
+            },
+            keys: ['b','c']
+        });
+        });
+    })
+
+    it('PartialType', function(){
+        let src = CreateSource(`
+        type Test1 = Partial<AA>;
+        type Test2 = Partial<{}>;
+        `);
+        let imports = AstParser.getScriptImports(src);
+        let nodes = AstParser.getFlattenNodes(src);
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, imports), {
+            type: 'Partial',
+            target: {
+                type: 'Reference',
+                targetName: 'AA'
+            }
+        });
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Test2'].node, imports), {
+            type: 'Partial',
+            target: {
+                type: 'Interface'
+            }
+        });
+    })
+
+    it('Overwrite', function(){
+        let src = CreateSource(`
+        type Test1 = Overwrite<AA, {a: string}>;
+        `);
+        let imports = AstParser.getScriptImports(src);
+        let nodes = AstParser.getFlattenNodes(src);
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, imports), {
+            type: 'Overwrite',
+            target: {
+                type: 'Reference',
+                targetName: 'AA'
+            },
+            overwrite: {
+                type: 'Interface',
+                properties: [{
+                    id: 0,
+                    name: 'a',
+                    type: {
+                        type: 'String'
+                    }
+                }]
+            }
+        });
+    })
 })
