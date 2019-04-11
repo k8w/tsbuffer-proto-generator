@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test/**/*.test.ts",
+    "test": "nyc mocha test/**/*.test.ts && start coverage\\index.html",
     "us": "npm i tsbuffer-schema@*"
   },
   "author": "",
@@ -20,6 +20,20 @@
   "devDependencies": {
     "@types/mocha": "^5.2.6",
     "mocha": "^6.1.2",
+    "nyc": "^13.3.0",
     "ts-node": "^8.0.3"
+  },
+  "nyc": {
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
+    "exclude": [
+      "**/*.d.ts"
+    ],
+    "reporter": [
+      "html"
+    ],
+    "all": true
   }
 }
