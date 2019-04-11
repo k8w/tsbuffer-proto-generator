@@ -417,7 +417,22 @@ export default class AstParser {
                 }
                 // indexSignature
                 else if (ts.isIndexSignatureDeclaration(member)) {
-                    // TODO
+                    if (!member.type || !member.parameters[0].type) {
+                        throw new Error('Error index signature: ' + member.getText())
+                    }
+
+                    let keyType: NonNullable<InterfaceTypeSchema['indexSignature']>['keyType'];
+                    if (member.parameters[0].type.kind === ts.SyntaxKind.NumberKeyword) {
+                        keyType = 'Number';
+                    }
+                    else {
+                        keyType = 'String';
+                    }
+
+                    indexSignature = {
+                        keyType: keyType,
+                        type: this.node2schema(member.type, imports)
+                    }
                 }
             })
 

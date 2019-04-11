@@ -465,28 +465,82 @@ enum Test3 {a=1,b,c,d=100,e,f}
         });
     })
 
-    // it('Interface: IndexSignature', function () {
-    //     let src = CreateSource(`
-    //     type Test = {
-    //         [key: string]: number;
-    //     }
+    it('Interface: IndexSignature', function () {
+        let src = CreateSource(`
+        type Test = {
+            [key: string]: number;
+        }
 
-    //     interface Test2 {
-    //         a: {valueA: string},
-    //         b: {valueB: string},
-    //         [key: string]: {valueA?: string, valueB?: string}
-    //     }
-    //     `);
-    //     let imports = AstParser.getScriptImports(src);
-    //     let nodes = AstParser.getFlattenNodes(src);
+        interface Test2 {
+            a: {valueA: string},
+            b?: {valueB: string},
+            [key: string]: {valueA?: string, valueB?: string}
+        }
+        `);
+        let imports = AstParser.getScriptImports(src);
+        let nodes = AstParser.getFlattenNodes(src);
 
-    //     assert.deepStrictEqual(AstParser.node2schema(nodes['Test'].node, imports), <InterfaceTypeSchema>{
-    //         type: 'Interface',
-    //         indexSignature: {
-    //             type: 'Number'
-    //         }
-    //     });
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Test'].node, imports), <InterfaceTypeSchema>{
+            type: 'Interface',
+            indexSignature: {
+                keyType: 'String',
+                type: {
+                    type: 'Number'
+                }
+            }
+        });
 
-
-    // });
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Test2'].node, imports), <InterfaceTypeSchema>{
+            type: 'Interface',
+            properties: [{
+                id: 0,
+                name: 'a',
+                type: {
+                    type: 'Interface',
+                    properties: [{
+                        id: 0,
+                        name: 'valueA',
+                        type: {
+                            type: 'String'
+                        }
+                    }]
+                }
+            }, {
+                id: 1,
+                name: 'b',
+                optional: true,
+                type: {
+                    type: 'Interface',
+                    properties: [{
+                        id: 0,
+                        name: 'valueB',
+                        type: {
+                            type: 'String'
+                        }
+                    }]
+                }
+            }],
+            indexSignature: {
+                keyType: 'String',
+                type: {
+                    type: 'Interface',
+                    properties: [{
+                        id: 0,
+                        name: 'valueA',
+                        optional: true,
+                        type: {
+                            type: 'String'
+                        }
+                    }, {
+                        id: 1,
+                        name: 'valueB',
+                        optional: true,
+                        type: {
+                            type: 'String'
+                        }
+                    }]
+                }
+            }
+        });
+    });
 })
