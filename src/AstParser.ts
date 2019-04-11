@@ -2,6 +2,7 @@ import { TSBufferSchema } from "tsbuffer-schema";
 import * as ts from "typescript";
 import ReferenceTypeSchema from "tsbuffer-schema/src/schemas/ReferenceTypeSchema";
 import InterfaceTypeSchema from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
+import BufferTypeSchema from 'tsbuffer-schema/src/schemas/BufferTypeSchema';
 
 const SCALAR_TYPES = [
     'int8' as const,
@@ -14,7 +15,21 @@ const SCALAR_TYPES = [
     'uint64' as const,
     'float32' as const,
     'float64' as const
-].orderBy(v => v);
+].sort();
+
+const BUFFER_TYPES = [
+    'ArrayBuffer' as const,
+    'Int8Array' as const,
+    'Int16Array' as const,
+    'Int32Array' as const,
+    'BigInt64Array' as const,
+    'Uint8Array' as const,
+    'Uint16Array' as const,
+    'Uint32Array' as const,
+    'BigUint64Array' as const,
+    'Float32Array' as const,
+    'Float64Array' as const,
+].sort();
 
 /**
  * 提取出有用的AST
@@ -197,6 +212,30 @@ export default class AstParser {
     }
 
     static node2schema(node: ts.Node, imports: ScriptImports): TSBufferSchema {
+        // AnyType
+        if (node.kind === ts.SyntaxKind.AnyKeyword) {
+            return {
+                type: 'Any'
+            }
+        }
+
+        // BufferType
+        if (ts.isTypeReferenceNode(node)) {
+            let ref = this._getReferenceTypeSchema(node.typeName, imports);
+            if (!ref.path && BUFFER_TYPES.binarySearch(ref.targetName) > -1) {                
+                let output: BufferTypeSchema = {
+                    type: 'Buffer'
+                };
+
+                let targetName = ref.targetName as (typeof BUFFER_TYPES)[number];
+                if (targetName !== 'ArrayBuffer') {
+                    output.arrayType = targetName;
+                }
+
+                return output;
+            }
+        }
+
         // BooleanType
         if (node.kind === ts.SyntaxKind.BooleanKeyword) {
             return {
@@ -328,7 +367,7 @@ export default class AstParser {
 
         // ReferenceType
         if (ts.isTypeReferenceNode(node)) {
-            return this._getImportReference(node.typeName, imports);
+            return this._getReferenceTypeSchema(node.typeName, imports);
         }
 
         // InterfaceType
@@ -339,7 +378,7 @@ export default class AstParser {
                 extendsInterface = [];
                 node.heritageClauses.forEach(v => {
                     v.types.forEach(type => {
-                        extendsInterface!.push(this._getImportReference(type.getText(), imports));
+                        extendsInterface!.push(this._getReferenceTypeSchema(type.getText(), imports));
                     })
                 })
             }
@@ -406,7 +445,7 @@ export default class AstParser {
         }
     }
 
-    private static _getImportReference(name: string | ts.Identifier | ts.QualifiedName, imports: ScriptImports): ReferenceTypeSchema {
+    private static _getReferenceTypeSchema(name: string | ts.Identifier | ts.QualifiedName, imports: ScriptImports): ReferenceTypeSchema {
         if (typeof name !== 'string') {
             name = this._typeNameToString(name);
         }

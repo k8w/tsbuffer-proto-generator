@@ -4,6 +4,46 @@ import AstParser from '../../../src/AstParser';
 import { CreateSource } from './GetSourceFile';
 
 describe('AstParser.node2schema', function () {
+    it('AnyType', function () {
+        let src = CreateSource(`type Test = any;`);
+        let nodes = AstParser.getFlattenNodes(src);
+        let schema = AstParser.node2schema(nodes['Test'].node, {});
+        assert.deepStrictEqual(schema, {
+            type: 'Any'
+        })
+    });
+
+    it('BufferType', function () {
+        [
+            'ArrayBuffer',
+            'Int8Array',
+            'Int16Array',
+            'Int32Array',
+            'BigInt64Array',
+            'Uint8Array',
+            'Uint16Array',
+            'Uint32Array',
+            'BigUint64Array',
+            'Float32Array',
+            'Float64Array',
+        ].forEach(v => {
+            let src = CreateSource(`type Test = ${v};`);
+            let nodes = AstParser.getFlattenNodes(src);
+            let schema = AstParser.node2schema(nodes['Test'].node, {});
+            if (v === 'ArrayBuffer') {
+                assert.deepStrictEqual(schema, {
+                    type: 'Buffer'
+                })
+            }
+            else {
+                assert.deepStrictEqual(schema, {
+                    type: 'Buffer',
+                    arrayType: v
+                })
+            }
+        })
+    });
+
     it('BooleanType', function () {
         let src = CreateSource(`type Test = boolean;`);
         let nodes = AstParser.getFlattenNodes(src);
@@ -358,6 +398,43 @@ enum Test3 {a=1,b,c,d=100,e,f}
                             }, {
                                 type: 'Boolean'
                             }]
+                        }
+                    }]
+                }
+            }]
+        });
+    })
+
+    it('TypeLiteral', function () {
+        let src = CreateSource(`
+        type Test = {
+            a: string,
+            b?: {
+                value: string
+            }
+        };
+        `);
+        let imports = AstParser.getScriptImports(src);
+        let nodes = AstParser.getFlattenNodes(src);
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Test'].node, imports), {
+            type: 'Interface',
+            properties: [{
+                id: 0,
+                name: 'a',
+                type: {
+                    type: 'String'
+                }
+            }, {
+                id: 1,
+                name: 'b',
+                type: {
+                    type: 'Interface',
+                    properties: [{
+                        id: 0,
+                        name: 'value',
+                        type: {
+                            type: 'String'
                         }
                     }]
                 }
