@@ -47,7 +47,7 @@ export default class AstParser {
 
         // 1. get flatten nodes
         let src = ts.createSourceFile(
-            'xxx.ts',
+            '',
             content,
             ts.ScriptTarget.ES3,
             true,
