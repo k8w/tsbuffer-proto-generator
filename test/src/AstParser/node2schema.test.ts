@@ -1,5 +1,4 @@
 import * as assert from 'assert';
-import * as ts from "typescript";
 import AstParser from '../../../src/AstParser';
 import { CreateSource } from './GetSourceFile';
 import InterfaceTypeSchema from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';

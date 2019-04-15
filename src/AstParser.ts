@@ -3,7 +3,6 @@ import * as ts from "typescript";
 import ReferenceTypeSchema from "tsbuffer-schema/src/schemas/ReferenceTypeSchema";
 import InterfaceTypeSchema from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
 import BufferTypeSchema from 'tsbuffer-schema/src/schemas/BufferTypeSchema';
-import UnionTypeSchema from 'tsbuffer-schema/src/schemas/UnionTypeSchema';
 import PickTypeSchema from 'tsbuffer-schema/src/schemas/PickTypeSchema';
 import OmitTypeSchema from 'tsbuffer-schema/src/schemas/OmitTypeSchema';
 
@@ -39,14 +38,36 @@ const BUFFER_TYPES = [
  */
 export default class AstParser {
 
-    // static parseSourceFile(path: string, content: string): {
-    //     [name: string]: TSBufferSchema
-    // } {
-    //     throw new Error('TODO');
-    //     // 1. get flatten nodes
-    //     // 2. parse imports
-    //     // 3. node2schema
-    // }
+    /**
+     * 解析整个文件
+     * @param content 
+     */
+    static parseScript(content: string): ScriptSchema {
+        let output: ScriptSchema = {};
+
+        // 1. get flatten nodes
+        let src = ts.createSourceFile(
+            'xxx.ts',
+            content,
+            ts.ScriptTarget.ES3,
+            true,
+            ts.ScriptKind.TS
+        );
+        let nodes = this.getFlattenNodes(src, true);
+
+        // 2. parse imports
+        let imports = this.getScriptImports(src);
+
+        // 3. node2schema
+        for (let name in nodes) {
+            output[name] = {
+                isExport: nodes[name].isExport,
+                schema: this.node2schema(nodes[name].node, imports)
+            }
+        }
+
+        return output;
+    }
 
     /** 解析顶层imports */
     static getScriptImports(src: ts.SourceFile): ScriptImports {
@@ -143,9 +164,7 @@ export default class AstParser {
                 // 生成TypeReference
                 if (_isExportDefault) {
                     output['default'] = {
-                        node: ts.createTypeAliasDeclaration(undefined, undefined, 'default', undefined,
-                            ts.createTypeReferenceNode(_v.name, undefined)
-                        ),
+                        node: ts.createTypeReferenceNode(_v.name, undefined),
                         isExport: true
                     };
                 }
@@ -577,7 +596,7 @@ export default class AstParser {
             return this._getReferenceTypeSchema(node.typeName, imports);
         }
 
-        console.log(node);
+        console.debug('node', node);
         throw new Error('Unresolveable type: ' + ts.SyntaxKind[node.kind]);
     }
 
@@ -662,5 +681,12 @@ export interface ScriptImports {
         path: string,
         // import { A as B } A为targetName
         targetName: string
+    }
+}
+
+export interface ScriptSchema {
+    [name: string]: {
+        isExport: boolean,
+        schema: TSBufferSchema
     }
 }

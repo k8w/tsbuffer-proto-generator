@@ -213,4 +213,39 @@ export {Out3};
                 }
             ])
     })
+
+    it('export default interface', function () {
+        let src = ts.createSourceFile(
+            '',
+            `interface Test1{}
+            export interface Test2{}
+            export default interface Test3 {}`,
+            ts.ScriptTarget.ES3,
+            true,
+            ts.ScriptKind.TS
+        );
+
+        let res = AstParser.getFlattenNodes(src, true);
+        assert.deepStrictEqual(Object.entries(res).map(v => ({
+            name: v[0],
+            isExport: v[1].isExport
+        })), [
+                {
+                    name: 'Test1',
+                    isExport: false
+                },
+                {
+                    name: 'Test2',
+                    isExport: true
+                },
+                {
+                    name: 'Test3',
+                    isExport: false
+                },
+                {
+                    name: 'default',
+                    isExport: true
+                }
+            ])
+    })
 })
