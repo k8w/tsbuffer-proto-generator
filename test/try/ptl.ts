@@ -25,8 +25,6 @@ function callApi<P extends Protocol<any, any>>(ptl: P, req: P['req']): P['res'] 
 }
 
 export default interface MsgXXX {
-    path: __filename,
-
 }
 
 // function sendMsg(msg: MsgXXX);
