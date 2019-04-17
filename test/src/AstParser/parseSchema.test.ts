@@ -2,6 +2,7 @@ import * as assert from 'assert';
 import * as fs from "fs";
 import * as path from "path";
 import AstParser from '../../../src/AstParser';
+import { isExport } from '../../../src/AstParser';
 
 describe('AstParser.parseSchema', function () {
     it('normal', function () {
@@ -265,6 +266,53 @@ describe('AstParser.parseSchema', function () {
                     ]
                 }
             }
+        })
+    })
+
+    it('export default namespace', function () {
+        let schema = AstParser.parseScript(
+            `namespace NSTest {
+                export type Test = string;
+                export type Test1 = Test;
+                type Test2 = string;
+            }
+            export default NSTest`
+        );
+
+        assert.deepStrictEqual(schema, {
+            'NSTest.Test': {
+                isExport: false,
+                schema: {
+                    type: 'String'
+                }
+            },
+            'NSTest.Test1': {
+                isExport: false,
+                schema: {
+                    type: 'Reference',
+                    targetName: 'Test'
+                }
+            },
+            'NSTest.Test2': {
+                isExport: false,
+                schema: {
+                    type: 'String'
+                }
+            },
+            'default.Test': {
+                isExport: true,
+                schema: {
+                    type: 'Reference',
+                    targetName: 'NSTest.Test'
+                }
+            },
+            'default.Test1': {
+                isExport: true,
+                schema: {
+                    type: 'Reference',
+                    targetName: 'NSTest.Test1'
+                }
+            },
         })
     })
 })

@@ -9,11 +9,18 @@ export interface SchemaGeneratorOptions {
     /** Schema的根目录（路径在根目录以前的字符串会被相对掉） */
     baseDir: string;
 
-    /** 读取文件的方法（用于扩展自定义文件系统） */
+    /** 
+     * 读取文件的方法（用于扩展自定义文件系统）
+     * @param path 于baseDir的相对路径
+     */
     readFile: (path: string) => Promise<string> | string;
 
-    /** 解析全局Module的路径，从前到后 */
-    resolveModules: string[]
+    /**
+     * 解析Module的路径
+     * @param importPath 例如 import xx from 'abcd/efg' 则 importPath 为 'abcd/efg'
+     * @return 返回于baseDir的相对路径
+     */
+    resolveModule?: (importPath: string, baseDir: string) => string;
 }
 
 export default class SchemaGenerator {
@@ -21,7 +28,8 @@ export default class SchemaGenerator {
     protected readonly options: SchemaGeneratorOptions = {
         baseDir: process.cwd(),
         readFile: (v => fs.readFileSync(path.resolve(this.options.baseDir, v)).toString()),
-        resolveModules: ['node_modules']
+        /** 默认将module解析为baseDir下的node_modules */
+        resolveModule: (importPath: string) => path.join('node_modules', importPath)
     };
 
     constructor(options: Partial<SchemaGeneratorOptions> = {}) {
@@ -30,7 +38,8 @@ export default class SchemaGenerator {
 
     /**
      * 生成FileSchema
-     * @param paths 相对于baseDir的相对路径
+     * 对modules（例如node_modules）的引用，也会全部转为相对路径引用
+     * @param paths 于baseDir的相对路径
      * @param options 
      */
     async generate(paths: string | string[], options: GenerateFileSchemaOptions = {}): Promise<FileSchema> {
@@ -40,14 +49,19 @@ export default class SchemaGenerator {
             paths = [paths];
         }
 
+        // 确保路径安全，再次将paths转为相对路径
+        paths = paths.map(v => path.relative(this.options.baseDir, v));
+
         // AST CACHE
         let astCache: AstCache = {};
 
-        // 生成这几个文件的AST CACHE
+        // 默认filter是导出所有export项
         let filter = options.filter || (v => v.isExport);
+
+        // 生成这几个文件的AST CACHE
         for (let filepath of paths) {
             // 生成该文件的AST
-            let ast = await this._getAst(filepath, astCache);
+            let { ast, astKey } = await this._getAst(filepath, astCache);
 
             // Filter出要被导出的
             for (let name in ast) {
@@ -57,7 +71,7 @@ export default class SchemaGenerator {
                     isExport: ast[name].isExport
                 })) {
                     // 加入output
-                    await this._addToOutput(filepath, name, ast[name].schema, output, astCache);
+                    await this._addToOutput(astKey, name, ast[name].schema, output, astCache);
                 }
             }
         }
@@ -65,32 +79,117 @@ export default class SchemaGenerator {
         return output;
     }
 
-    private async _getAst(filepath: string, astCache: AstCache) {
-        if (!astCache[filepath]) {
-            astCache[filepath] = AstParser.parseScript(await this.options.readFile(filepath));
+    private async _getAst(pathOrKey: string, astCache: AstCache) {
+        // GET AST KEY
+        let astKey = pathOrKey.replace(/\\/g, '/').replace(/\.ts$/, '');
+
+        if (!astCache[astKey]) {
+            // 按node规则解析文件
+            let fileContent: string | undefined;
+            let postfixs = ['.ts', '.d.ts', '/index.ts', '/index.d.ts'];
+            for (let postfix of postfixs) {
+                try {
+                    fileContent = await this.options.readFile(astKey + postfix);
+                }
+                // 出错 继续加载下一个
+                catch{
+                    continue;
+                }
+                // 未出错 说明解析到文件
+                if (postfix.startsWith('/')) {
+                    astKey = astKey + '/index';
+                }
+                break;
+            }
+            // 找不到文件，报错
+            if (!fileContent) {
+                throw new Error(`Cannot resolve file: ` + astKey)
+            }
+
+            astCache[astKey] = AstParser.parseScript(fileContent);
         }
-        return astCache[filepath];
+        return {
+            ast: astCache[astKey],
+            astKey: astKey
+        };
     }
 
-    private async _addToOutput(filepath: string, name: string, schema: TSBufferSchema, output: FileSchema, astCache: AstCache) {
-        if (!output[filepath]) {
-            output[filepath] = {};
+    private async _addToOutput(astKey: string, name: string, schema: TSBufferSchema, output: FileSchema, astCache: AstCache) {
+        if (!output[astKey]) {
+            output[astKey] = {};
         }
 
-        if (!output[filepath][name]) {
-            output[filepath][name] = schema;
+        if (!output[astKey][name]) {
+            output[astKey][name] = schema;
 
             // TODO flatten 解引用
 
-            // 将引用的也加入进来
+            // 递归加入引用
             let refs = this.getUsedReference(schema);
             for (let ref of refs) {
-                let ast = await this._getAst(ref.path ? ref.path : filepath, astCache);
-                if (!ast[ref.targetName]) {
-                    console.debug('schema', schema);
-                    throw new Error(`Cannot find reference ${ref.targetName} at: ${filepath}`);
+                let refPath: string | undefined;
+                if (ref.path) {
+                    // 相对路径引用
+                    if (ref.path.startsWith('.')) {
+                        refPath = path.join(astKey, '..', ref.path)
+                    }
+                    // 绝对路径引用 resolveModule
+                    else {
+                        if (!this.options.resolveModule) {
+                            throw new Error(`Must specific a resolveModule handler for resolve "${ref.path}"`);
+                        }
+                        refPath = this.options.resolveModule(ref.path, this.options.baseDir);
+                    }
                 }
-                this._addToOutput(filepath, ref.targetName, ast[ref.targetName].schema, output, astCache);
+                // 当前文件内引用
+                else {
+                    refPath = astKey;
+                }
+
+                // 将要挨个寻找的refTarget
+                let refTargetNames: string[] = [];
+                // 文件内&Namespace内引用，从Namespace向外部 逐级寻找
+                if (!ref.path && name.indexOf('.') > -1) {
+                    // name: A.B.C.D
+                    // refTarget: E
+                    // A.B.C.E
+                    // A.B.E
+                    // A.E
+                    // E
+                    let nameArr = name.split('.');
+                    for (let i = nameArr.length - 1; i >= 1; --i) {
+                        let refName = '';
+                        for (let j = 0; j < i; ++j) {
+                            refName += `${nameArr[j]}.`
+                        }
+                        refTargetNames.push(refName + ref.targetName);
+                    }
+                }
+                refTargetNames.push(ref.targetName);
+
+                let refAst = await this._getAst(refPath, astCache);
+
+                // 确认的 refTargetName
+                let certainRefTargetName: string | undefined;
+                for (let refTargetName of refTargetNames) {
+                    if (refAst.ast[refTargetName]) {
+                        certainRefTargetName = refTargetName;
+                        break;
+                    }
+                }
+
+                if (certainRefTargetName) {
+                    // 修改源reference的targetName
+                    ref.targetName = certainRefTargetName;
+                    // 将ref加入output
+                    this._addToOutput(refAst.astKey, certainRefTargetName, refAst.ast[certainRefTargetName].schema, output, astCache);
+                }
+                else {
+                    console.debug('current', astKey, name);
+                    console.debug('ref', ref);
+                    console.debug('schema', schema);
+                    throw new Error(`Cannot find reference "${ref.targetName}" at: ${refPath}`);
+                }
             }
         }
     }
@@ -148,45 +247,6 @@ export default class SchemaGenerator {
 
         return output;
     }
-
-    // private async _getAst(filepath: string, astCache: AstCache) {
-    //     let relativePath = path.relative(this.options.baseDir, filepath).replace(/\\/g, '/');
-
-    //     if (!astCache[relativePath]) {
-    //         let fileContent = await this.options.readFile(filepath);
-    //         astCache[relativePath] = AstParser.parseScript(fileContent);
-    //     }
-
-    //     let output: { [name: string]: ScriptSchema[string] & { isUsed: boolean } } = {};
-    //     for (let key in astCache[relativePath]) {
-    //         output[key] = {
-    //             ...astCache[relativePath][key],
-    //             isUsed: false
-    //         }
-    //     }
-
-    //     return output;
-    // }
-
-    /**
-     * 读取一个文件，并解析内部所有类型定义
-     * @param filepath 
-     * @param options 
-     */
-    // async parseFile(filepath: string, options: GetSchemasOptions = {}): Promise<FileSchema> {
-    //     // typescript.createSourceFile
-    //     throw new Error('TODO')
-    // }
-
-    /**
-     * 从一个文件路径中，解析指定的Schema，追加到结果集中
-     * @param filepath 
-     * @param symbollName 
-     */
-    // async getSchema(filepath: string, symbollName: string): Promise<TSBufferSchema> {
-    //     throw new Error('TODO');
-    // }
-
 }
 
 export interface AstCache {
@@ -210,7 +270,11 @@ export interface GenerateFileSchemaOptions {
 }
 
 export interface FileSchema {
-    [filepath: string]: {
+    /**
+     * 于baseDir的文件的相对路径 不带扩展名的
+     * 例如 a/b/c/index.ts 的key会是 a/b/c/index 不会是 a/b/c
+     */
+    [astKey: string]: {
         [name: string]: TSBufferSchema
     };
 }

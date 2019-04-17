@@ -248,4 +248,32 @@ export {Out3};
                 }
             ])
     })
+
+    it('export default NS', function () {
+        let src = ts.createSourceFile(
+            '',
+            `namespace NSTest {
+                export type Test = string;
+            }
+            export default NSTest`,
+            ts.ScriptTarget.ES3,
+            true,
+            ts.ScriptKind.TS
+        );
+
+        let res = AstParser.getFlattenNodes(src, true);
+        assert.deepStrictEqual(Object.entries(res).map(v => ({
+            name: v[0],
+            isExport: v[1].isExport
+        })), [
+                {
+                    name: 'NSTest.Test',
+                    isExport: false
+                },
+                {
+                    name: 'default.Test',
+                    isExport: true
+                },
+            ])
+    })
 })

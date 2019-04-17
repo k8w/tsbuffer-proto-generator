@@ -265,6 +265,7 @@ enum Test3 {a=1,b,c,d=100,e,f}
         type TestB = B;
         type TestD = D;
         type TestDD = D.D;
+        type TestE = E;
         type Inside = TestA;
         type Inside2 = TestA.TestB;
         `);
@@ -295,6 +296,11 @@ enum Test3 {a=1,b,c,d=100,e,f}
             type: 'Reference',
             path: 'abcd',
             targetName: 'C.D'
+        });
+        assert.deepStrictEqual(AstParser.node2schema(nodes['TestE'].node, imports), {
+            type: 'Reference',
+            path: './eee',
+            targetName: 'E'
         });
         assert.deepStrictEqual(AstParser.node2schema(nodes['Inside'].node, imports), {
             type: 'Reference',
@@ -797,34 +803,34 @@ enum Test3 {a=1,b,c,d=100,e,f}
     })
 
     it('PickType & OmitType', function () {
-        ['Pick', 'Omit'].forEach(v=>{
+        ['Pick', 'Omit'].forEach(v => {
             let src = CreateSource(`
         type Test1 = ${v}<AA, 'a'|'b'|'c'>;
         type Test2 = ${v}<{}, ('a'|'b'|'c') & ('b'|'c'|'d');
         `);
-        let imports = AstParser.getScriptImports(src);
-        let nodes = AstParser.getFlattenNodes(src);
+            let imports = AstParser.getScriptImports(src);
+            let nodes = AstParser.getFlattenNodes(src);
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, imports), {
-            type: v,
-            target: {
-                type: 'Reference',
-                targetName: 'AA'
-            },
-            keys: ['a','b','c']
-        });
+            assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, imports), {
+                type: v,
+                target: {
+                    type: 'Reference',
+                    targetName: 'AA'
+                },
+                keys: ['a', 'b', 'c']
+            });
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test2'].node, imports), {
-            type: v,
-            target: {
-                type: 'Interface'
-            },
-            keys: ['b','c']
-        });
+            assert.deepStrictEqual(AstParser.node2schema(nodes['Test2'].node, imports), {
+                type: v,
+                target: {
+                    type: 'Interface'
+                },
+                keys: ['b', 'c']
+            });
         });
     })
 
-    it('PartialType', function(){
+    it('PartialType', function () {
         let src = CreateSource(`
         type Test1 = Partial<AA>;
         type Test2 = Partial<{}>;
@@ -848,7 +854,7 @@ enum Test3 {a=1,b,c,d=100,e,f}
         });
     })
 
-    it('Overwrite', function(){
+    it('Overwrite', function () {
         let src = CreateSource(`
         type Test1 = Overwrite<AA, {a: string}>;
         `);

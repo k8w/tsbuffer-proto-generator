@@ -138,25 +138,27 @@ export default class AstParser {
         let output: ReturnType<typeof AstParser.getFlattenNodes> = {};
 
         // 检测到ExportDeclaration的项目，会在最后统一设为isExport
-        let exportNames: { [name: string]: null } = {};
+        let exportNames: { [name: string]: true } = {};
+
+        // 检测到的顶级Modules（namespace）
+        let namespaceExports: {
+            [nsname: string]: {
+                // 在Namespace内是否export
+                [symbolName: string]: boolean
+            }
+        } = {};
 
         node.forEachChild(v => {
             // 类型定义
-            if (
-                v.kind === ts.SyntaxKind.InterfaceDeclaration
-                || v.kind === ts.SyntaxKind.TypeAliasDeclaration
-                || v.kind === ts.SyntaxKind.EnumDeclaration
-            ) {
-                let _v = v as (ts.InterfaceDeclaration | ts.TypeAliasDeclaration | ts.EnumDeclaration);
-
+            if (ts.isInterfaceDeclaration(v) || ts.isTypeAliasDeclaration(v) || ts.isEnumDeclaration(v)) {
                 // 外层允许export，且自身有被export
-                let _isExport = Boolean(isExport && _v.modifiers && _v.modifiers.findIndex(v1 => v1.kind === ts.SyntaxKind.ExportKeyword) > -1);
+                let _isExport = Boolean(isExport && v.modifiers && v.modifiers.findIndex(v1 => v1.kind === ts.SyntaxKind.ExportKeyword) > -1);
 
                 // 是否为export default
-                let _isExportDefault = _isExport && _v.modifiers!.findIndex(v1 => v1.kind === ts.SyntaxKind.DefaultKeyword) > -1
+                let _isExportDefault = _isExport && v.modifiers!.findIndex(v1 => v1.kind === ts.SyntaxKind.DefaultKeyword) > -1
 
-                output[_v.name.text] = {
-                    node: v.kind === ts.SyntaxKind.TypeAliasDeclaration ? (_v as ts.TypeAliasDeclaration).type : _v,
+                output[v.name.text] = {
+                    node: v.kind === ts.SyntaxKind.TypeAliasDeclaration ? (v as ts.TypeAliasDeclaration).type : v,
                     // export default的情况，本体作为不isExport，取而代之生成一个名为default的TypeReference来export
                     isExport: _isExport && !_isExportDefault
                 };
@@ -164,71 +166,92 @@ export default class AstParser {
                 // 生成TypeReference
                 if (_isExportDefault) {
                     output['default'] = {
-                        node: ts.createTypeReferenceNode(_v.name, undefined),
+                        node: ts.createTypeReferenceNode(v.name, undefined),
                         isExport: true
                     };
                 }
             }
             // namespace
-            else if (v.kind === ts.SyntaxKind.ModuleDeclaration && (v.flags & ts.NodeFlags.Namespace)) {
-                let _v = v as ts.ModuleDeclaration;
-                if (_v.body && _v.body.kind === ts.SyntaxKind.ModuleBlock) {
+            else if (ts.isModuleDeclaration(v) && (v.flags & ts.NodeFlags.Namespace)) {
+                if (v.body && v.body.kind === ts.SyntaxKind.ModuleBlock) {
                     // 外层允许export，且自身有被export
-                    let _isExport = Boolean(isExport && _v.modifiers && _v.modifiers.findIndex(v1 => v1.kind === ts.SyntaxKind.ExportKeyword) > -1);
+                    let _isExport = Boolean(isExport && v.modifiers && v.modifiers.findIndex(v1 => v1.kind === ts.SyntaxKind.ExportKeyword) > -1);
 
                     // 递归生成子树
-                    let children = AstParser.getFlattenNodes(_v.body, _isExport);
+                    let children = AstParser.getFlattenNodes(v.body, true);
+
+                    namespaceExports[v.name.text] = {};
+                    for (let item of Object.entries(children)) {
+                        // 临时存储内部export
+                        namespaceExports[v.name.text][item[0]] = item[1].isExport;
+                        // 实际export还要考虑外部(_isExport)
+                        item[1].isExport = item[1].isExport && _isExport;
+                    }
 
                     // 展平子树
                     Object.entries(children).forEach(v1 => {
                         // 转换name为 A.B.C 的形式
-                        output[_v.name.text + '.' + v1[0]] = v1[1];
+                        output[v.name.text + '.' + v1[0]] = v1[1];
                     })
                 }
             }
             // export
-            else if (v.kind === ts.SyntaxKind.ExportDeclaration) {
-                let _v = v as ts.ExportDeclaration;
-                _v.exportClause && _v.exportClause.elements.forEach(elem => {
+            else if (ts.isExportDeclaration(v)) {
+                v.exportClause && v.exportClause.elements.forEach(elem => {
                     // export { A as B }
                     if (elem.propertyName) {
                         output[elem.name.text] = {
-                            node: ts.createTypeAliasDeclaration(undefined, undefined, elem.name.text, undefined,
-                                ts.createTypeReferenceNode(elem.propertyName.text, undefined)
-                            ),
+                            node: ts.createTypeReferenceNode(elem.propertyName.text, undefined),
                             isExport: true
                         };
                     }
                     // export { A }
                     else {
-                        exportNames[elem.name.text] = null;
+                        exportNames[elem.name.text] = true;
                     }
                 })
             }
             // export default
-            else if (v.kind === ts.SyntaxKind.ExportAssignment) {
-                let _v = v as ts.ExportAssignment;
-
+            else if (ts.isExportAssignment(v)) {
                 // 暂不支持 export = XXX
-                if (_v.isExportEquals) {
+                if (v.isExportEquals) {
                     return;
                 }
 
                 output['default'] = {
-                    node: ts.createTypeAliasDeclaration(undefined, undefined, 'default', undefined,
-                        ts.createTypeReferenceNode(_v.name ? _v.name.text : '', undefined)
-                    ),
+                    node: ts.createTypeReferenceNode(v.expression.getText(), undefined),
                     isExport: true
                 };
             }
         });
 
         // exportNames
+        // 后续export declaration的
         Object.keys(exportNames).forEach(v => {
             if (output[v]) {
                 output[v].isExport = true
             }
         });
+
+        // export default namespace 的情况
+        if (output['default'] && ts.isTypeReferenceNode(output['default'].node)) {
+            let typeName = this._typeNameToString(output['default'].node.typeName);
+            // 确实是export default namespace
+            if (namespaceExports[typeName]) {
+                delete output['default'];
+                // 遍历所有 typeName.XXX
+                for (let key in namespaceExports[typeName]) {
+                    // 内部也export的
+                    if (namespaceExports[typeName][key]) {
+                        // 增加 default.XXX 到 typeName.XXX 的引用
+                        output['default.' + key] = {
+                            node: ts.createTypeReferenceNode(typeName + '.' + key, undefined),
+                            isExport: true
+                        }
+                    }
+                }
+            }
+        }
 
         return output;
     }
@@ -596,8 +619,8 @@ export default class AstParser {
             return this._getReferenceTypeSchema(node.typeName, imports);
         }
 
-        console.debug('node', node);
-        throw new Error('Unresolveable type: ' + ts.SyntaxKind[node.kind]);
+        console.debug(node)
+        throw new Error('Cannot resolve type: ' + node.getText());
     }
 
     /**
