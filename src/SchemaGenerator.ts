@@ -9,6 +9,9 @@ export interface SchemaGeneratorOptions {
     /** Schema的根目录（路径在根目录以前的字符串会被相对掉） */
     baseDir: string;
 
+    /** console.debug 打印调试信息 */
+    verbose: boolean;
+
     /** 
      * 读取文件的方法（用于扩展自定义文件系统）
      * @param path 于baseDir的相对路径
@@ -26,7 +29,8 @@ export interface SchemaGeneratorOptions {
 export default class SchemaGenerator {
 
     protected readonly options: SchemaGeneratorOptions = {
-        baseDir: process.cwd(),
+        baseDir: '.',
+        verbose: false,
         readFile: (v => fs.readFileSync(path.resolve(this.options.baseDir, v)).toString()),
         /** 默认将module解析为baseDir下的node_modules */
         resolveModule: (importPath: string) => path.join('node_modules', importPath)
@@ -50,7 +54,12 @@ export default class SchemaGenerator {
         }
 
         // 确保路径安全，再次将paths转为相对路径
-        paths = paths.map(v => path.relative(this.options.baseDir, v));
+        paths = paths.map(v => path.relative(this.options.baseDir, path.resolve(this.options.baseDir, v)));
+
+        if (this.options.verbose) {
+            console.debug('[TSBuffer Schema Generator]', 'generate', `Ready to generate ${paths.length} file`);
+            console.debug('[TSBuffer Schema Generator]', 'generate', 'BaseDir=' + this.options.baseDir);
+        }
 
         // AST CACHE
         let astCache: AstCache = {};
@@ -60,8 +69,16 @@ export default class SchemaGenerator {
 
         // 生成这几个文件的AST CACHE
         for (let filepath of paths) {
+            if (this.options.verbose) {
+                console.debug('[TSBuffer Schema Generator]', 'generate', 'FilePath=' + filepath)
+            }
+
             // 生成该文件的AST
             let { ast, astKey } = await this._getAst(filepath, astCache);
+
+            if (this.options.verbose) {
+                console.debug('[TSBuffer Schema Generator]', 'generate', 'AstLoaded Key=' + astKey);
+            }
 
             // Filter出要被导出的
             for (let name in ast) {
@@ -70,8 +87,15 @@ export default class SchemaGenerator {
                     name: name,
                     isExport: ast[name].isExport
                 })) {
+                    if (this.options.verbose) {
+                        console.debug('[TSBuffer Schema Generator]', 'generate', `filter passed: ${name} at ${filepath}`);
+                    }
+
                     // 加入output
                     await this._addToOutput(astKey, name, ast[name].schema, output, astCache);
+                }
+                else if (this.options.verbose) {
+                    console.debug('[TSBuffer Schema Generator]', 'generate', `filter not passed: ${name} at ${filepath}`);
                 }
             }
         }
@@ -103,7 +127,7 @@ export default class SchemaGenerator {
             }
             // 找不到文件，报错
             if (!fileContent) {
-                throw new Error(`Cannot resolve file: ` + astKey)
+                throw new Error(`Cannot resolve file: ` + path.resolve(this.options.baseDir, astKey))
             }
 
             astCache[astKey] = AstParser.parseScript(fileContent);
@@ -115,6 +139,10 @@ export default class SchemaGenerator {
     }
 
     private async _addToOutput(astKey: string, name: string, schema: TSBufferSchema, output: FileSchema, astCache: AstCache) {
+        if (this.options.verbose) {
+            console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`)
+        }
+
         if (!output[astKey]) {
             output[astKey] = {};
         }
@@ -126,7 +154,14 @@ export default class SchemaGenerator {
 
             // 递归加入引用
             let refs = this.getUsedReference(schema);
+            if (this.options.verbose) {
+                console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `refs.length=${refs.length}`)
+            }
             for (let ref of refs) {
+                if (this.options.verbose) {
+                    console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `ref={path:${ref.path || ''}, targetName=${ref.targetName}}`)
+                }
+
                 let refPath: string | undefined;
                 if (ref.path) {
                     // 相对路径引用
@@ -144,6 +179,17 @@ export default class SchemaGenerator {
                 // 当前文件内引用
                 else {
                     refPath = astKey;
+                }
+
+                if (this.options.verbose) {
+                    console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `AST "${refPath}" loading`);
+                }
+
+                // load ast
+                let refAst = await this._getAst(refPath, astCache);
+
+                if (this.options.verbose) {
+                    console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `AST "${refPath}" loaded`);
                 }
 
                 // 将要挨个寻找的refTarget
@@ -167,8 +213,6 @@ export default class SchemaGenerator {
                 }
                 refTargetNames.push(ref.targetName);
 
-                let refAst = await this._getAst(refPath, astCache);
-
                 // 确认的 refTargetName
                 let certainRefTargetName: string | undefined;
                 for (let refTargetName of refTargetNames) {
@@ -178,11 +222,16 @@ export default class SchemaGenerator {
                     }
                 }
 
+                if (this.options.verbose) {
+                    console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `refTargetName=${certainRefTargetName}`);
+                }
+
                 if (certainRefTargetName) {
-                    // 修改源reference的targetName
+                    // 修改源reference的targetName和path
+                    ref.path = refAst.astKey;
                     ref.targetName = certainRefTargetName;
                     // 将ref加入output
-                    this._addToOutput(refAst.astKey, certainRefTargetName, refAst.ast[certainRefTargetName].schema, output, astCache);
+                    await this._addToOutput(refAst.astKey, certainRefTargetName, refAst.ast[certainRefTargetName].schema, output, astCache);
                 }
                 else {
                     console.debug('current', astKey, name);
@@ -214,6 +263,9 @@ export default class SchemaGenerator {
                     output = output.concat(this.getUsedReference(schema.elementTypes));
                     break;
                 case 'Interface':
+                    if (schema.extends) {
+                        output = output.concat(this.getUsedReference(schema.extends));
+                    }
                     if (schema.properties) {
                         output = output.concat(this.getUsedReference(schema.properties.map(v => v.type)));
                     }
