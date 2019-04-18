@@ -228,7 +228,9 @@ export default class SchemaGenerator {
 
                 if (certainRefTargetName) {
                     // 修改源reference的targetName和path
-                    ref.path = refAst.astKey;
+                    if (ref.path) {
+                        ref.path = refAst.astKey;
+                    }
                     ref.targetName = certainRefTargetName;
                     // 将ref加入output
                     await this._addToOutput(refAst.astKey, certainRefTargetName, refAst.ast[certainRefTargetName].schema, output, astCache);

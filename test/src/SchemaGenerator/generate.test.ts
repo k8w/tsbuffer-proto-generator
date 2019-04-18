@@ -19,8 +19,7 @@ describe('SchemaGenerator.generate', function () {
             "sources/Student": {
                 "default": {
                     "type": "Reference",
-                    "targetName": "Student",
-                    "path": "sources/Student"
+                    "targetName": "Student"
                 },
                 "Student": {
                     "type": "Interface",
@@ -80,8 +79,7 @@ describe('SchemaGenerator.generate', function () {
             "sources/NSPerson": {
                 "default.Person": {
                     "type": "Reference",
-                    "targetName": "NSPerson.Person",
-                    "path": "sources/NSPerson"
+                    "targetName": "NSPerson.Person"
                 },
                 "NSPerson.Person": {
                     "type": "Union",
@@ -90,16 +88,14 @@ describe('SchemaGenerator.generate', function () {
                             "id": 0,
                             "type": {
                                 "type": "Reference",
-                                "targetName": "NSPerson.Male",
-                                "path": "sources/NSPerson"
+                                "targetName": "NSPerson.Male"
                             }
                         },
                         {
                             "id": 1,
                             "type": {
                                 "type": "Reference",
-                                "targetName": "NSPerson.Female",
-                                "path": "sources/NSPerson"
+                                "targetName": "NSPerson.Female"
                             }
                         }
                     ]
@@ -180,8 +176,7 @@ describe('SchemaGenerator.generate', function () {
             "sources/Animal": {
                 "default": {
                     "type": "Reference",
-                    "targetName": "Animal",
-                    "path": "sources/Animal"
+                    "targetName": "Animal"
                 },
                 "Animal": {
                     "type": "Interface",
