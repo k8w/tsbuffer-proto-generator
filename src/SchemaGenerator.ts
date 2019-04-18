@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import AstParser from './AstParser';
 import ReferenceTypeSchema from 'tsbuffer-schema/src/schemas/ReferenceTypeSchema';
-import { ScriptSchema } from './AstParser';
+import { AstParserResult } from './AstParser';
 
 export interface SchemaGeneratorOptions {
     /** Schema的根目录（路径在根目录以前的字符串会被相对掉） */
@@ -46,8 +46,8 @@ export default class SchemaGenerator {
      * @param paths 于baseDir的相对路径
      * @param options 
      */
-    async generate(paths: string | string[], options: GenerateFileSchemaOptions = {}): Promise<FileSchema> {
-        let output: FileSchema = {};
+    async generate(paths: string | string[], options: GenerateFileSchemaOptions = {}): Promise<GenerateResult> {
+        let output: GenerateResult = {};
 
         if (typeof paths === 'string') {
             paths = [paths];
@@ -103,6 +103,14 @@ export default class SchemaGenerator {
         return output;
     }
 
+    // private async _getFlatSchema(schema: TSBufferSchema): Promise<TSBufferSchema> {
+
+    // }
+
+    // private async _getRealReference(schema: ReferenceTypeSchema): Promise<ReferenceTypeSchema>{
+
+    // }
+
     private async _getAst(pathOrKey: string, astCache: AstCache) {
         // GET AST KEY
         let astKey = pathOrKey.replace(/\\/g, '/').replace(/\.ts$/, '');
@@ -138,7 +146,7 @@ export default class SchemaGenerator {
         };
     }
 
-    private async _addToOutput(astKey: string, name: string, schema: TSBufferSchema, output: FileSchema, astCache: AstCache) {
+    private async _addToOutput(astKey: string, name: string, schema: TSBufferSchema, output: GenerateResult, astCache: AstCache) {
         if (this.options.verbose) {
             console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`)
         }
@@ -304,7 +312,7 @@ export default class SchemaGenerator {
 }
 
 export interface AstCache {
-    [relativePath: string]: ScriptSchema;
+    [relativePath: string]: AstParserResult;
 }
 
 export interface GenerateFileSchemaOptions {
@@ -316,19 +324,20 @@ export interface GenerateFileSchemaOptions {
      */
     filter?: (info: { path: string, name: string, isExport: boolean }) => boolean;
 
-    /** 默认导出所有export的 */
-    // include?: string[],
-
-    /** *代表所有, exclude优先级更高 */
-    // exclude?: string[]
+    /**
+     * 需要向后兼容的Result
+     * 生成结果：全兼容、部分兼容、完全不兼容
+     * 兼容方式：old与new完全相同，old的在特定情况下能用，new的在特定情况下能用
+     */
+    compatibleResult?: GenerateResult;
 }
 
-export interface FileSchema {
+export interface GenerateResult {
     /**
      * 于baseDir的文件的相对路径 不带扩展名的
      * 例如 a/b/c/index.ts 的key会是 a/b/c/index 不会是 a/b/c
      */
-    [astKey: string]: {
-        [name: string]: TSBufferSchema
+    [path: string]: {
+        [symbolName: string]: TSBufferSchema
     };
 }

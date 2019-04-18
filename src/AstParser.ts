@@ -42,8 +42,8 @@ export default class AstParser {
      * 解析整个文件
      * @param content 
      */
-    static parseScript(content: string): ScriptSchema {
-        let output: ScriptSchema = {};
+    static parseScript(content: string): AstParserResult {
+        let output: AstParserResult = {};
 
         // 1. get flatten nodes
         let src = ts.createSourceFile(
@@ -707,7 +707,7 @@ export interface ScriptImports {
     }
 }
 
-export interface ScriptSchema {
+export interface AstParserResult {
     [name: string]: {
         isExport: boolean,
         schema: TSBufferSchema
