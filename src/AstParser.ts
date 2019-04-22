@@ -1,4 +1,4 @@
-import { TSBufferSchema } from "tsbuffer-schema";
+import TSBufferSchema from "tsbuffer-schema";
 import * as ts from "typescript";
 import ReferenceTypeSchema from "tsbuffer-schema/src/schemas/ReferenceTypeSchema";
 import InterfaceTypeSchema from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';

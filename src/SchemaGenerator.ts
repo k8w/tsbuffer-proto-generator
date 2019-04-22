@@ -1,9 +1,10 @@
-import { TSBufferSchema } from 'tsbuffer-schema';
+import TSBufferSchema from 'tsbuffer-schema';
 import * as fs from "fs";
 import * as path from "path";
 import AstParser from './AstParser';
 import ReferenceTypeSchema from 'tsbuffer-schema/src/schemas/ReferenceTypeSchema';
 import { AstParserResult } from './AstParser';
+import Crypto from 'k8w-crypto';
 
 export interface SchemaGeneratorOptions {
     /** Schema的根目录（路径在根目录以前的字符串会被相对掉） */
@@ -101,6 +102,52 @@ export default class SchemaGenerator {
         }
 
         return output;
+    }
+
+    // flattenSchemas(schemas: GeneratedSchema) { };
+
+    /**
+     * 将字符串映射为从0开始的自增数字，支持向后兼容
+     * @param values object将视为 md5(JSON.stringify(obj)) 
+     * @param compatible 需要向后兼容的结果集（新字段用新数字，旧字段ID不变）
+     */
+    static genValueUidMap(values: (string | number | object)[], compatible?: ValueUidMap): ValueUidMap {
+        let strs = values.map(v => typeof (v) === 'object' ? Crypto.md5(JSON.stringify(v)) : '' + v);
+        // 无compatible 按传入顺序生成
+        if (!compatible) {
+            let id = 0;
+            return strs.reduce((output, v) => {
+                output[v] = id++;
+                return output;
+            }, {} as ValueUidMap);
+        }
+
+        // 有compatible
+
+        // 先生成可用最小ID列表
+        let existIds = Object.values(compatible).orderBy(v => v);
+        let availableIds = Array.from({ length: existIds.last() + 1 }, (v, i) => i);
+        for (let i = 0; i < existIds.length; ++i) {
+            availableIds.removeOne(existIds[i]);
+        }
+        // 已有ID是顺序且严密的，直接从下一个开始编码
+        availableIds.push(existIds.last() + 1);
+
+        return strs.reduce((output, v) => {
+            // compatible中有，用compatible中的
+            if (typeof compatible[v] === 'number') {
+                output[v] = compatible[v];
+            }
+            // compatible中没有，用compatible中可用的下一个最小的
+            else {
+                let id = availableIds.shift()!;
+                output[v] = id;
+                if (availableIds.length === 0) {
+                    availableIds.push(id + 1)
+                }
+            }
+            return output;
+        }, {} as ValueUidMap);
     }
 
     // private async _getFlatSchema(schema: TSBufferSchema): Promise<TSBufferSchema> {
@@ -327,9 +374,25 @@ export interface GenerateFileSchemaOptions {
     /**
      * 需要向后兼容的Result
      * 生成结果：全兼容、部分兼容、完全不兼容
-     * 兼容方式：old与new完全相同，old的在特定情况下能用，new的在特定情况下能用
+     * 兼容方式：旧字段ID不变，新字段换新ID
      */
     compatibleResult?: GenerateResult;
+}
+
+export interface OriginalSchemas {
+    /**
+     * 于baseDir的文件的相对路径 不带扩展名的
+     * 例如 a/b/c/index.ts 的key会是 a/b/c/index 不会是 a/b/c
+     */
+    [path: string]: {
+        [symbolName: string]: {
+            schema: TSBufferSchema,
+            // 经filter检测过是需要导出的使用类型
+            isFiltered: boolean,
+            // 有被其它任何Schema依赖
+            isDependency: boolean
+        }
+    };
 }
 
 export interface GenerateResult {
@@ -342,21 +405,6 @@ export interface GenerateResult {
     };
 }
 
-export interface GeneratedSchema {
-    /**
-     * 于baseDir的文件的相对路径 不带扩展名的
-     * 例如 a/b/c/index.ts 的key会是 a/b/c/index 不会是 a/b/c
-     */
-    [path: string]: {
-        [symbolName: string]: TSBufferSchema
-    };
-}
-
-export interface GeneratedProtocol {
-    schemas: GeneratedSchema;
-    exports: {
-        id: number,
-        path: string,
-        targetName: string
-    }[];
+export interface ValueUidMap {
+    [key: string]: number
 }
