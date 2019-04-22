@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import * as fs from "fs";
 import * as path from "path";
 import AstParser from '../../../src/AstParser';
-import { isExport } from '../../../src/AstParser';
 
 describe('AstParser.parseSchema', function () {
     it('normal', function () {

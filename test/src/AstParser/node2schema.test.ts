@@ -75,7 +75,7 @@ describe('AstParser.node2schema', function () {
     })
 
     it('NumberType: ScalarValueType', function () {
-        ['int8', 'int16', 'int32', 'int64', 'uint8', 'uint16', 'uint32', 'uint64', 'float32', 'float64'].forEach(v => {
+        ['int32', 'int64', 'uint32', 'uint64', 'sint32', 'sint64', 'fixed32', 'fixed64', 'sfixed32', 'sfixed64', 'float', 'double'].forEach(v => {
             let src = CreateSource(`type Test = ${v};`);
             let nodes = AstParser.getFlattenNodes(src);
             let schema = AstParser.node2schema(nodes['Test'].node, {});

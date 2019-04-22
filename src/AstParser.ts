@@ -7,16 +7,18 @@ import PickTypeSchema from 'tsbuffer-schema/src/schemas/PickTypeSchema';
 import OmitTypeSchema from 'tsbuffer-schema/src/schemas/OmitTypeSchema';
 
 const SCALAR_TYPES = [
-    'int8' as const,
-    'int16' as const,
     'int32' as const,
     'int64' as const,
-    'uint8' as const,
-    'uint16' as const,
     'uint32' as const,
     'uint64' as const,
-    'float32' as const,
-    'float64' as const
+    'sint32' as const,
+    'sint64' as const,
+    'fixed32' as const,
+    'fixed64' as const,
+    'sfixed32' as const,
+    'sfixed64' as const,
+    'float' as const,
+    'double' as const
 ].sort();
 
 const BUFFER_TYPES = [

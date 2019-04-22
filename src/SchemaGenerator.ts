@@ -341,3 +341,22 @@ export interface GenerateResult {
         [symbolName: string]: TSBufferSchema
     };
 }
+
+export interface GeneratedSchema {
+    /**
+     * 于baseDir的文件的相对路径 不带扩展名的
+     * 例如 a/b/c/index.ts 的key会是 a/b/c/index 不会是 a/b/c
+     */
+    [path: string]: {
+        [symbolName: string]: TSBufferSchema
+    };
+}
+
+export interface GeneratedProtocol {
+    schemas: GeneratedSchema;
+    exports: {
+        id: number,
+        path: string,
+        targetName: string
+    }[];
+}
