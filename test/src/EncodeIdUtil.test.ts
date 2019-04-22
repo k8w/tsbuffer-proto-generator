@@ -1,0 +1,33 @@
+import * as assert from 'assert';
+import EncodeIdUtil from '../../src/EncodeIdUtil';
+
+describe('EncodeIdUtil', function () {
+    it('genEncodeIdMap', function () {
+        let result = EncodeIdUtil.genEncodeIds(['d', 'e', 'f', 'a', 'b', 'c']);
+        assert.deepStrictEqual(result, [
+            { key: 'd', id: 0 },
+            { key: 'e', id: 1 },
+            { key: 'f', id: 2 },
+            { key: 'a', id: 3 },
+            { key: 'b', id: 4 },
+            { key: 'c', id: 5 },
+        ])
+
+        let result1 = EncodeIdUtil.genEncodeIds(['d', 'e', 'f', 'a', 'b', 'c', 'h', 'i', 'j'], [
+            { key: 'd', id: 1 },
+            { key: 'a', id: 4 },
+            { key: 'b', id: 5 }
+        ]);
+        assert.deepStrictEqual(result1, [
+            { key: 'd', id: 1 },
+            { key: 'e', id: 0 },
+            { key: 'f', id: 2 },
+            { key: 'a', id: 4 },
+            { key: 'b', id: 5 },
+            { key: 'c', id: 3 },
+            { key: 'h', id: 6 },
+            { key: 'i', id: 7 },
+            { key: 'j', id: 8 },
+        ])
+    })
+})

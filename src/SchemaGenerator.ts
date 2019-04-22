@@ -2,9 +2,15 @@ import TSBufferSchema from 'tsbuffer-schema';
 import * as fs from "fs";
 import * as path from "path";
 import AstParser from './AstParser';
-import ReferenceTypeSchema from 'tsbuffer-schema/src/schemas/ReferenceTypeSchema';
 import { AstParserResult } from './AstParser';
-import Crypto from 'k8w-crypto';
+import SchemaUtil from './SchemaUtil';
+import EncodeIdUtil from './EncodeIdUtil';
+import InterfaceTypeSchema from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
+import IntersectionTypeSchema from 'tsbuffer-schema/src/schemas/IntersectionTypeSchema';
+import UnionTypeSchema from 'tsbuffer-schema/src/schemas/UnionTypeSchema';
+import ArrayTypeSchema from 'tsbuffer-schema/src/schemas/ArrayTypeSchema';
+import IndexedAccessTypeSchema from 'tsbuffer-schema/src/schemas/IndexedAccessTypeSchema';
+import TupleTypeSchema from 'tsbuffer-schema/src/schemas/TupleTypeSchema';
 
 export interface SchemaGeneratorOptions {
     /** Schema的根目录（路径在根目录以前的字符串会被相对掉） */
@@ -22,6 +28,7 @@ export interface SchemaGeneratorOptions {
     /**
      * 解析Module的路径
      * @param importPath 例如 import xx from 'abcd/efg' 则 importPath 为 'abcd/efg'
+import SchemaUtil from './SchemaUtil';
      * @return 返回于baseDir的相对路径
      */
     resolveModule?: (importPath: string, baseDir: string) => string;
@@ -67,6 +74,8 @@ export default class SchemaGenerator {
 
         // 默认filter是导出所有export项
         let filter = options.filter || (v => v.isExport);
+        // 是要被导出的直接引用的项目
+        let exports: { [path: string]: string[] } = {};
 
         // 生成这几个文件的AST CACHE
         for (let filepath of paths) {
@@ -92,6 +101,12 @@ export default class SchemaGenerator {
                         console.debug('[TSBuffer Schema Generator]', 'generate', `filter passed: ${name} at ${filepath}`);
                     }
 
+                    // 记入exports
+                    if (!exports[filepath]) {
+                        exports[filepath] = [];
+                    }
+                    exports[filepath].push(name);
+
                     // 加入output
                     await this._addToOutput(astKey, name, ast[name].schema, output, astCache);
                 }
@@ -101,62 +116,98 @@ export default class SchemaGenerator {
             }
         }
 
+        // flatten
+
+        // 重新生成EncodeId
+        this._regenResultEncodeIds(output, options.compatibleResult);
+
         return output;
     }
 
-    // flattenSchemas(schemas: GeneratedSchema) { };
-
     /**
-     * 将字符串映射为从0开始的自增数字，支持向后兼容
-     * @param values object将视为 md5(JSON.stringify(obj)) 
-     * @param compatible 需要向后兼容的结果集（新字段用新数字，旧字段ID不变）
+     * 重新生成EncodeId
+     * @param output 
+     * @param compatibleResult 
      */
-    static genValueUidMap(values: (string | number | object)[], compatible?: ValueUidMap): ValueUidMap {
-        let strs = values.map(v => typeof (v) === 'object' ? Crypto.md5(JSON.stringify(v)) : '' + v);
-        // 无compatible 按传入顺序生成
-        if (!compatible) {
-            let id = 0;
-            return strs.reduce((output, v) => {
-                output[v] = id++;
-                return output;
-            }, {} as ValueUidMap);
-        }
-
-        // 有compatible
-
-        // 先生成可用最小ID列表
-        let existIds = Object.values(compatible).orderBy(v => v);
-        let availableIds = Array.from({ length: existIds.last() + 1 }, (v, i) => i);
-        for (let i = 0; i < existIds.length; ++i) {
-            availableIds.removeOne(existIds[i]);
-        }
-        // 已有ID是顺序且严密的，直接从下一个开始编码
-        availableIds.push(existIds.last() + 1);
-
-        return strs.reduce((output, v) => {
-            // compatible中有，用compatible中的
-            if (typeof compatible[v] === 'number') {
-                output[v] = compatible[v];
+    private _regenResultEncodeIds(output: GenerateResult, compatibleResult?: GenerateResult) {
+        for (let pathKey in output) {
+            for (let name in output[pathKey]) {
+                this._regenSchemaEncodeIds(
+                    output[pathKey][name],
+                    compatibleResult && compatibleResult[pathKey] && compatibleResult[pathKey][name]
+                );
             }
-            // compatible中没有，用compatible中可用的下一个最小的
-            else {
-                let id = availableIds.shift()!;
-                output[v] = id;
-                if (availableIds.length === 0) {
-                    availableIds.push(id + 1)
-                }
-            }
-            return output;
-        }, {} as ValueUidMap);
+        }
     }
 
-    // private async _getFlatSchema(schema: TSBufferSchema): Promise<TSBufferSchema> {
+    private _regenSchemaEncodeIds(schema: TSBufferSchema, compatibleSchema?: TSBufferSchema) {
+        // 不仅要有 还要是同类型才行
+        if (compatibleSchema && compatibleSchema.type !== schema.type) {
+            compatibleSchema = undefined;
+        }
 
-    // }
+        switch (schema.type) {
+            case 'Enum': {
+                let cpIds = EncodeIdUtil.getSchemaEncodeIds(compatibleSchema);
+                let ids = EncodeIdUtil.genEncodeIds(EncodeIdUtil.getSchemaEncodeKeys(schema), cpIds);
+                for (let i = 0; i < ids.length; ++i) {
+                    schema.members[i].id = ids[i].id;
+                }
+                break;
+            }
+            case 'Interface': {
+                // properties
+                if (schema.properties) {
+                    let cpIds = EncodeIdUtil.getSchemaEncodeIds(compatibleSchema);
+                    let ids = EncodeIdUtil.genEncodeIds(EncodeIdUtil.getSchemaEncodeKeys(schema), cpIds);
 
-    // private async _getRealReference(schema: ReferenceTypeSchema): Promise<ReferenceTypeSchema>{
+                    let cpSchemaProps = compatibleSchema && (compatibleSchema as InterfaceTypeSchema).properties;
+                    for (let i = 0; i < ids.length; ++i) {
+                        // 更新ID
+                        schema.properties[i].id = ids[i].id;
+                        // 递归子项
+                        let subCpProp = cpSchemaProps && cpSchemaProps.find(v => v.name === schema.properties![i].name);
+                        this._regenSchemaEncodeIds(schema.properties[i].type, subCpProp ? subCpProp.type : undefined)
+                    }
+                }
 
-    // }
+                // indexSignature
+                if (schema.indexSignature) {
+                    let cpIndexSignature = compatibleSchema
+                        && (compatibleSchema as InterfaceTypeSchema).indexSignature
+                        && (compatibleSchema as InterfaceTypeSchema).indexSignature!.type || undefined;
+                    this._regenSchemaEncodeIds(schema.indexSignature.type, cpIndexSignature);
+                }
+
+                break;
+            }
+            case 'Intersection':
+            case 'Union':
+                let cpIds = EncodeIdUtil.getSchemaEncodeIds(compatibleSchema);
+                let ids = EncodeIdUtil.genEncodeIds(EncodeIdUtil.getSchemaEncodeKeys(schema), cpIds);
+                for (let i = 0; i < ids.length; ++i) {
+                    schema.members[i].id = ids[i].id;
+                    // 递归子项
+                    let subCpMember = compatibleSchema
+                        && (compatibleSchema as IntersectionTypeSchema | UnionTypeSchema).members.find(v => v.id === ids[i].id);
+                    let subCpSchema = subCpMember && subCpMember.type;
+                    this._regenSchemaEncodeIds(schema.members[i].type, subCpSchema);
+                }
+                break;
+            case 'Array':
+                // TODO elementType
+                this._regenSchemaEncodeIds(schema.elementType, compatibleSchema && (compatibleSchema as ArrayTypeSchema).elementType)
+                break;
+            case 'IndexedAccess':
+                this._regenSchemaEncodeIds(schema.objectType, compatibleSchema && (compatibleSchema as IndexedAccessTypeSchema).objectType)
+                break;
+            case 'Tuple':
+                for (let i = 0; i < schema.elementTypes.length; ++i) {
+                    this._regenSchemaEncodeIds(schema.elementTypes[i], compatibleSchema && (compatibleSchema as TupleTypeSchema).elementTypes[i])
+                }
+                break;
+        }
+    }
 
     private async _getAst(pathOrKey: string, astCache: AstCache) {
         // GET AST KEY
@@ -208,7 +259,7 @@ export default class SchemaGenerator {
             // TODO flatten 解引用
 
             // 递归加入引用
-            let refs = this.getUsedReference(schema);
+            let refs = SchemaUtil.getUsedReferences(schema);
             if (this.options.verbose) {
                 console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `refs.length=${refs.length}`)
             }
@@ -300,62 +351,7 @@ export default class SchemaGenerator {
         }
     }
 
-    /**
-     * 解析一个Schema引用到的其它类型
-     * @param schema 
-     */
-    getUsedReference(schemas: TSBufferSchema | TSBufferSchema[]): ReferenceTypeSchema[] {
-        if (!Array.isArray(schemas)) {
-            schemas = [schemas];
-        }
 
-        let output: ReferenceTypeSchema[] = [];
-
-        for (let schema of schemas) {
-            switch (schema.type) {
-                case 'Array':
-                    output = output.concat(this.getUsedReference(schema.elementType));
-                    break;
-                case 'Tuple':
-                    output = output.concat(this.getUsedReference(schema.elementTypes));
-                    break;
-                case 'Interface':
-                    if (schema.extends) {
-                        output = output.concat(this.getUsedReference(schema.extends));
-                    }
-                    if (schema.properties) {
-                        output = output.concat(this.getUsedReference(schema.properties.map(v => v.type)));
-                    }
-                    if (schema.indexSignature) {
-                        output = output.concat(this.getUsedReference(schema.indexSignature.type));
-                    }
-                    break;
-                case 'IndexedAccess':
-                    output = output.concat(this.getUsedReference(schema.objectType));
-                    break;
-                case 'Reference':
-                    output.push(schema);
-                    break;
-                case 'Union':
-                case 'Intersection':
-                    output = output.concat(this.getUsedReference(schema.members.map(v => v.type)));
-                    break;
-                case 'Pick':
-                case 'Omit':
-                case 'Partial':
-                    output = output.concat(this.getUsedReference(schema.target));
-                    break;
-                case 'Overwrite':
-                    output = output.concat(this.getUsedReference(schema.target));
-                    output = output.concat(this.getUsedReference(schema.overwrite));
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        return output;
-    }
 }
 
 export interface AstCache {
@@ -403,8 +399,4 @@ export interface GenerateResult {
     [path: string]: {
         [symbolName: string]: TSBufferSchema
     };
-}
-
-export interface ValueUidMap {
-    [key: string]: number
 }
