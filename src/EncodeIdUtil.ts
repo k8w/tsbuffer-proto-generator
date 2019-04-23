@@ -17,13 +17,23 @@ export default class EncodeIdUtil {
         let strs = values.map(v => this.getKey(v));
         // 无compatible 按传入顺序生成
         if (!compatible) {
-            return strs.map((v, i) => ({ id: i, key: v }));
+            let keyId: { [key: string]: number } = {};
+            let output: EncodeIdItem[] = [];
+            let id = 0;
+            for (let str of strs) {
+                // 已有这个key
+                if (keyId[str] === undefined) {
+                    keyId[str] = id++;
+                }
+                output.push({ key: str, id: keyId[str] });
+            }
+            return output;
         }
 
         // 有compatible
         // 先生成可用最小ID列表
         let existIds = compatible.map(v => v.id).orderBy(v => v);
-        compatible = compatible.orderBy(v => v.key);    // 按key排序，便于之后二分查找
+        let keyOrderedCp = compatible.orderBy(v => v.key);    // 按key排序，便于之后二分查找
         let availableIds = Array.from({ length: existIds.last() + 1 }, (v, i) => i);
         for (let i = 0; i < existIds.length; ++i) {
             availableIds.removeOne(existIds[i]);
@@ -31,20 +41,28 @@ export default class EncodeIdUtil {
         // 已有ID是顺序且严密的，直接从下一个开始编码
         availableIds.push(existIds.last() + 1);
 
-        return strs.map(v => {
-            // compatible中有，用compatible中的
-            let compatibleIndex = compatible!.binarySearch(v, v => v.key);
-            if (compatibleIndex > -1) {
-                return Object.assign({}, compatible![compatibleIndex]);
-            }
-            // compatible中没有，用compatible中可用的下一个最小的
-            else {
-                let id = availableIds.shift()!;
-                if (availableIds.length === 0) {
-                    availableIds.push(id + 1)
+        // 防止有重复的2个Key 用于去重的临时变量
+        let keyId: { [key: string]: number } = {};
+
+        return strs.map(str => {
+            // 除非Key重复 用已有结果
+            if (keyId[str] === undefined) {
+                // Compatible中已有，用已有的
+                let compatibleIndex = keyOrderedCp.binarySearch(str, v => v.key);
+                if (compatibleIndex > -1) {
+                    keyId[str] = keyOrderedCp[compatibleIndex].id;
                 }
-                return { key: v, id: id }
+                // 否则 选择下一个最小可用ID
+                else {
+                    let id = availableIds.shift()!;
+                    if (availableIds.length === 0) {
+                        availableIds.push(id + 1)
+                    }
+                    keyId[str] = id;
+                }
             }
+
+            return { key: str, id: keyId[str] };
         });
     }
 
@@ -54,11 +72,11 @@ export default class EncodeIdUtil {
                 return schema.members.map(v => '' + v.value);
             }
             case 'Interface': {
-                return schema.properties ? schema.properties.map(v => Crypto.md5(JSON.stringify(v))) : [];
+                return schema.properties ? schema.properties.map(v => v.name) : [];
             }
             case 'Intersection':
             case 'Union':
-                return schema.members.map(v => Crypto.md5(JSON.stringify(v)));
+                return schema.members.map(v => Crypto.md5(JSON.stringify(v.type)));
             default:
                 return [];
         }
