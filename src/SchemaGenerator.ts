@@ -350,8 +350,6 @@ export default class SchemaGenerator {
             }
         }
     }
-
-
 }
 
 export interface AstCache {

@@ -203,4 +203,37 @@ describe('SchemaGenerator.generate', function () {
 
         assert.deepStrictEqual(schemas, rightAnswer)
     })
+
+    it('node_modules', async function () {
+        let generator = new SchemaGenerator({
+            baseDir: path.resolve(__dirname, 'sources', 'nodeModule')
+        });
+
+        let schemas = await generator.generate('Test.ts');
+
+        assert.deepStrictEqual(schemas, {
+            'Test': {
+                'Test': {
+                    type: 'Interface',
+                    extends: [
+                        {
+                            type: 'Reference',
+                            path: 'node_modules/test-nm/index',
+                            targetName: 'TestNodeModule'
+                        }
+                    ]
+                }
+            },
+            'node_modules/test-nm/index': {
+                'TestNodeModule': {
+                    type: 'Interface',
+                    properties: [{
+                        id: 0,
+                        name: 'base',
+                        type: { type: 'String' }
+                    }]
+                }
+            }
+        })
+    })
 })
