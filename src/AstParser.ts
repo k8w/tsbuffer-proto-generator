@@ -1,10 +1,10 @@
-import TSBufferSchema from "tsbuffer-schema";
+import { TSBufferSchema } from "tsbuffer-schema";
 import * as ts from "typescript";
-import ReferenceTypeSchema from "tsbuffer-schema/src/schemas/ReferenceTypeSchema";
-import InterfaceTypeSchema from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
-import BufferTypeSchema from 'tsbuffer-schema/src/schemas/BufferTypeSchema';
-import PickTypeSchema from 'tsbuffer-schema/src/schemas/PickTypeSchema';
-import OmitTypeSchema from 'tsbuffer-schema/src/schemas/OmitTypeSchema';
+import { ReferenceTypeSchema } from "tsbuffer-schema/src/schemas/ReferenceTypeSchema";
+import { InterfaceTypeSchema } from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
+import { BufferTypeSchema } from 'tsbuffer-schema/src/schemas/BufferTypeSchema';
+import { PickTypeSchema } from 'tsbuffer-schema/src/schemas/PickTypeSchema';
+import { OmitTypeSchema } from 'tsbuffer-schema/src/schemas/OmitTypeSchema';
 
 const SCALAR_TYPES = [
     'int32' as const,
@@ -38,7 +38,7 @@ const BUFFER_TYPES = [
 /**
  * 提取出有用的AST
  */
-export default class AstParser {
+export class AstParser {
 
     /**
      * 解析整个文件
@@ -571,7 +571,7 @@ export default class AstParser {
             let output: PickTypeSchema | OmitTypeSchema = Object.assign({
                 target: target,
                 keys: this._getPickKeys(this.node2schema(node.typeArguments[1], imports))
-            }, nodeName === 'Pick' ? { type: 'Pick' } : { type: 'Omit' })
+            }, nodeName === 'Pick' ? { type: 'Pick' as const } : { type: 'Omit' as const })
 
             return output;
         }

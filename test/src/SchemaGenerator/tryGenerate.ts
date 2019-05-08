@@ -1,6 +1,6 @@
 import 'k8w-extend-native';
 import * as path from "path";
-import SchemaGenerator from '../../../src/SchemaGenerator';
+import { SchemaGenerator } from '../../../src/SchemaGenerator';
 
 (async function main() {
     let generator = new SchemaGenerator({

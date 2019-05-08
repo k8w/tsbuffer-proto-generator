@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import * as ts from "typescript";
-import AstParser from '../../../src/AstParser';
+import { AstParser } from '../../../src/AstParser';
 
 describe('AstParser.getScriptImports', function () {
     it('import A', function () {

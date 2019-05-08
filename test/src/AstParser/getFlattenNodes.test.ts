@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import AstParser from '../../../src/AstParser';
+import { AstParser } from '../../../src/AstParser';
 import GetSourceFile from './GetSourceFile';
 import * as ts from "typescript";
 

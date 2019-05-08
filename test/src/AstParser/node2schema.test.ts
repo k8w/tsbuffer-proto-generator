@@ -1,10 +1,10 @@
 import * as assert from 'assert';
-import AstParser from '../../../src/AstParser';
+import { AstParser } from '../../../src/AstParser';
 import { CreateSource } from './GetSourceFile';
-import InterfaceTypeSchema from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
-import IndexedAccessTypeSchema from 'tsbuffer-schema/src/schemas/IndexedAccessTypeSchema';
-import UnionTypeSchema from 'tsbuffer-schema/src/schemas/UnionTypeSchema';
-import IntersectionTypeSchema from 'tsbuffer-schema/src/schemas/IntersectionTypeSchema';
+import { InterfaceTypeSchema } from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
+import { IndexedAccessTypeSchema } from 'tsbuffer-schema/src/schemas/IndexedAccessTypeSchema';
+import { UnionTypeSchema } from 'tsbuffer-schema/src/schemas/UnionTypeSchema';
+import { IntersectionTypeSchema } from 'tsbuffer-schema/src/schemas/IntersectionTypeSchema';
 
 describe('AstParser.node2schema', function () {
     it('AnyType', function () {

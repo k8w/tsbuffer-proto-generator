@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import EncodeIdUtil from '../../src/EncodeIdUtil';
+import { EncodeIdUtil } from '../../src/EncodeIdUtil';
 
 describe('EncodeIdUtil', function () {
     it('genEncodeIdMap', function () {

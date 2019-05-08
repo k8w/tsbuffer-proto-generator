@@ -1,11 +1,11 @@
 import * as assert from 'assert';
-import SchemaGenerator from '../../../src/SchemaGenerator';
+import { SchemaGenerator } from '../../../src/SchemaGenerator';
 import * as path from "path";
 import { GenerateResult } from '../../../src/SchemaGenerator';
-import InterfaceTypeSchema from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
-import EnumTypeSchema from 'tsbuffer-schema/src/schemas/EnumTypeSchema';
-import IntersectionTypeSchema from 'tsbuffer-schema/src/schemas/IntersectionTypeSchema';
-import UnionTypeSchema from 'tsbuffer-schema/src/schemas/UnionTypeSchema';
+import { InterfaceTypeSchema } from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
+import { EnumTypeSchema } from 'tsbuffer-schema/src/schemas/EnumTypeSchema';
+import { IntersectionTypeSchema } from 'tsbuffer-schema/src/schemas/IntersectionTypeSchema';
+import { UnionTypeSchema } from 'tsbuffer-schema/src/schemas/UnionTypeSchema';
 
 describe('SchemaGenerator.compatible', function () {
     it('simple enum', async function () {

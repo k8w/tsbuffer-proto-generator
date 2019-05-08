@@ -15,9 +15,9 @@
     "@types/typescript": "^2.0.0",
     "k8w-crypto": "^0.1.1",
     "k8w-extend-native": "^1.1.0",
-    "tsbuffer-schema": "^0.3.15",
+    "tsbuffer-schema": "^0.4.0",
     "tslib": "^1.9.3",
-    "typescript": "^3.4.2"
+    "typescript": "^3.4.5"
   },
   "devDependencies": {
     "@types/mocha": "^5.2.6",

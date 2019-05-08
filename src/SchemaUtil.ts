@@ -1,7 +1,7 @@
-import TSBufferSchema from 'tsbuffer-schema';
-import ReferenceTypeSchema from 'tsbuffer-schema/src/schemas/ReferenceTypeSchema';
+import { TSBufferSchema } from 'tsbuffer-schema';
+import { ReferenceTypeSchema } from 'tsbuffer-schema/src/schemas/ReferenceTypeSchema';
 
-export default class SchemaUtil {
+export class SchemaUtil {
     /**
      * 解析一个Schema引用到的其它类型
      * @param schema 

@@ -1,5 +1,5 @@
 import 'k8w-extend-native';
-import SchemaGenerator from '../../src/SchemaGenerator';
+import { SchemaGenerator } from '../../src/SchemaGenerator';
 import * as path from "path";
 
 new SchemaGenerator({

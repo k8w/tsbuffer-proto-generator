@@ -1,11 +1,11 @@
 import Crypto from 'k8w-crypto';
-import TSBufferSchema from 'tsbuffer-schema';
-import EnumTypeSchema from 'tsbuffer-schema/src/schemas/EnumTypeSchema';
-import InterfaceTypeSchema from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
-import IntersectionTypeSchema from 'tsbuffer-schema/src/schemas/IntersectionTypeSchema';
-import UnionTypeSchema from 'tsbuffer-schema/src/schemas/UnionTypeSchema';
+import { TSBufferSchema } from 'tsbuffer-schema';
+import { EnumTypeSchema } from 'tsbuffer-schema/src/schemas/EnumTypeSchema';
+import { InterfaceTypeSchema } from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
+import { IntersectionTypeSchema } from 'tsbuffer-schema/src/schemas/IntersectionTypeSchema';
+import { UnionTypeSchema } from 'tsbuffer-schema/src/schemas/UnionTypeSchema';
 
-export default class EncodeIdUtil {
+export class EncodeIdUtil {
 
     /**
     * 将字符串映射为从0开始的自增数字，支持向后兼容

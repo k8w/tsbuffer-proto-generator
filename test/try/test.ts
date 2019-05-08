@@ -1,4 +1,4 @@
-import AstParser from '../../src/AstParser';
+import { AstParser } from '../../src/AstParser';
 import * as ts from "typescript";
 import * as fs from "fs";
 
