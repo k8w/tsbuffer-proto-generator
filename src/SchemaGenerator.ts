@@ -256,8 +256,6 @@ export class SchemaGenerator {
         if (!output[astKey][name]) {
             output[astKey][name] = schema;
 
-            // TODO flatten 解引用
-
             // 递归加入引用
             let refs = SchemaUtil.getUsedReferences(schema);
             if (this.options.verbose) {
@@ -268,7 +266,7 @@ export class SchemaGenerator {
                     console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `ref={path:${ref.path || ''}, targetName=${ref.targetName}}`)
                 }
 
-                let refPath: string | undefined;
+                let refPath: string;    // 实际引用路径
                 if (ref.path) {
                     // 相对路径引用
                     if (ref.path.startsWith('.')) {
@@ -334,9 +332,7 @@ export class SchemaGenerator {
 
                 if (certainRefTargetName) {
                     // 修改源reference的targetName和path
-                    if (ref.path) {
-                        ref.path = refAst.astKey;
-                    }
+                    ref.path = refAst.astKey;
                     ref.targetName = certainRefTargetName;
                     // 将ref加入output
                     await this._addToOutput(refAst.astKey, certainRefTargetName, refAst.ast[certainRefTargetName].schema, output, astCache);

@@ -5,6 +5,8 @@ import { InterfaceTypeSchema } from 'tsbuffer-schema/src/schemas/InterfaceTypeSc
 import { BufferTypeSchema } from 'tsbuffer-schema/src/schemas/BufferTypeSchema';
 import { PickTypeSchema } from 'tsbuffer-schema/src/schemas/PickTypeSchema';
 import { OmitTypeSchema } from 'tsbuffer-schema/src/schemas/OmitTypeSchema';
+import { InterfaceReference } from "tsbuffer-schema/src/InterfaceReference";
+import { TypeReference } from "tsbuffer-schema/src/TypeReference";
 
 const SCALAR_TYPES = [
     'int32' as const,
@@ -518,10 +520,15 @@ export class AstParser {
                     throw new Error(`Error indexType literal: ${node.getText()}`)
                 }
 
+                let objectType = this.node2schema(node.objectType, imports);
+                if (!this._isInterfaceReference(objectType)) {
+                    throw new Error(`ObjectType for IndexedAccess must be interface or interface reference`);
+                }
+
                 return {
                     type: 'IndexedAccess',
                     index: index,
-                    objectType: this.node2schema(node.objectType, imports)
+                    objectType: objectType
                 }
             }
             // A['a' | 'b']
@@ -657,10 +664,11 @@ export class AstParser {
             }
         }
         else {
-            return {
+            let ref: Omit<ReferenceTypeSchema, 'path'> = {
                 type: 'Reference',
                 targetName: name
-            }
+            };
+            return ref as any;
         }
     }
 
@@ -697,6 +705,19 @@ export class AstParser {
             console.log('Illeagle Pick keys:', schema);
             throw new Error('Illeagle Pick keys: ' + JSON.stringify(schema, null, 2));
         }
+    }
+
+    private static _isInterfaceReference(schema: TSBufferSchema): schema is InterfaceReference {
+        return this._isTypeReference(schema) ||
+            schema.type === 'Interface' ||
+            schema.type === 'Pick' ||
+            schema.type === 'Partial' ||
+            schema.type === 'Omit' ||
+            schema.type === 'Overwrite';
+    }
+
+    private static _isTypeReference(schema: TSBufferSchema): schema is TypeReference {
+        return schema.type === 'Reference' || schema.type === 'IndexedAccess';
     }
 }
 
