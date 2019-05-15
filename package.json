@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "rm -rf dist && tsc && cp package.json LICENSE README.md dist/",
+    "build": "rm -rf dist && tsc -d && cp package.json LICENSE README.md dist/",
     "bp": "npm version patch && npm run build && cd dist && npm publish & cd..",
     "test": "mocha test/**/*.test.ts",
     "coverage": "nyc mocha test/**/*.test.ts && start coverage\\index.html",
