@@ -607,12 +607,12 @@ export class AstParser {
             }
 
             let target = this.node2schema(node.typeArguments[0], imports);
-            if (target.type !== 'Interface' && target.type !== 'Reference') {
+            if (!this._isInterfaceReference(target)) {
                 throw new Error(`Illeagle OverwriteType: ` + node.getText())
             }
 
             let overwrite = this.node2schema(node.typeArguments[1], imports);
-            if (overwrite.type !== 'Interface' && overwrite.type !== 'Reference') {
+            if (!this._isInterfaceReference(overwrite)) {
                 throw new Error(`Illeagle OverwriteType: ` + node.getText())
             }
 

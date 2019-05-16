@@ -879,4 +879,32 @@ enum Test3 {a=1,b,c,d=100,e,f}
             }
         });
     })
+
+    it('Overwrite InterfaceReference', function () {
+        let src = CreateSource(`
+        type Test1 = Overwrite<Pick<AA, 'a'|'b'>, Omit<BB, 'b'|'c'>>;
+        `);
+        let imports = AstParser.getScriptImports(src);
+        let nodes = AstParser.getFlattenNodes(src);
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, imports), {
+            type: 'Overwrite',
+            target: {
+                type: 'Pick',
+                target: {
+                    type: 'Reference',
+                    targetName: 'AA'
+                },
+                keys: ['a', 'b']
+            },
+            overwrite: {
+                type: 'Omit',
+                target: {
+                    type: 'Reference',
+                    targetName: 'BB'
+                },
+                keys: ['b', 'c']
+            }
+        });
+    })
 })
