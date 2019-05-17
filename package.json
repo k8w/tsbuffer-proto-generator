@@ -17,7 +17,7 @@
     "@types/typescript": "^2.0.0",
     "k8w-crypto": "^0.1.1",
     "k8w-extend-native": "^1.1.0",
-    "tsbuffer-schema": "^0.4.4",
+    "tsbuffer-schema": "^0.4.5",
     "tslib": "^1.9.3",
     "typescript": "^3.4.5"
   },

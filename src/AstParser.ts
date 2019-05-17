@@ -7,6 +7,7 @@ import { PickTypeSchema } from 'tsbuffer-schema/src/schemas/PickTypeSchema';
 import { OmitTypeSchema } from 'tsbuffer-schema/src/schemas/OmitTypeSchema';
 import { InterfaceReference } from "tsbuffer-schema/src/InterfaceReference";
 import { TypeReference } from "tsbuffer-schema/src/TypeReference";
+import { TupleTypeSchema } from "tsbuffer-schema/src/schemas/TupleTypeSchema";
 
 const SCALAR_TYPES = [
     'int32' as const,
@@ -340,10 +341,25 @@ export class AstParser {
 
         // TupleType
         if (ts.isTupleTypeNode(node)) {
-            return {
+            let optionalStartIndex: number | undefined;
+            let output: TupleTypeSchema = {
                 type: 'Tuple',
-                elementTypes: node.elementTypes.map(v => this.node2schema(v, imports))
+                elementTypes: node.elementTypes.map((v, i) => {
+                    if (v.kind === ts.SyntaxKind.OptionalType) {
+                        if (optionalStartIndex === undefined) {
+                            optionalStartIndex = i;
+                        }
+                        return this.node2schema((v as ts.OptionalTypeNode).type, imports)
+                    }
+                    else {
+                        return this.node2schema(v, imports)
+                    }
+                })
             }
+            if (optionalStartIndex !== undefined) {
+                output.optionalStartIndex = optionalStartIndex;
+            }
+            return output;
         }
 
         // LiteralType

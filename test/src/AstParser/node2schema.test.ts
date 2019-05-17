@@ -152,6 +152,20 @@ describe('AstParser.node2schema', function () {
                     }
                 ]
             })
+
+        src = CreateSource(`type Test = [number, any, string?, boolean?]`);
+        assert.deepStrictEqual(AstParser.node2schema(
+            AstParser.getFlattenNodes(src)['Test'].node, {}
+        ), {
+                type: 'Tuple',
+                elementTypes: [
+                    { type: 'Number' },
+                    { type: 'Any' },
+                    { type: 'String' },
+                    { type: 'Boolean' },
+                ],
+                optionalStartIndex: 2
+            })
     })
 
     it('LiteralType: String', function () {
