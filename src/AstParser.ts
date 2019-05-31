@@ -10,16 +10,13 @@ import { TypeReference } from "tsbuffer-schema/src/TypeReference";
 import { TupleTypeSchema } from "tsbuffer-schema/src/schemas/TupleTypeSchema";
 
 const SCALAR_TYPES = [
+    'int' as const,
+    'uint' as const,
     'int32' as const,
     'int64' as const,
     'uint32' as const,
     'uint64' as const,
-    'sint32' as const,
-    'sint64' as const,
-    'fixed32' as const,
-    'fixed64' as const,
-    'sfixed32' as const,
-    'sfixed64' as const,
+    'bigint' as const,
     'float' as const,
     'double' as const
 ].sort();
@@ -309,6 +306,12 @@ export class AstParser {
         if (node.kind === ts.SyntaxKind.NumberKeyword) {
             return {
                 type: 'Number'
+            }
+        }
+        else if (node.kind === ts.SyntaxKind.BigIntKeyword) {
+            return {
+                type: 'Number',
+                scalarType: 'bigint'
             }
         }
         // Scalar value types
