@@ -107,15 +107,15 @@ describe('AstParser.node2schema', function () {
         })
     })
 
-    it('ArrayType: Array<uint64>', function () {
-        let src = CreateSource(`type Test = Array<uint64>;`);
+    it('ArrayType: Array<uint32>', function () {
+        let src = CreateSource(`type Test = Array<uint32>;`);
         let nodes = AstParser.getFlattenNodes(src);
         let schema = AstParser.node2schema(nodes['Test'].node, {});
         assert.deepStrictEqual(schema, {
             type: 'Array',
             elementType: {
                 type: 'Number',
-                scalarType: 'uint64'
+                scalarType: 'uint32'
             }
         })
     })
