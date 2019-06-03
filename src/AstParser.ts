@@ -11,6 +11,7 @@ import { TupleTypeSchema } from "tsbuffer-schema/src/schemas/TupleTypeSchema";
 
 const SCALAR_TYPES = [
     'int' as const,
+    'sint' as const,
     'uint' as const,
     'int32' as const,
     'int64' as const,
