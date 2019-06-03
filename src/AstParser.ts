@@ -13,12 +13,12 @@ const SCALAR_TYPES = [
     'int' as const,
     'uint' as const,
     'int32' as const,
-    'int64' as const,
     'uint32' as const,
-    'uint64' as const,
-    'bigint' as const,
     'float' as const,
-    'double' as const
+    'double' as const,
+    'bigint' as const,
+    'bigint64' as const,
+    'biguint64' as const,
 ].sort();
 
 const BUFFER_TYPES = [
