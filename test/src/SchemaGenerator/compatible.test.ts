@@ -117,6 +117,93 @@ describe('SchemaGenerator.compatible', function () {
         ])
     })
 
+    it('interface change extends', async function () {
+        let result1 = (await new SchemaGenerator({
+            baseDir: path.resolve(__dirname, 'sources/encId1')
+        }).generate('EncodeId.ts'));
+
+        let result2 = (await new SchemaGenerator({
+            baseDir: path.resolve(__dirname, 'sources/encId2')
+        }).generate('EncodeId.ts', {
+            compatibleResult: result1
+        }));
+
+        let result3 = (await new SchemaGenerator({
+            baseDir: path.resolve(__dirname, 'sources/encId3')
+        }).generate('EncodeId.ts', {
+            compatibleResult: result1
+        }));
+
+        let e1 = (result1['EncodeId']['Extend1'] as InterfaceTypeSchema).extends!;
+        let e2 = (result2['EncodeId']['Extend1'] as InterfaceTypeSchema).extends!;
+        let e3 = (result3['EncodeId']['Extend1'] as InterfaceTypeSchema).extends!;
+
+        assert.deepStrictEqual(e1, [
+            {
+                id: 0,
+                type: {
+                    type: 'Reference',
+                    targetName: 'EA',
+                    path: 'EncodeId'
+                }
+            },
+            {
+                id: 1,
+                type: {
+                    type: 'Reference',
+                    targetName: 'EB',
+                    path: 'EncodeId'
+                }
+            }
+        ])
+
+        assert.deepStrictEqual(e2, [
+            {
+                id: 1,
+                type: {
+                    type: 'Reference',
+                    targetName: 'EB',
+                    path: 'EncodeId'
+                }
+            },
+            {
+                id: 0,
+                type: {
+                    type: 'Reference',
+                    targetName: 'EA',
+                    path: 'EncodeId'
+                }
+            }
+        ]);
+
+        assert.deepStrictEqual(e3, [
+            {
+                id: 2,
+                type: {
+                    type: 'Reference',
+                    targetName: 'EB',
+                    path: 'ext'
+                }
+            },
+            {
+                id: 3,
+                type: {
+                    type: 'Reference',
+                    targetName: 'EC',
+                    path: 'EncodeId'
+                }
+            },
+            {
+                id: 0,
+                type: {
+                    type: 'Reference',
+                    targetName: 'EA',
+                    path: 'EncodeId'
+                }
+            }
+        ])
+    })
+
     it('Intersection add/del', async function () {
         let result1 = (await new SchemaGenerator({
             baseDir: path.resolve(__dirname, 'sources/encId2')

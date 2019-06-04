@@ -357,24 +357,35 @@ enum Test3 {a=1,b,c,d=100,e,f}
         assert.deepStrictEqual(AstParser.node2schema(nodes['XXPtl'].node, imports), {
             type: 'Interface',
             extends: [{
-                type: 'Reference',
-                path: 'proto',
-                targetName: 'default'
+                id: 0,
+                type: {
+                    type: 'Reference',
+                    path: 'proto',
+                    targetName: 'default'
+                }
             }]
         });
 
         assert.deepStrictEqual(AstParser.node2schema(nodes['BaseReq'].node, imports), {
             type: 'Interface',
-            extends: [{
-                type: 'Reference',
-                path: 'proto',
-                targetName: 'Req'
-            },
-            {
-                type: 'Reference',
-                path: 'proto',
-                targetName: 'FuckReq'
-            }],
+            extends: [
+                {
+                    id: 0,
+                    type: {
+                        type: 'Reference',
+                        path: 'proto',
+                        targetName: 'Req'
+                    }
+                },
+                {
+                    id: 1,
+                    type: {
+                        type: 'Reference',
+                        path: 'proto',
+                        targetName: 'FuckReq'
+                    }
+                }
+            ],
             properties: [{
                 id: 0,
                 name: 'url',
@@ -387,8 +398,11 @@ enum Test3 {a=1,b,c,d=100,e,f}
         assert.deepStrictEqual(AstParser.node2schema(nodes['XXReq'].node, imports), {
             type: 'Interface',
             extends: [{
-                type: 'Reference',
-                targetName: 'BaseReq'
+                id: 0,
+                type: {
+                    type: 'Reference',
+                    targetName: 'BaseReq'
+                }
             }],
             properties: [{
                 id: 0,

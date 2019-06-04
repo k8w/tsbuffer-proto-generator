@@ -108,9 +108,12 @@ describe('SchemaGenerator.generate', function () {
                     "type": "Interface",
                     "extends": [
                         {
-                            "type": "Reference",
-                            "path": "sources/Animal",
-                            "targetName": "default"
+                            id: 0,
+                            type: {
+                                "type": "Reference",
+                                "path": "sources/Animal",
+                                "targetName": "default"
+                            }
                         }
                     ],
                     "properties": [
@@ -144,9 +147,12 @@ describe('SchemaGenerator.generate', function () {
                     "type": "Interface",
                     "extends": [
                         {
-                            "type": "Reference",
-                            "path": "sources/Animal",
-                            "targetName": "default"
+                            id: 0,
+                            type: {
+                                "type": "Reference",
+                                "path": "sources/Animal",
+                                "targetName": "default"
+                            }
                         }
                     ],
                     "properties": [
@@ -222,9 +228,12 @@ describe('SchemaGenerator.generate', function () {
                     type: 'Interface',
                     extends: [
                         {
-                            type: 'Reference',
-                            path: 'node_modules/test-nm/index',
-                            targetName: 'TestNodeModule'
+                            id: 0,
+                            type: {
+                                type: 'Reference',
+                                path: 'node_modules/test-nm/index',
+                                targetName: 'TestNodeModule'
+                            }
                         }
                     ]
                 }

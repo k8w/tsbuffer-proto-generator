@@ -1,3 +1,5 @@
+import { EB } from "./ext";
+
 export interface Test1 {
     f0?: string;
     f2: boolean[];
@@ -13,3 +15,15 @@ export interface Test1 {
 type A = any;
 type B = any;
 type C = any;
+
+export interface EA {
+    a: string;
+}
+
+export interface EC {
+    c: string;
+}
+
+export interface Extend1 extends EB, EC, EA {
+    value: string;
+}

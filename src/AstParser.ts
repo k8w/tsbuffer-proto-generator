@@ -509,7 +509,10 @@ export class AstParser {
                 type: 'Interface'
             };
             if (extendsInterface) {
-                output.extends = extendsInterface;
+                output.extends = extendsInterface.map((v, i) => ({
+                    id: i,
+                    type: v
+                }));
             }
             if (properties.length) {
                 output.properties = properties;

@@ -12,3 +12,15 @@ export interface Test1 {
 
 type A = any;
 type B = any;
+
+export interface EA {
+    a: string;
+}
+
+export interface EB {
+    b: string;
+}
+
+export interface Extend1 extends EB, EA {
+    value: string;
+}

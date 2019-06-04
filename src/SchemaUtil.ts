@@ -23,7 +23,7 @@ export class SchemaUtil {
                     break;
                 case 'Interface':
                     if (schema.extends) {
-                        output = output.concat(this.getUsedReferences(schema.extends));
+                        output = output.concat(this.getUsedReferences(schema.extends.map(v => v.type)));
                     }
                     if (schema.properties) {
                         output = output.concat(this.getUsedReferences(schema.properties.map(v => v.type)));
