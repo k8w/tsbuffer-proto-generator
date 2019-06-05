@@ -447,7 +447,7 @@ export class AstParser {
         // InterfaceType
         if (ts.isInterfaceDeclaration(node) || ts.isTypeLiteralNode(node)) {
             // extends
-            let extendsInterface: ReferenceTypeSchema[] | undefined;
+            let extendsInterface: InterfaceReference[] | undefined;
             if (ts.isInterfaceDeclaration(node) && node.heritageClauses) {
                 extendsInterface = [];
                 node.heritageClauses.forEach(v => {

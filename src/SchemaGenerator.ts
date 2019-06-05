@@ -160,10 +160,10 @@ export class SchemaGenerator {
                 if (schema.extends) {
                     let cpExtends = compatibleSchema && (compatibleSchema as InterfaceTypeSchema).extends;
                     let cpIds = cpExtends && cpExtends.map(v => ({
-                        key: `${v.type.path}:${v.type.targetName}`,
+                        key: JSON.stringify(v.type),
                         id: v.id
                     }));
-                    let ids = EncodeIdUtil.genEncodeIds(schema.extends.map(v => `${v.type.path}:${v.type.targetName}`), cpIds);
+                    let ids = EncodeIdUtil.genEncodeIds(schema.extends.map(v => JSON.stringify(v.type)), cpIds);
                     for (let i = 0; i < ids.length; ++i) {
                         schema.extends[i].id = ids[i].id;
                     }
