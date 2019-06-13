@@ -429,6 +429,14 @@ export class AstParser {
                                 value: initializer++
                             }
                         }
+                        // 负数
+                        else if (ts.isPrefixUnaryExpression(v.initializer) && v.initializer.operator === ts.SyntaxKind.MinusToken) {
+                            initializer = parseFloat(v.initializer.operand.getText()) * -1;
+                            return {
+                                id: i,
+                                value: initializer++
+                            }
+                        }
                         else {
                             console.log('initializer', v.initializer);
                             throw new Error('Enum initializer type error: ' + ts.SyntaxKind[v.initializer.kind]);

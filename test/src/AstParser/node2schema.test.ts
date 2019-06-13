@@ -237,7 +237,7 @@ describe('AstParser.node2schema', function () {
         let src = CreateSource(`
 enum Test1 { a,b,c}
 enum Test2 {a='AA',b='BB',c='CC'}
-enum Test3 {a=1,b,c,d=100,e,f}
+enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
         `);
         let nodes = AstParser.getFlattenNodes(src);
 
@@ -266,6 +266,9 @@ enum Test3 {a=1,b,c,d=100,e,f}
                 { id: 3, value: 100 },
                 { id: 4, value: 101 },
                 { id: 5, value: 102 },
+                { id: 6, value: -100 },
+                { id: 7, value: -99 },
+                { id: 8, value: -98 },
             ]
         });
     })
