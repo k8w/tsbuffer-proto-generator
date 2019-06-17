@@ -601,7 +601,7 @@ export class AstParser {
             }
 
             let target = this.node2schema(node.typeArguments[0], imports);
-            if (target.type !== 'Interface' && target.type !== 'Reference') {
+            if (!this._isInterfaceReference(target)) {
                 throw new Error(`Illeagle ${nodeName}Type: ` + node.getText())
             }
 
@@ -620,7 +620,7 @@ export class AstParser {
             }
 
             let target = this.node2schema(node.typeArguments[0], imports);
-            if (target.type !== 'Interface' && target.type !== 'Reference') {
+            if (!this._isInterfaceReference(target)) {
                 throw new Error('Illeagle PartialType: ' + node.getText())
             }
 
