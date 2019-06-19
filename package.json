@@ -14,7 +14,6 @@
   "license": "ISC",
   "dependencies": {
     "@types/node": "^11.13.2",
-    "@types/typescript": "^2.0.0",
     "k8w-crypto": "^0.1.1",
     "k8w-extend-native": "^1.1.0",
     "tsbuffer-schema": "^0.8.0",
@@ -23,7 +22,7 @@
   },
   "devDependencies": {
     "@types/mocha": "^5.2.6",
-    "mocha": "^6.1.2",
+    "mocha": "^6.1.4",
     "nyc": "^13.3.0",
     "ts-node": "^8.0.3"
   },
