@@ -1,4 +1,4 @@
-import { TSBufferSchema } from 'tsbuffer-schema';
+import { TSBufferSchema, TSBufferProto } from 'tsbuffer-schema';
 import * as fs from "fs";
 import * as path from "path";
 import { AstParser } from './AstParser';
@@ -54,8 +54,8 @@ export class SchemaGenerator {
      * @param paths 于baseDir的相对路径
      * @param options 
      */
-    async generate(paths: string | string[], options: GenerateFileSchemaOptions = {}): Promise<GenerateResult> {
-        let output: GenerateResult = {};
+    async generate(paths: string | string[], options: GenerateFileSchemaOptions = {}): Promise<TSBufferProto> {
+        let output: TSBufferProto = {};
 
         if (typeof paths === 'string') {
             paths = [paths];
@@ -129,14 +129,12 @@ export class SchemaGenerator {
      * @param output 
      * @param compatibleResult 
      */
-    private _regenResultEncodeIds(output: GenerateResult, compatibleResult?: GenerateResult) {
-        for (let pathKey in output) {
-            for (let name in output[pathKey]) {
-                this._regenSchemaEncodeIds(
-                    output[pathKey][name],
-                    compatibleResult && compatibleResult[pathKey] && compatibleResult[pathKey][name]
-                );
-            }
+    private _regenResultEncodeIds(output: TSBufferProto, compatibleResult?: TSBufferProto) {
+        for (let schemaId in output) {
+            this._regenSchemaEncodeIds(
+                output[schemaId],
+                compatibleResult && compatibleResult[schemaId]
+            );
         }
     }
 
@@ -257,105 +255,107 @@ export class SchemaGenerator {
         };
     }
 
-    private async _addToOutput(astKey: string, name: string, schema: TSBufferSchema, output: GenerateResult, astCache: AstCache) {
+    private async _addToOutput(astKey: string, name: string, schema: TSBufferSchema, output: TSBufferProto, astCache: AstCache) {
         if (this.options.verbose) {
             console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`)
         }
 
-        if (!output[astKey]) {
-            output[astKey] = {};
+        let schemaId = astKey + '/' + name;
+        if (output[schemaId]) {
+            // Already added
+            return;
         }
 
-        if (!output[astKey][name]) {
-            output[astKey][name] = schema;
+        output[schemaId] = schema;
 
-            // 递归加入引用
-            let refs = SchemaUtil.getUsedReferences(schema);
+        // 递归加入引用
+        let refs = SchemaUtil.getUsedReferences(schema);
+        if (this.options.verbose) {
+            console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `refs.length=${refs.length}`)
+        }
+        for (let ref of refs) {
             if (this.options.verbose) {
-                console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `refs.length=${refs.length}`)
+                console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `target=${ref.target}`)
             }
-            for (let ref of refs) {
-                if (this.options.verbose) {
-                    console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `ref={path:${ref.path || ''}, targetName=${ref.targetName}}`)
-                }
 
-                let refPath: string;    // 实际引用路径
-                if (ref.path) {
-                    // 相对路径引用
-                    if (ref.path.startsWith('.')) {
-                        refPath = path.join(astKey, '..', ref.path)
-                    }
-                    // 绝对路径引用 resolveModule
-                    else {
-                        if (!this.options.resolveModule) {
-                            throw new Error(`Must specific a resolveModule handler for resolve "${ref.path}"`);
-                        }
-                        refPath = this.options.resolveModule(ref.path, this.options.baseDir);
-                    }
+            let refPath: string;
+            let pathMatch = ref.target.match(/(.*)\/(.*)$/);
+            if (pathMatch) {
+                // 相对路径引用
+                if (ref.target.startsWith('.')) {
+                    refPath = path.join(astKey, '..', pathMatch[1])
                 }
-                // 当前文件内引用
+                // 绝对路径引用 resolveModule
                 else {
-                    refPath = astKey;
-                }
-
-                if (this.options.verbose) {
-                    console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `AST "${refPath}" loading`);
-                }
-
-                // load ast
-                let refAst = await this._getAst(refPath, astCache);
-
-                if (this.options.verbose) {
-                    console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `AST "${refPath}" loaded`);
-                }
-
-                // 将要挨个寻找的refTarget
-                let refTargetNames: string[] = [];
-                // 文件内&Namespace内引用，从Namespace向外部 逐级寻找
-                if (!ref.path && name.indexOf('.') > -1) {
-                    // name: A.B.C.D
-                    // refTarget: E
-                    // A.B.C.E
-                    // A.B.E
-                    // A.E
-                    // E
-                    let nameArr = name.split('.');
-                    for (let i = nameArr.length - 1; i >= 1; --i) {
-                        let refName = '';
-                        for (let j = 0; j < i; ++j) {
-                            refName += `${nameArr[j]}.`
-                        }
-                        refTargetNames.push(refName + ref.targetName);
+                    if (!this.options.resolveModule) {
+                        throw new Error(`Must specific a resolveModule handler for resolve "${pathMatch[1]}"`);
                     }
+                    refPath = this.options.resolveModule(pathMatch[1], this.options.baseDir);
                 }
-                refTargetNames.push(ref.targetName);
+            }
+            // 当前文件内引用
+            else {
+                refPath = astKey;
+            }
 
-                // 确认的 refTargetName
-                let certainRefTargetName: string | undefined;
-                for (let refTargetName of refTargetNames) {
-                    if (refAst.ast[refTargetName]) {
-                        certainRefTargetName = refTargetName;
-                        break;
+            if (this.options.verbose) {
+                console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `AST "${refPath}" loading`);
+            }
+
+            // load ast
+            let refAst = await this._getAst(refPath, astCache);
+
+            if (this.options.verbose) {
+                console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `AST "${refPath}" loaded`);
+            }
+
+            // 将要挨个寻找的refTarget
+            let refTargetNames: string[] = [];
+            // 文件内&Namespace内引用，从Namespace向外部 逐级寻找
+            if (!pathMatch && name.indexOf('.') > 0) {
+                // name: A.B.C.D
+                // refTarget: E
+                // A.B.C.E
+                // A.B.E
+                // A.E
+                // E
+                let nameArr = name.split('.');
+                for (let i = nameArr.length - 1; i >= 1; --i) {
+                    let refName = '';
+                    for (let j = 0; j < i; ++j) {
+                        refName += `${nameArr[j]}.`
                     }
+                    refTargetNames.push(refName + ref.target);
                 }
+            }
 
-                if (this.options.verbose) {
-                    console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `refTargetName=${certainRefTargetName}`);
-                }
+            let refTargetName = pathMatch ? pathMatch[2] : ref.target;
+            refTargetNames.push(refTargetName);
 
-                if (certainRefTargetName) {
-                    // 修改源reference的targetName和path
-                    ref.path = refAst.astKey;
-                    ref.targetName = certainRefTargetName;
-                    // 将ref加入output
-                    await this._addToOutput(refAst.astKey, certainRefTargetName, refAst.ast[certainRefTargetName].schema, output, astCache);
+            // 确认的 refTargetName
+            let certainRefTargetName: string | undefined;
+            for (let refTargetName of refTargetNames) {
+                if (refAst.ast[refTargetName]) {
+                    certainRefTargetName = refTargetName;
+                    break;
                 }
-                else {
-                    console.debug('current', astKey, name);
-                    console.debug('ref', ref);
-                    console.debug('schema', schema);
-                    throw new Error(`Cannot find reference "${ref.targetName}" at: ${refPath}`);
-                }
+            }
+
+            if (this.options.verbose) {
+                console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `refTargetName=${certainRefTargetName}`);
+            }
+
+            if (certainRefTargetName) {
+                // 修改源reference的target
+                ref.target = refAst.astKey + '/' + certainRefTargetName;
+                // 将ref加入output
+                await this._addToOutput(refAst.astKey, certainRefTargetName, refAst.ast[certainRefTargetName].schema, output, astCache);
+            }
+            else {
+                console.debug('current', astKey, name);
+                console.debug('ref', ref);
+                console.debug('schema', schema);
+                throw new Error(`Cannot find reference target "${ref.target}"`);
             }
         }
     }
@@ -379,31 +379,19 @@ export interface GenerateFileSchemaOptions {
      * 生成结果：全兼容、部分兼容、完全不兼容
      * 兼容方式：旧字段ID不变，新字段换新ID
      */
-    compatibleResult?: GenerateResult;
+    compatibleResult?: TSBufferProto;
 }
 
 export interface OriginalSchemas {
     /**
      * 于baseDir的文件的相对路径 不带扩展名的
-     * 例如 a/b/c/index.ts 的key会是 a/b/c/index 不会是 a/b/c
+     * 例如 a/b/c/index.ts 下的 Test 的ID会是 a/b/c/index/Test
      */
-    [path: string]: {
-        [symbolName: string]: {
-            schema: TSBufferSchema,
-            // 经filter检测过是需要导出的使用类型
-            isFiltered: boolean,
-            // 有被其它任何Schema依赖
-            isDependency: boolean
-        }
-    };
-}
-
-export interface GenerateResult {
-    /**
-     * 于baseDir的文件的相对路径 不带扩展名的
-     * 例如 a/b/c/index.ts 的key会是 a/b/c/index 不会是 a/b/c
-     */
-    [path: string]: {
-        [symbolName: string]: TSBufferSchema
-    };
+    [schemaId: string]: {
+        schema: TSBufferSchema,
+        // 经filter检测过是需要导出的使用类型
+        isFiltered: boolean,
+        // 有被其它任何Schema依赖
+        isDependency: boolean
+    }
 }

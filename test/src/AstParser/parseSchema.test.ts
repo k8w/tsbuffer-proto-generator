@@ -141,7 +141,7 @@ describe('AstParser.parseSchema', function () {
                 isExport: true,
                 schema: {
                     type: 'Reference',
-                    targetName: 'Test4'
+                    target: 'Test4'
                 }
             }
         })
@@ -252,14 +252,14 @@ describe('AstParser.parseSchema', function () {
                             id: 0,
                             type: {
                                 type: 'Reference',
-                                targetName: "NsIf1"
+                                target: "NsIf1"
                             }
                         },
                         {
                             id: 1,
                             type: {
                                 type: 'Reference',
-                                targetName: "NsIf2"
+                                target: "NsIf2"
                             }
                         }
                     ]
@@ -289,7 +289,7 @@ describe('AstParser.parseSchema', function () {
                 isExport: false,
                 schema: {
                     type: 'Reference',
-                    targetName: 'Test'
+                    target: 'Test'
                 }
             },
             'NSTest.Test2': {
@@ -302,14 +302,14 @@ describe('AstParser.parseSchema', function () {
                 isExport: true,
                 schema: {
                     type: 'Reference',
-                    targetName: 'NSTest.Test'
+                    target: 'NSTest.Test'
                 }
             },
             'default.Test1': {
                 isExport: true,
                 schema: {
                     type: 'Reference',
-                    targetName: 'NSTest.Test1'
+                    target: 'NSTest.Test1'
                 }
             },
         })

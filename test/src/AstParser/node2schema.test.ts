@@ -291,41 +291,35 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
 
         assert.deepStrictEqual(AstParser.node2schema(nodes['TestA'].node, imports), {
             type: 'Reference',
-            path: 'abcd',
-            targetName: 'default'
+            target: 'abcd/default'
         });
         assert.deepStrictEqual(AstParser.node2schema(nodes['TestAA'].node, imports), {
             type: 'Reference',
-            path: 'abcd',
-            targetName: 'default.A'
+            target: 'abcd/default.A'
         });
         assert.deepStrictEqual(AstParser.node2schema(nodes['TestB'].node, imports), {
             type: 'Reference',
-            path: 'abcd',
-            targetName: 'B'
+            target: 'abcd/B'
         });
         assert.deepStrictEqual(AstParser.node2schema(nodes['TestD'].node, imports), {
             type: 'Reference',
-            path: 'abcd',
-            targetName: 'C'
+            target: 'abcd/C'
         });
         assert.deepStrictEqual(AstParser.node2schema(nodes['TestDD'].node, imports), {
             type: 'Reference',
-            path: 'abcd',
-            targetName: 'C.D'
+            target: 'abcd/C.D'
         });
         assert.deepStrictEqual(AstParser.node2schema(nodes['TestE'].node, imports), {
             type: 'Reference',
-            path: './eee',
-            targetName: 'E'
+            target: './eee/E'
         });
         assert.deepStrictEqual(AstParser.node2schema(nodes['Inside'].node, imports), {
             type: 'Reference',
-            targetName: 'TestA'
+            target: 'TestA'
         });
         assert.deepStrictEqual(AstParser.node2schema(nodes['Inside2'].node, imports), {
             type: 'Reference',
-            targetName: 'TestA.TestB'
+            target: 'TestA.TestB'
         });
     })
 
@@ -363,8 +357,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
                 id: 0,
                 type: {
                     type: 'Reference',
-                    path: 'proto',
-                    targetName: 'default'
+                    target: 'proto/default'
                 }
             }]
         });
@@ -376,16 +369,14 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
                     id: 0,
                     type: {
                         type: 'Reference',
-                        path: 'proto',
-                        targetName: 'Req'
+                        target: 'proto/Req'
                     }
                 },
                 {
                     id: 1,
                     type: {
                         type: 'Reference',
-                        path: 'proto',
-                        targetName: 'FuckReq'
+                        target: 'proto/FuckReq'
                     }
                 }
             ],
@@ -404,7 +395,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
                 id: 0,
                 type: {
                     type: 'Reference',
-                    targetName: 'BaseReq'
+                    target: 'BaseReq'
                 }
             }],
             properties: [{
@@ -596,7 +587,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
             type: 'IndexedAccess',
             objectType: {
                 type: 'Reference',
-                targetName: 'A'
+                target: 'A'
             },
             index: 'B'
         });
@@ -607,7 +598,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
                 type: 'IndexedAccess',
                 objectType: {
                     type: 'Reference',
-                    targetName: 'A'
+                    target: 'A'
                 },
                 index: 'B'
             },
@@ -645,14 +636,14 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
                     id: 0,
                     type: {
                         type: 'Reference',
-                        targetName: 'A'
+                        target: 'A'
                     }
                 },
                 {
                     id: 1,
                     type: {
                         type: 'Reference',
-                        targetName: 'B'
+                        target: 'B'
                     }
                 }
             ]
@@ -698,14 +689,14 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
                     id: 0,
                     type: {
                         type: 'Reference',
-                        targetName: 'A'
+                        target: 'A'
                     }
                 },
                 {
                     id: 1,
                     type: {
                         type: 'Reference',
-                        targetName: 'B'
+                        target: 'B'
                     }
                 }
             ]
@@ -755,13 +746,13 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
                             id: 0,
                             type: {
                                 type: 'Reference',
-                                targetName: 'A'
+                                target: 'A'
                             }
                         }, {
                             id: 1,
                             type: {
                                 type: 'Reference',
-                                targetName: 'B'
+                                target: 'B'
                             }
                         }]
                     }
@@ -774,13 +765,13 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
                             id: 0,
                             type: {
                                 type: 'Reference',
-                                targetName: 'C'
+                                target: 'C'
                             }
                         }, {
                             id: 1,
                             type: {
                                 type: 'Reference',
-                                targetName: 'D'
+                                target: 'D'
                             }
                         }]
                     }
@@ -799,13 +790,13 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
                             id: 0,
                             type: {
                                 type: 'Reference',
-                                targetName: 'A'
+                                target: 'A'
                             }
                         }, {
                             id: 1,
                             type: {
                                 type: 'Reference',
-                                targetName: 'B'
+                                target: 'B'
                             }
                         }]
                     }
@@ -818,13 +809,13 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
                             id: 0,
                             type: {
                                 type: 'Reference',
-                                targetName: 'C'
+                                target: 'C'
                             }
                         }, {
                             id: 1,
                             type: {
                                 type: 'Reference',
-                                targetName: 'D'
+                                target: 'D'
                             }
                         }]
                     }
@@ -846,7 +837,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
                 type: v,
                 target: {
                     type: 'Reference',
-                    targetName: 'AA'
+                    target: 'AA'
                 },
                 keys: ['a', 'b', 'c']
             });
@@ -873,7 +864,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
             type: 'Partial',
             target: {
                 type: 'Reference',
-                targetName: 'AA'
+                target: 'AA'
             }
         });
 
@@ -896,7 +887,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
             type: 'Overwrite',
             target: {
                 type: 'Reference',
-                targetName: 'AA'
+                target: 'AA'
             },
             overwrite: {
                 type: 'Interface',
@@ -924,7 +915,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
                 type: 'Pick',
                 target: {
                     type: 'Reference',
-                    targetName: 'AA'
+                    target: 'AA'
                 },
                 keys: ['a', 'b']
             },
@@ -932,7 +923,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
                 type: 'Omit',
                 target: {
                     type: 'Reference',
-                    targetName: 'BB'
+                    target: 'BB'
                 },
                 keys: ['b', 'c']
             }

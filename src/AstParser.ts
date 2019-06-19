@@ -274,14 +274,14 @@ export class AstParser {
         // BufferType
         if (ts.isTypeReferenceNode(node)) {
             let ref = this._getReferenceTypeSchema(node.typeName, imports);
-            if (!ref.path && BUFFER_TYPES.binarySearch(ref.targetName) > -1) {
+            if (BUFFER_TYPES.binarySearch(ref.target) > -1) {
                 let output: BufferTypeSchema = {
                     type: 'Buffer'
                 };
 
-                let targetName = ref.targetName as (typeof BUFFER_TYPES)[number];
-                if (targetName !== 'ArrayBuffer') {
-                    output.arrayType = targetName;
+                let target = ref.target as (typeof BUFFER_TYPES)[number];
+                if (target !== 'ArrayBuffer') {
+                    output.arrayType = target;
                 }
 
                 return output;
@@ -689,14 +689,13 @@ export class AstParser {
             importName[0] = importItem.targetName;
             return {
                 type: 'Reference',
-                path: importItem.path,
-                targetName: importName.join('.')
+                target: importItem.path + '/' + importName.join('.')
             }
         }
         else {
             let ref: Omit<ReferenceTypeSchema, 'path'> = {
                 type: 'Reference',
-                targetName: name
+                target: name
             };
             return ref as any;
         }
@@ -713,7 +712,7 @@ export class AstParser {
 
         let ref = this._getReferenceTypeSchema(node.typeName, imports);
         for (let name of referenceName) {
-            if (!ref.path && ref.targetName === name) {
+            if (ref.target.indexOf('/') === -1 && ref.target === name) {
                 return name as any;
             }
         }

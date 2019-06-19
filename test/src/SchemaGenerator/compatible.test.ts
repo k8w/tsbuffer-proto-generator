@@ -1,11 +1,11 @@
 import * as assert from 'assert';
 import { SchemaGenerator } from '../../../src/SchemaGenerator';
 import * as path from "path";
-import { GenerateResult } from '../../../src/SchemaGenerator';
 import { InterfaceTypeSchema } from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
 import { EnumTypeSchema } from 'tsbuffer-schema/src/schemas/EnumTypeSchema';
 import { IntersectionTypeSchema } from 'tsbuffer-schema/src/schemas/IntersectionTypeSchema';
 import { UnionTypeSchema } from 'tsbuffer-schema/src/schemas/UnionTypeSchema';
+import { TSBufferProto } from 'tsbuffer-schema';
 
 describe('SchemaGenerator.compatible', function () {
     it('simple enum', async function () {
@@ -13,21 +13,19 @@ describe('SchemaGenerator.compatible', function () {
             baseDir: path.resolve(__dirname, 'sources')
         });
 
-        let cp: GenerateResult = {
-            "SimpleEnum": {
-                "TestEnum": {
-                    "type": "Enum",
-                    "members": [
-                        {
-                            "id": 2,
-                            "value": '1'
-                        },
-                        {
-                            "id": 50,
-                            "value": '100'
-                        }
-                    ]
-                }
+        let cp: TSBufferProto = {
+            "SimpleEnum/TestEnum": {
+                "type": "Enum",
+                "members": [
+                    {
+                        "id": 2,
+                        "value": '1'
+                    },
+                    {
+                        "id": 50,
+                        "value": '100'
+                    }
+                ]
             }
         };
 
@@ -35,7 +33,7 @@ describe('SchemaGenerator.compatible', function () {
             compatibleResult: cp
         });
 
-        let sc = schemas['SimpleEnum']['TestEnum'] as EnumTypeSchema;
+        let sc = schemas['SimpleEnum/TestEnum'] as EnumTypeSchema;
         assert.deepStrictEqual(sc.members.map(v => [v.value, v.id]), [
             [0, 0],
             [1, 2],
@@ -59,16 +57,16 @@ describe('SchemaGenerator.compatible', function () {
             compatibleResult: result1
         });
 
-        assert.strictEqual(result1['EncodeId']['Test1'].type, 'Interface');
+        assert.strictEqual(result1['EncodeId/Test1'].type, 'Interface');
 
-        let if1 = result1['EncodeId']['Test1'] as InterfaceTypeSchema;
+        let if1 = result1['EncodeId/Test1'] as InterfaceTypeSchema;
         assert.deepStrictEqual(if1.properties!.map(v => [v.name, v.id]), [
             ['f0', 0],
             ['f1', 1],
             ['f2', 2]
         ])
 
-        let if2 = result2['EncodeId']['Test1'] as InterfaceTypeSchema;
+        let if2 = result2['EncodeId/Test1'] as InterfaceTypeSchema;
         assert.deepStrictEqual(if2.properties!.map(v => [v.name, v.id]), [
             ['f0', 0],
             // ['f1', 1],
@@ -81,7 +79,7 @@ describe('SchemaGenerator.compatible', function () {
         let result3 = await new SchemaGenerator({
             baseDir: path.resolve(__dirname, 'sources/encId2')
         }).generate('EncodeId.ts');
-        let if3 = result3['EncodeId']['Test1'] as InterfaceTypeSchema;
+        let if3 = result3['EncodeId/Test1'] as InterfaceTypeSchema;
         assert.deepStrictEqual(if3.properties!.map(v => [v.name, v.id]), [
             ['f0', 0],
             ['f2', 1],
@@ -95,14 +93,14 @@ describe('SchemaGenerator.compatible', function () {
         let result1 = (await new SchemaGenerator({
             baseDir: path.resolve(__dirname, 'sources/encId2')
         }).generate('EncodeId.ts'));
-        let if1 = (result1['EncodeId']['Test1'] as InterfaceTypeSchema).properties!.find(v => v.name === 'f3')!.type as InterfaceTypeSchema;
+        let if1 = (result1['EncodeId/Test1'] as InterfaceTypeSchema).properties!.find(v => v.name === 'f3')!.type as InterfaceTypeSchema;
 
         let result2 = await new SchemaGenerator({
             baseDir: path.resolve(__dirname, 'sources/encId3')
         }).generate('EncodeId.ts', {
             compatibleResult: result1
         });
-        let if2 = (result2['EncodeId']['Test1'] as InterfaceTypeSchema).properties!.find(v => v.name === 'f3')!.type as InterfaceTypeSchema;
+        let if2 = (result2['EncodeId/Test1'] as InterfaceTypeSchema).properties!.find(v => v.name === 'f3')!.type as InterfaceTypeSchema;
 
         assert.deepStrictEqual(if1.properties!.map(v => [v.name, v.id]), [
             ['f30', 0],
@@ -134,25 +132,23 @@ describe('SchemaGenerator.compatible', function () {
             compatibleResult: result1
         }));
 
-        let e1 = (result1['EncodeId']['Extend1'] as InterfaceTypeSchema).extends!;
-        let e2 = (result2['EncodeId']['Extend1'] as InterfaceTypeSchema).extends!;
-        let e3 = (result3['EncodeId']['Extend1'] as InterfaceTypeSchema).extends!;
+        let e1 = (result1['EncodeId/Extend1'] as InterfaceTypeSchema).extends!;
+        let e2 = (result2['EncodeId/Extend1'] as InterfaceTypeSchema).extends!;
+        let e3 = (result3['EncodeId/Extend1'] as InterfaceTypeSchema).extends!;
 
         assert.deepStrictEqual(e1, [
             {
                 id: 0,
                 type: {
                     type: 'Reference',
-                    targetName: 'EA',
-                    path: 'EncodeId'
+                    target: 'EncodeId/EA'
                 }
             },
             {
                 id: 1,
                 type: {
                     type: 'Reference',
-                    targetName: 'EB',
-                    path: 'EncodeId'
+                    target: 'EncodeId/EB'
                 }
             }
         ])
@@ -162,16 +158,14 @@ describe('SchemaGenerator.compatible', function () {
                 id: 1,
                 type: {
                     type: 'Reference',
-                    targetName: 'EB',
-                    path: 'EncodeId'
+                    target: 'EncodeId/EB'
                 }
             },
             {
                 id: 0,
                 type: {
                     type: 'Reference',
-                    targetName: 'EA',
-                    path: 'EncodeId'
+                    target: 'EncodeId/EA'
                 }
             }
         ]);
@@ -181,24 +175,21 @@ describe('SchemaGenerator.compatible', function () {
                 id: 2,
                 type: {
                     type: 'Reference',
-                    targetName: 'EB',
-                    path: 'ext'
+                    target: 'ext/EB'
                 }
             },
             {
                 id: 3,
                 type: {
                     type: 'Reference',
-                    targetName: 'EC',
-                    path: 'EncodeId'
+                    target: 'EncodeId/EC'
                 }
             },
             {
                 id: 0,
                 type: {
                     type: 'Reference',
-                    targetName: 'EA',
-                    path: 'EncodeId'
+                    target: 'EncodeId/EA'
                 }
             }
         ])
@@ -208,14 +199,14 @@ describe('SchemaGenerator.compatible', function () {
         let result1 = (await new SchemaGenerator({
             baseDir: path.resolve(__dirname, 'sources/encId2')
         }).generate('EncodeId.ts'));
-        let is1 = (result1['EncodeId']['Test1'] as InterfaceTypeSchema).properties!.find(v => v.name === 'f5')!.type as IntersectionTypeSchema;
+        let is1 = (result1['EncodeId/Test1'] as InterfaceTypeSchema).properties!.find(v => v.name === 'f5')!.type as IntersectionTypeSchema;
 
         let result2 = await new SchemaGenerator({
             baseDir: path.resolve(__dirname, 'sources/encId3')
         }).generate('EncodeId.ts', {
             compatibleResult: result1
         });
-        let is2 = (result2['EncodeId']['Test1'] as InterfaceTypeSchema).properties!.find(v => v.name === 'f5')!.type as IntersectionTypeSchema;
+        let is2 = (result2['EncodeId/Test1'] as InterfaceTypeSchema).properties!.find(v => v.name === 'f5')!.type as IntersectionTypeSchema;
 
         assert.deepStrictEqual(is1.members.map(v => v.id), [0, 1, 0]);
 
@@ -226,14 +217,14 @@ describe('SchemaGenerator.compatible', function () {
         let result1 = (await new SchemaGenerator({
             baseDir: path.resolve(__dirname, 'sources/encId2')
         }).generate('EncodeId.ts'));
-        let is1 = (result1['EncodeId']['Test1'] as InterfaceTypeSchema).properties!.find(v => v.name === 'f4')!.type as UnionTypeSchema;
+        let is1 = (result1['EncodeId/Test1'] as InterfaceTypeSchema).properties!.find(v => v.name === 'f4')!.type as UnionTypeSchema;
 
         let result2 = await new SchemaGenerator({
             baseDir: path.resolve(__dirname, 'sources/encId3')
         }).generate('EncodeId.ts', {
             compatibleResult: result1
         });
-        let is2 = (result2['EncodeId']['Test1'] as InterfaceTypeSchema).properties!.find(v => v.name === 'f4')!.type as UnionTypeSchema;
+        let is2 = (result2['EncodeId/Test1'] as InterfaceTypeSchema).properties!.find(v => v.name === 'f4')!.type as UnionTypeSchema;
 
         assert.deepStrictEqual(is1.members.map(v => v.id), [0, 1, 0]);
 

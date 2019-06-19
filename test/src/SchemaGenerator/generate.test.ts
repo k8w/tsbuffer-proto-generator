@@ -16,199 +16,185 @@ describe('SchemaGenerator.generate', function () {
         assert.deepStrictEqual(JSON.stringify(schemas, null, 2), JSON.stringify(schemas2, null, 2));
 
         let rightAnswer = {
-            "sources/Student": {
-                "default": {
-                    "type": "Reference",
-                    "path": "sources/Student",
-                    "targetName": "Student"
-                },
-                "Student": {
-                    "type": "Interface",
-                    "properties": [
-                        {
-                            "id": 0,
-                            "name": "name",
-                            "type": {
-                                "type": "String"
-                            }
-                        },
-                        {
-                            "id": 1,
-                            "name": "age",
-                            "type": {
-                                "type": "Number"
-                            }
-                        },
-                        {
-                            "id": 2,
-                            "name": "class",
-                            "type": {
-                                "type": "Array",
-                                "elementType": {
-                                    "type": "String"
-                                }
-                            }
-                        },
-                        {
-                            "id": 3,
-                            "name": "sex",
-                            "type": {
-                                "type": "IndexedAccess",
-                                "index": "sex",
-                                "objectType": {
-                                    "type": "Reference",
-                                    "path": "sources/NSPerson",
-                                    "targetName": "default.Person"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "Unused1": {
-                    "type": "Interface",
-                    "properties": [
-                        {
-                            "id": 0,
-                            "name": "value",
-                            "type": {
-                                "type": "String"
-                            }
-                        }
-                    ]
-                }
+            "sources/Student/default": {
+                "type": "Reference",
+                "target": "sources/Student/Student"
             },
-            "sources/NSPerson": {
-                "default.Person": {
-                    "type": "Reference",
-                    "path": "sources/NSPerson",
-                    "targetName": "NSPerson.Person"
-                },
-                "NSPerson.Person": {
-                    "type": "Union",
-                    "members": [
-                        {
-                            "id": 0,
-                            "type": {
-                                "type": "Reference",
-                                "path": "sources/NSPerson",
-                                "targetName": "NSPerson.Male"
-                            }
-                        },
-                        {
-                            "id": 1,
-                            "type": {
-                                "type": "Reference",
-                                "path": "sources/NSPerson",
-                                "targetName": "NSPerson.Female"
-                            }
+            "sources/Student/Student": {
+                "type": "Interface",
+                "properties": [
+                    {
+                        "id": 0,
+                        "name": "name",
+                        "type": {
+                            "type": "String"
                         }
-                    ]
-                },
-                "NSPerson.Male": {
-                    "type": "Interface",
-                    "extends": [
-                        {
-                            id: 0,
-                            type: {
-                                "type": "Reference",
-                                "path": "sources/Animal",
-                                "targetName": "default"
-                            }
+                    },
+                    {
+                        "id": 1,
+                        "name": "age",
+                        "type": {
+                            "type": "Number"
                         }
-                    ],
-                    "properties": [
-                        {
-                            "id": 0,
-                            "name": "maleXXX",
-                            "type": {
-                                "type": "Interface",
-                                "properties": [
-                                    {
-                                        "id": 0,
-                                        "name": "value",
-                                        "type": {
-                                            "type": "String"
-                                        }
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            "id": 1,
-                            "name": "sex",
-                            "type": {
-                                "type": "Literal",
-                                "literal": "m"
-                            }
-                        }
-                    ]
-                },
-                "NSPerson.Female": {
-                    "type": "Interface",
-                    "extends": [
-                        {
-                            id: 0,
-                            type: {
-                                "type": "Reference",
-                                "path": "sources/Animal",
-                                "targetName": "default"
-                            }
-                        }
-                    ],
-                    "properties": [
-                        {
-                            "id": 0,
-                            "name": "femaleXXX",
-                            "type": {
-                                "type": "Interface",
-                                "properties": [
-                                    {
-                                        "id": 0,
-                                        "name": "value",
-                                        "type": {
-                                            "type": "String"
-                                        }
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            "id": 1,
-                            "name": "sex",
-                            "type": {
-                                "type": "Literal",
-                                "literal": "f"
-                            }
-                        }
-                    ]
-                }
-            },
-            "sources/Animal": {
-                "default": {
-                    "type": "Reference",
-                    "path": "sources/Animal",
-                    "targetName": "Animal"
-                },
-                "Animal": {
-                    "type": "Interface",
-                    "properties": [
-                        {
-                            "id": 0,
-                            "name": "name",
-                            "type": {
+                    },
+                    {
+                        "id": 2,
+                        "name": "class",
+                        "type": {
+                            "type": "Array",
+                            "elementType": {
                                 "type": "String"
                             }
-                        },
-                        {
-                            "id": 1,
-                            "name": "age",
-                            "type": {
-                                "type": "Number"
-                            },
-                            "optional": true
                         }
-                    ]
-                }
+                    },
+                    {
+                        "id": 3,
+                        "name": "sex",
+                        "type": {
+                            "type": "IndexedAccess",
+                            "index": "sex",
+                            "objectType": {
+                                "type": "Reference",
+                                "target": "sources/NSPerson/default.Person"
+                            }
+                        }
+                    }
+                ]
+            },
+            "sources/Student/Unused1": {
+                "type": "Interface",
+                "properties": [
+                    {
+                        "id": 0,
+                        "name": "value",
+                        "type": {
+                            "type": "String"
+                        }
+                    }
+                ]
+            },
+            "sources/NSPerson/default.Person": {
+                "type": "Reference",
+                "target": "sources/NSPerson/NSPerson.Person"
+            },
+            "sources/NSPerson/NSPerson.Person": {
+                "type": "Union",
+                "members": [
+                    {
+                        "id": 0,
+                        "type": {
+                            "type": "Reference",
+                            "target": "sources/NSPerson/NSPerson.Male"
+                        }
+                    },
+                    {
+                        "id": 1,
+                        "type": {
+                            "type": "Reference",
+                            "target": "sources/NSPerson/NSPerson.Female"
+                        }
+                    }
+                ]
+            },
+            "sources/NSPerson/NSPerson.Male": {
+                "type": "Interface",
+                "extends": [
+                    {
+                        id: 0,
+                        type: {
+                            "type": "Reference",
+                            "target": "sources/Animal/default"
+                        }
+                    }
+                ],
+                "properties": [
+                    {
+                        "id": 0,
+                        "name": "maleXXX",
+                        "type": {
+                            "type": "Interface",
+                            "properties": [
+                                {
+                                    "id": 0,
+                                    "name": "value",
+                                    "type": {
+                                        "type": "String"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 1,
+                        "name": "sex",
+                        "type": {
+                            "type": "Literal",
+                            "literal": "m"
+                        }
+                    }
+                ]
+            },
+            "sources/NSPerson/NSPerson.Female": {
+                "type": "Interface",
+                "extends": [
+                    {
+                        id: 0,
+                        type: {
+                            "type": "Reference",
+                            "target": "sources/Animal/default"
+                        }
+                    }
+                ],
+                "properties": [
+                    {
+                        "id": 0,
+                        "name": "femaleXXX",
+                        "type": {
+                            "type": "Interface",
+                            "properties": [
+                                {
+                                    "id": 0,
+                                    "name": "value",
+                                    "type": {
+                                        "type": "String"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 1,
+                        "name": "sex",
+                        "type": {
+                            "type": "Literal",
+                            "literal": "f"
+                        }
+                    }
+                ]
+            },
+            "sources/Animal/default": {
+                "type": "Reference",
+                "target": "sources/Animal/Animal"
+            },
+            "sources/Animal/Animal": {
+                "type": "Interface",
+                "properties": [
+                    {
+                        "id": 0,
+                        "name": "name",
+                        "type": {
+                            "type": "String"
+                        }
+                    },
+                    {
+                        "id": 1,
+                        "name": "age",
+                        "type": {
+                            "type": "Number"
+                        },
+                        "optional": true
+                    }
+                ]
             }
         };
 
@@ -223,30 +209,25 @@ describe('SchemaGenerator.generate', function () {
         let schemas = await generator.generate('Test.ts');
 
         assert.deepStrictEqual(schemas, {
-            'Test': {
-                'Test': {
-                    type: 'Interface',
-                    extends: [
-                        {
-                            id: 0,
-                            type: {
-                                type: 'Reference',
-                                path: 'node_modules/test-nm/index',
-                                targetName: 'TestNodeModule'
-                            }
-                        }
-                    ]
-                }
-            },
-            'node_modules/test-nm/index': {
-                'TestNodeModule': {
-                    type: 'Interface',
-                    properties: [{
+            'Test/Test': {
+                type: 'Interface',
+                extends: [
+                    {
                         id: 0,
-                        name: 'base',
-                        type: { type: 'String' }
-                    }]
-                }
+                        type: {
+                            type: 'Reference',
+                            target: 'node_modules/test-nm/index/TestNodeModule'
+                        }
+                    }
+                ]
+            },
+            'node_modules/test-nm/index/TestNodeModule': {
+                type: 'Interface',
+                properties: [{
+                    id: 0,
+                    name: 'base',
+                    type: { type: 'String' }
+                }]
             }
         })
     })
