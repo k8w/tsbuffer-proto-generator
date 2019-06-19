@@ -1,6 +1,6 @@
 {
-  "name": "tsbuffer-schema-generator",
-  "version": "1.2.2",
+  "name": "tsbuffer-proto-generator",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,19 @@
     "coverage": "nyc mocha test/**/*.test.ts && start coverage\\index.html",
     "us": "npm i tsbuffer-schema@*"
   },
-  "author": "",
+  "author": "k8w",
+  "keywords": [
+    "tsbuffer",
+    "protobuf",
+    "typescript",
+    "serialize",
+    "json",
+    "schema",
+    "binary",
+    "protocol",
+    "websocket",
+    "k8w"
+  ],
   "license": "ISC",
   "dependencies": {
     "@types/node": "^11.13.2",

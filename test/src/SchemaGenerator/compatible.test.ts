@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { SchemaGenerator } from '../../../src/SchemaGenerator';
+import { ProtoGenerator } from '../../../src/ProtoGenerator';
 import * as path from "path";
 import { InterfaceTypeSchema } from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
 import { EnumTypeSchema } from 'tsbuffer-schema/src/schemas/EnumTypeSchema';
@@ -7,9 +7,9 @@ import { IntersectionTypeSchema } from 'tsbuffer-schema/src/schemas/Intersection
 import { UnionTypeSchema } from 'tsbuffer-schema/src/schemas/UnionTypeSchema';
 import { TSBufferProto } from 'tsbuffer-schema';
 
-describe('SchemaGenerator.compatible', function () {
+describe('ProtoGenerator.compatible', function () {
     it('simple enum', async function () {
-        let generator = new SchemaGenerator({
+        let generator = new ProtoGenerator({
             baseDir: path.resolve(__dirname, 'sources')
         });
 
@@ -47,11 +47,11 @@ describe('SchemaGenerator.compatible', function () {
     })
 
     it('interface add/del fields', async function () {
-        let result1 = (await new SchemaGenerator({
+        let result1 = (await new ProtoGenerator({
             baseDir: path.resolve(__dirname, 'sources/encId1')
         }).generate('EncodeId.ts'));
 
-        let result2 = await new SchemaGenerator({
+        let result2 = await new ProtoGenerator({
             baseDir: path.resolve(__dirname, 'sources/encId2')
         }).generate('EncodeId.ts', {
             compatibleResult: result1
@@ -76,7 +76,7 @@ describe('SchemaGenerator.compatible', function () {
             ['f5', 5]
         ])
 
-        let result3 = await new SchemaGenerator({
+        let result3 = await new ProtoGenerator({
             baseDir: path.resolve(__dirname, 'sources/encId2')
         }).generate('EncodeId.ts');
         let if3 = result3['EncodeId/Test1'] as InterfaceTypeSchema;
@@ -90,12 +90,12 @@ describe('SchemaGenerator.compatible', function () {
     })
 
     it('interface nest add/del', async function () {
-        let result1 = (await new SchemaGenerator({
+        let result1 = (await new ProtoGenerator({
             baseDir: path.resolve(__dirname, 'sources/encId2')
         }).generate('EncodeId.ts'));
         let if1 = (result1['EncodeId/Test1'] as InterfaceTypeSchema).properties!.find(v => v.name === 'f3')!.type as InterfaceTypeSchema;
 
-        let result2 = await new SchemaGenerator({
+        let result2 = await new ProtoGenerator({
             baseDir: path.resolve(__dirname, 'sources/encId3')
         }).generate('EncodeId.ts', {
             compatibleResult: result1
@@ -116,17 +116,17 @@ describe('SchemaGenerator.compatible', function () {
     })
 
     it('interface change extends', async function () {
-        let result1 = (await new SchemaGenerator({
+        let result1 = (await new ProtoGenerator({
             baseDir: path.resolve(__dirname, 'sources/encId1')
         }).generate('EncodeId.ts'));
 
-        let result2 = (await new SchemaGenerator({
+        let result2 = (await new ProtoGenerator({
             baseDir: path.resolve(__dirname, 'sources/encId2')
         }).generate('EncodeId.ts', {
             compatibleResult: result1
         }));
 
-        let result3 = (await new SchemaGenerator({
+        let result3 = (await new ProtoGenerator({
             baseDir: path.resolve(__dirname, 'sources/encId3')
         }).generate('EncodeId.ts', {
             compatibleResult: result1
@@ -196,12 +196,12 @@ describe('SchemaGenerator.compatible', function () {
     })
 
     it('Intersection add/del', async function () {
-        let result1 = (await new SchemaGenerator({
+        let result1 = (await new ProtoGenerator({
             baseDir: path.resolve(__dirname, 'sources/encId2')
         }).generate('EncodeId.ts'));
         let is1 = (result1['EncodeId/Test1'] as InterfaceTypeSchema).properties!.find(v => v.name === 'f5')!.type as IntersectionTypeSchema;
 
-        let result2 = await new SchemaGenerator({
+        let result2 = await new ProtoGenerator({
             baseDir: path.resolve(__dirname, 'sources/encId3')
         }).generate('EncodeId.ts', {
             compatibleResult: result1
@@ -214,12 +214,12 @@ describe('SchemaGenerator.compatible', function () {
     });
 
     it('Union add/del', async function () {
-        let result1 = (await new SchemaGenerator({
+        let result1 = (await new ProtoGenerator({
             baseDir: path.resolve(__dirname, 'sources/encId2')
         }).generate('EncodeId.ts'));
         let is1 = (result1['EncodeId/Test1'] as InterfaceTypeSchema).properties!.find(v => v.name === 'f4')!.type as UnionTypeSchema;
 
-        let result2 = await new SchemaGenerator({
+        let result2 = await new ProtoGenerator({
             baseDir: path.resolve(__dirname, 'sources/encId3')
         }).generate('EncodeId.ts', {
             compatibleResult: result1

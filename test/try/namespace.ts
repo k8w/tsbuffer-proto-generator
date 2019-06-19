@@ -1,5 +1,4 @@
 import * as ts from "typescript";
-import * as fs from "fs";
 
 let src = ts.createSourceFile(
     'test.ts',
@@ -23,6 +22,6 @@ src.forEachChild(v => {
 })
 
 namespace SDF {
-    
+
 }
 export default SDF;

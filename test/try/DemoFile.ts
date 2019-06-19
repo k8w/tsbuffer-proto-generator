@@ -1,4 +1,3 @@
-import { addSyntheticLeadingComment } from "typescript";
 
 export default interface Test1 {
     a: string,
@@ -54,5 +53,3 @@ export namespace Ns1 {
         export type Tany = any;
     }
 }
-
-type asdg = Ns1;

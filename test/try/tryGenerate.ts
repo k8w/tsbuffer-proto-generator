@@ -1,9 +1,9 @@
 import 'k8w-extend-native';
-import { SchemaGenerator } from '../../src/SchemaGenerator';
+import { ProtoGenerator } from '../../src/ProtoGenerator';
 import * as path from "path";
 
-new SchemaGenerator({
-    baseDir: path.resolve(__dirname, '../src/SchemaGenerator'),
+new ProtoGenerator({
+    baseDir: path.resolve(__dirname, '../src/ProtoGenerator'),
     verbose: true
 }).generate(['sources/Student.ts'])
     .then(v => {

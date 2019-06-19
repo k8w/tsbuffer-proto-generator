@@ -12,7 +12,7 @@ import { ArrayTypeSchema } from 'tsbuffer-schema/src/schemas/ArrayTypeSchema';
 import { IndexedAccessTypeSchema } from 'tsbuffer-schema/src/schemas/IndexedAccessTypeSchema';
 import { TupleTypeSchema } from 'tsbuffer-schema/src/schemas/TupleTypeSchema';
 
-export interface SchemaGeneratorOptions {
+export interface ProtoGeneratorOptions {
     /** Schema的根目录（路径在根目录以前的字符串会被相对掉） */
     baseDir: string;
 
@@ -34,9 +34,9 @@ import SchemaUtil from './SchemaUtil';
     resolveModule?: (importPath: string, baseDir: string) => string;
 }
 
-export class SchemaGenerator {
+export class ProtoGenerator {
 
-    protected readonly options: SchemaGeneratorOptions = {
+    protected readonly options: ProtoGeneratorOptions = {
         baseDir: '.',
         verbose: false,
         readFile: (v => fs.readFileSync(path.resolve(this.options.baseDir, v)).toString()),
@@ -44,7 +44,7 @@ export class SchemaGenerator {
         resolveModule: (importPath: string) => path.join('node_modules', importPath)
     };
 
-    constructor(options: Partial<SchemaGeneratorOptions> = {}) {
+    constructor(options: Partial<ProtoGeneratorOptions> = {}) {
         Object.assign(this.options, options);
     }
 

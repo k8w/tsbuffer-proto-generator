@@ -1,6 +1,6 @@
 import 'k8w-extend-native';
-import { SchemaGenerator } from './src/SchemaGenerator';
+import { ProtoGenerator } from './src/ProtoGenerator';
 import { EncodeIdUtil } from './src/EncodeIdUtil';
 
-export { SchemaGenerator as TSBufferSchemaGenerator };
+export { ProtoGenerator as TSBufferProtoGenerator };
 export { EncodeIdUtil };

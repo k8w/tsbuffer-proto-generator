@@ -1,10 +1,10 @@
 import * as assert from 'assert';
-import { SchemaGenerator } from '../../../src/SchemaGenerator';
+import { ProtoGenerator } from '../../../src/ProtoGenerator';
 import * as path from "path";
 
-describe('SchemaGenerator.generate', function () {
+describe('ProtoGenerator.generate', function () {
     it('specific filter', async function () {
-        let generator = new SchemaGenerator({
+        let generator = new ProtoGenerator({
             baseDir: path.resolve(__dirname)
         });
 
@@ -202,7 +202,7 @@ describe('SchemaGenerator.generate', function () {
     })
 
     it('node_modules', async function () {
-        let generator = new SchemaGenerator({
+        let generator = new ProtoGenerator({
             baseDir: path.resolve(__dirname, 'sources', 'nodeModule')
         });
 
