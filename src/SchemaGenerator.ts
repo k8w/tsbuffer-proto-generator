@@ -381,17 +381,3 @@ export interface GenerateFileSchemaOptions {
      */
     compatibleResult?: TSBufferProto;
 }
-
-export interface OriginalSchemas {
-    /**
-     * 于baseDir的文件的相对路径 不带扩展名的
-     * 例如 a/b/c/index.ts 下的 Test 的ID会是 a/b/c/index/Test
-     */
-    [schemaId: string]: {
-        schema: TSBufferSchema,
-        // 经filter检测过是需要导出的使用类型
-        isFiltered: boolean,
-        // 有被其它任何Schema依赖
-        isDependency: boolean
-    }
-}
