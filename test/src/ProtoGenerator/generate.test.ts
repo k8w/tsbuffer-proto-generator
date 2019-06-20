@@ -429,4 +429,13 @@ describe('ProtoGenerator.generate', function () {
             }
         })
     })
+
+    it('empty', async function () {
+        let generator = new ProtoGenerator({
+            baseDir: path.resolve(__dirname)
+        });
+
+        let schemas = await generator.generate('sources/empty.d.ts');
+        assert.deepStrictEqual(schemas, {});
+    })
 })

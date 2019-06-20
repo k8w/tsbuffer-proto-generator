@@ -243,7 +243,7 @@ export class ProtoGenerator {
                 break;
             }
             // 找不到文件，报错
-            if (!fileContent) {
+            if (fileContent === undefined) {
                 throw new Error(`Cannot resolve file: ` + path.resolve(this.options.baseDir, astKey))
             }
 
