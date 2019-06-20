@@ -222,7 +222,7 @@ export class ProtoGenerator {
 
     private async _getAst(pathOrKey: string, astCache: AstCache) {
         // GET AST KEY
-        let astKey = pathOrKey.replace(/\\/g, '/').replace(/\.ts$/, '');
+        let astKey = pathOrKey.replace(/\\/g, '/').replace(/(\.d)?\.ts$/, '');
 
         if (!astCache[astKey]) {
             // 按node规则解析文件
