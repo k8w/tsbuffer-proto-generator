@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "rm -rf dist && tsc -d && cp package.json LICENSE README.md dist/",
+    "build": "rm -rf dist && npx rollup -c && cp package.json LICENSE README.md dist/",
     "bp": "npm version patch && npm run build && cd dist && npm publish & cd..",
     "test": "mocha test/**/*.test.ts",
     "coverage": "nyc mocha test/**/*.test.ts && start coverage\\index.html",
@@ -36,6 +36,9 @@
     "@types/mocha": "^5.2.6",
     "mocha": "^6.1.4",
     "nyc": "^13.3.0",
+    "rollup": "^1.27.0",
+    "rollup-plugin-typescript2": "^0.25.2",
+    "rollup-plugin-uglify": "^6.0.3",
     "ts-node": "^8.0.3"
   },
   "nyc": {
