@@ -75,7 +75,7 @@ describe('AstParser.node2schema', function () {
     })
 
     it('NumberType: ScalarValueType', function () {
-        ['int', 'uint', 'int32', 'uint32', 'float', 'double', 'bigint', 'bigint64', 'biguint64'].forEach(v => {
+        ['int', 'uint', 'double', 'bigint', 'bigint64', 'biguint64'].forEach(v => {
             let src = CreateSource(`type Test = ${v};`);
             let nodes = AstParser.getFlattenNodes(src);
             let schema = AstParser.node2schema(nodes['Test'].node, {});
@@ -107,15 +107,15 @@ describe('AstParser.node2schema', function () {
         })
     })
 
-    it('ArrayType: Array<uint32>', function () {
-        let src = CreateSource(`type Test = Array<uint32>;`);
+    it('ArrayType: Array<uint>', function () {
+        let src = CreateSource(`type Test = Array<uint>;`);
         let nodes = AstParser.getFlattenNodes(src);
         let schema = AstParser.node2schema(nodes['Test'].node, {});
         assert.deepStrictEqual(schema, {
             type: 'Array',
             elementType: {
                 type: 'Number',
-                scalarType: 'uint32'
+                scalarType: 'uint'
             }
         })
     })
