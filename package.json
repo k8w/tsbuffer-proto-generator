@@ -1,6 +1,6 @@
 {
   "name": "tsbuffer-proto-generator",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -25,14 +25,14 @@
   ],
   "license": "ISC",
   "dependencies": {
-    "@types/node": "^11.13.2",
     "k8w-crypto": "^0.1.1",
     "k8w-extend-native": "*",
-    "tsbuffer-schema": "^1.0.0",
-    "tslib": "^1.9.3",
-    "typescript": "^3.7.2"
+    "tsbuffer-schema": "*",
+    "tslib": "*",
+    "typescript": "*"
   },
   "devDependencies": {
+    "@types/node": "*",
     "@types/mocha": "^5.2.6",
     "mocha": "^6.1.4",
     "nyc": "^13.3.0",
