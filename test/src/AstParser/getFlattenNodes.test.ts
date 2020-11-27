@@ -10,27 +10,27 @@ describe('AstParser.getFlattenNodes', function () {
             name: v[0],
             isExport: v[1].isExport
         })), [
-                {
-                    name: 'Test1',
-                    isExport: true
-                },
-                {
-                    name: 'Test2',
-                    isExport: false
-                },
-                {
-                    name: 'Test3',
-                    isExport: true
-                },
-                {
-                    name: 'Test4',
-                    isExport: false
-                },
-                {
-                    name: 'default',
-                    isExport: true
-                }
-            ]);
+            {
+                name: 'Test1',
+                isExport: true
+            },
+            {
+                name: 'Test2',
+                isExport: false
+            },
+            {
+                name: 'Test3',
+                isExport: true
+            },
+            {
+                name: 'Test4',
+                isExport: false
+            },
+            {
+                name: 'default',
+                isExport: true
+            }
+        ]);
     })
 
     it('normal top non export', function () {
@@ -39,23 +39,23 @@ describe('AstParser.getFlattenNodes', function () {
             name: v[0],
             isExport: v[1].isExport
         })), [
-                {
-                    name: 'Test1',
-                    isExport: false
-                },
-                {
-                    name: 'Test2',
-                    isExport: false
-                },
-                {
-                    name: 'Test3',
-                    isExport: false
-                },
-                {
-                    name: 'Test4',
-                    isExport: false
-                },
-            ]);
+            {
+                name: 'Test1',
+                isExport: false
+            },
+            {
+                name: 'Test2',
+                isExport: false
+            },
+            {
+                name: 'Test3',
+                isExport: false
+            },
+            {
+                name: 'Test4',
+                isExport: false
+            },
+        ]);
     })
 
     it('export default', function () {
@@ -75,15 +75,15 @@ export default TestName;
             name: v[0],
             isExport: v[1].isExport
         })), [
-                {
-                    name: 'TestName',
-                    isExport: false
-                },
-                {
-                    name: 'default',
-                    isExport: true
-                }
-            ])
+            {
+                name: 'TestName',
+                isExport: false
+            },
+            {
+                name: 'default',
+                isExport: true
+            }
+        ])
     })
 
     it('export { XXX }', function () {
@@ -103,11 +103,11 @@ export { TestName };
             name: v[0],
             isExport: v[1].isExport
         })), [
-                {
-                    name: 'TestName',
-                    isExport: true
-                }
-            ])
+            {
+                name: 'TestName',
+                isExport: true
+            }
+        ])
     })
 
     it('export { A as B }', function () {
@@ -127,15 +127,15 @@ export { TestName };
             name: v[0],
             isExport: v[1].isExport
         })), [
-                {
-                    name: 'TestName',
-                    isExport: false
-                },
-                {
-                    name: 'FuckU',
-                    isExport: true
-                }
-            ])
+            {
+                name: 'TestName',
+                isExport: false
+            },
+            {
+                name: 'FuckU',
+                isExport: true
+            }
+        ])
     })
 
     it('complex test', function () {
@@ -182,36 +182,36 @@ export {Out3};
             name: v[0],
             isExport: v[1].isExport
         })), [
-                {
-                    name: 'Internal1',
-                    isExport: false
-                },
-                {
-                    name: 'Outside1',
-                    isExport: true
-                },
-                {
-                    name: 'Out3',
-                    isExport: true
-                },
-                {
-                    name: 'TestNS.In1',
-                    isExport: false
-                },
+            {
+                name: 'Internal1',
+                isExport: false
+            },
+            {
+                name: 'Outside1',
+                isExport: true
+            },
+            {
+                name: 'Out3',
+                isExport: true
+            },
+            {
+                name: 'TestNS.In1',
+                isExport: false
+            },
 
-                {
-                    name: 'TestNS.Out1',
-                    isExport: true
-                },
-                {
-                    name: 'TestNS.Out2',
-                    isExport: true
-                },
-                {
-                    name: 'default',
-                    isExport: true
-                }
-            ])
+            {
+                name: 'TestNS.Out1',
+                isExport: true
+            },
+            {
+                name: 'TestNS.Out2',
+                isExport: true
+            },
+            {
+                name: 'default',
+                isExport: true
+            }
+        ])
     })
 
     it('export default interface', function () {
@@ -230,23 +230,23 @@ export {Out3};
             name: v[0],
             isExport: v[1].isExport
         })), [
-                {
-                    name: 'Test1',
-                    isExport: false
-                },
-                {
-                    name: 'Test2',
-                    isExport: true
-                },
-                {
-                    name: 'Test3',
-                    isExport: false
-                },
-                {
-                    name: 'default',
-                    isExport: true
-                }
-            ])
+            {
+                name: 'Test1',
+                isExport: false
+            },
+            {
+                name: 'Test2',
+                isExport: true
+            },
+            {
+                name: 'Test3',
+                isExport: false
+            },
+            {
+                name: 'default',
+                isExport: true
+            }
+        ])
     })
 
     it('export default NS', function () {
@@ -266,14 +266,14 @@ export {Out3};
             name: v[0],
             isExport: v[1].isExport
         })), [
-                {
-                    name: 'NSTest.Test',
-                    isExport: false
-                },
-                {
-                    name: 'default.Test',
-                    isExport: true
-                },
-            ])
+            {
+                name: 'NSTest.Test',
+                isExport: false
+            },
+            {
+                name: 'default.Test',
+                isExport: true
+            },
+        ])
     })
 })

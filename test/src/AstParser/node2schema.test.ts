@@ -929,4 +929,51 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
             }
         });
     })
+
+    it('{value: boolean|null}', function () {
+        let src = CreateSource(`export type Test5 = {value: boolean|null};`);
+        let imports = AstParser.getScriptImports(src);
+        let nodes = AstParser.getFlattenNodes(src);
+        console.log('xxxxxxxxxxxxx', JSON.stringify(AstParser.node2schema(nodes['Test5'].node, imports), null, 2))
+        assert.deepStrictEqual(AstParser.node2schema(nodes['Test5'].node, imports), {
+            "type": "Interface",
+            "properties": [
+                {
+                    "id": 0,
+                    "name": "value",
+                    "type": {
+                        "type": "Union",
+                        "members": [
+                            {
+                                "id": 0,
+                                "type": {
+                                    "type": "Boolean"
+                                }
+                            },
+                            {
+                                "id": 1,
+                                "type": {
+                                    "type": "Literal",
+                                    "literal": null
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        });
+        // assert.deepStrictEqual(Object.entries(res).map(v => ({
+        //     name: v[0],
+        //     isExport: v[1].isExport
+        // })), [
+        //     {
+        //         name: 'NSTest.Test',
+        //         isExport: false
+        //     },
+        //     {
+        //         name: 'default.Test',
+        //         isExport: true
+        //     },
+        // ])
+    })
 })

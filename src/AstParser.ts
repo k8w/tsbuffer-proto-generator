@@ -196,19 +196,24 @@ export class AstParser {
             }
             // export
             else if (ts.isExportDeclaration(v)) {
-                v.exportClause && v.exportClause.elements.forEach(elem => {
-                    // export { A as B }
-                    if (elem.propertyName) {
-                        output[elem.name.text] = {
-                            node: ts.createTypeReferenceNode(elem.propertyName.text, undefined),
-                            isExport: true
-                        };
-                    }
-                    // export { A }
-                    else {
-                        exportNames[elem.name.text] = true;
-                    }
-                })
+                if (!v.exportClause) {
+                    return;
+                }
+                if ('elements' in v.exportClause) {
+                    v.exportClause && v.exportClause.elements.forEach(elem => {
+                        // export { A as B }
+                        if (elem.propertyName) {
+                            output[elem.name.text] = {
+                                node: ts.createTypeReferenceNode(elem.propertyName.text, undefined),
+                                isExport: true
+                            };
+                        }
+                        // export { A }
+                        else {
+                            exportNames[elem.name.text] = true;
+                        }
+                    })
+                }
             }
             // export default
             else if (ts.isExportAssignment(v)) {
@@ -344,7 +349,7 @@ export class AstParser {
             let optionalStartIndex: number | undefined;
             let output: TupleTypeSchema = {
                 type: 'Tuple',
-                elementTypes: node.elementTypes.map((v, i) => {
+                elementTypes: node.elements.map((v, i) => {
                     if (v.kind === ts.SyntaxKind.OptionalType) {
                         if (optionalStartIndex === undefined) {
                             optionalStartIndex = i;
@@ -389,12 +394,11 @@ export class AstParser {
                     literal: false
                 }
             }
-        }
-        // Literal: null
-        else if (node.kind === ts.SyntaxKind.NullKeyword) {
-            return {
-                type: 'Literal',
-                literal: null
+            else if (node.literal.kind === ts.SyntaxKind.NullKeyword) {
+                return {
+                    type: 'Literal',
+                    literal: null
+                }
             }
         }
         // Literal: undefined
