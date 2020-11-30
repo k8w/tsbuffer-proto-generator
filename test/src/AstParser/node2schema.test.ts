@@ -878,6 +878,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
 
     it('Overwrite', function () {
         let src = CreateSource(`
+        import {Overwrite} from 'k8w-extend-native';
         type Test1 = Overwrite<AA, {a: string}>;
         `);
         let imports = AstParser.getScriptImports(src);

@@ -632,7 +632,7 @@ export class AstParser {
         }
 
         // OverwriteType
-        if (this._isLocalReference(node, imports, 'Overwrite')) {
+        if (ts.isTypeReferenceNode(node) && this._typeNameToString(node.typeName) === 'Overwrite') {
             if (!node.typeArguments || node.typeArguments.length != 2) {
                 throw new Error(`Illeagle OverwriteType: ` + node.getText());
             }
