@@ -1,11 +1,7 @@
 import * as assert from 'assert';
 import { ProtoGenerator } from '../../../src/ProtoGenerator';
 import * as path from "path";
-import { InterfaceTypeSchema } from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
-import { EnumTypeSchema } from 'tsbuffer-schema/src/schemas/EnumTypeSchema';
-import { IntersectionTypeSchema } from 'tsbuffer-schema/src/schemas/IntersectionTypeSchema';
-import { UnionTypeSchema } from 'tsbuffer-schema/src/schemas/UnionTypeSchema';
-import { TSBufferProto } from 'tsbuffer-schema';
+import { EnumTypeSchema, InterfaceTypeSchema, IntersectionTypeSchema, TSBufferProto, UnionTypeSchema } from 'tsbuffer-schema';
 
 describe('ProtoGenerator.compatible', function () {
     it('simple enum', async function () {

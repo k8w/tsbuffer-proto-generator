@@ -1,9 +1,5 @@
-import Crypto from 'k8w-crypto';
-import { TSBufferSchema } from 'tsbuffer-schema';
-import { EnumTypeSchema } from 'tsbuffer-schema/src/schemas/EnumTypeSchema';
-import { InterfaceTypeSchema } from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
-import { IntersectionTypeSchema } from 'tsbuffer-schema/src/schemas/IntersectionTypeSchema';
-import { UnionTypeSchema } from 'tsbuffer-schema/src/schemas/UnionTypeSchema';
+import { Crypto } from 'k8w-crypto';
+import { EnumTypeSchema, InterfaceTypeSchema, IntersectionTypeSchema, TSBufferSchema, UnionTypeSchema } from 'tsbuffer-schema';
 
 export class EncodeIdUtil {
 

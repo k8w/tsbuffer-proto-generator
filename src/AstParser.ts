@@ -1,13 +1,5 @@
-import { TSBufferSchema } from "tsbuffer-schema";
+import { BufferTypeSchema, InterfaceReference, InterfaceTypeSchema, OmitTypeSchema, PickTypeSchema, ReferenceTypeSchema, TSBufferSchema, TupleTypeSchema, TypeReference } from "tsbuffer-schema";
 import * as ts from "typescript";
-import { ReferenceTypeSchema } from "tsbuffer-schema/src/schemas/ReferenceTypeSchema";
-import { InterfaceTypeSchema } from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
-import { BufferTypeSchema } from 'tsbuffer-schema/src/schemas/BufferTypeSchema';
-import { PickTypeSchema } from 'tsbuffer-schema/src/schemas/PickTypeSchema';
-import { OmitTypeSchema } from 'tsbuffer-schema/src/schemas/OmitTypeSchema';
-import { InterfaceReference } from "tsbuffer-schema/src/InterfaceReference";
-import { TypeReference } from "tsbuffer-schema/src/TypeReference";
-import { TupleTypeSchema } from "tsbuffer-schema/src/schemas/TupleTypeSchema";
 
 const SCALAR_TYPES = [
     'int' as const,

@@ -1,0 +1,541 @@
+{
+  "metadata": {
+    "toolPackage": "@microsoft/api-extractor",
+    "toolVersion": "7.13.2",
+    "schemaVersion": 1003,
+    "oldestForwardsCompatibleVersion": 1001
+  },
+  "kind": "Package",
+  "canonicalReference": "tsbuffer-proto-generator!",
+  "docComment": "",
+  "name": "tsbuffer-proto-generator",
+  "members": [
+    {
+      "kind": "EntryPoint",
+      "canonicalReference": "tsbuffer-proto-generator!",
+      "name": "",
+      "members": [
+        {
+          "kind": "Class",
+          "canonicalReference": "tsbuffer-proto-generator!EncodeIdUtil:class",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class EncodeIdUtil "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "EncodeIdUtil",
+          "members": [
+            {
+              "kind": "Method",
+              "canonicalReference": "tsbuffer-proto-generator!EncodeIdUtil.genEncodeIds:member(1)",
+              "docComment": "/**\n * 将字符串映射为从0开始的自增数字，支持向后兼容\n *\n * @param values - object将视为 md5(JSON.stringify(obj))\n *\n * @param compatible - 需要向后兼容的结果集（新字段用新数字，旧字段ID不变）  @return 返回的顺序必定与values传入的顺序相同\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "static genEncodeIds(values: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "(string | number | object)[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", compatible?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "EncodeIdItem",
+                  "canonicalReference": "tsbuffer-proto-generator!EncodeIdItem:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "EncodeIdItem",
+                  "canonicalReference": "tsbuffer-proto-generator!EncodeIdItem:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": true,
+              "returnTypeTokenRange": {
+                "startIndex": 6,
+                "endIndex": 8
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "values",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  }
+                },
+                {
+                  "parameterName": "compatible",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 5
+                  }
+                }
+              ],
+              "name": "genEncodeIds"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "tsbuffer-proto-generator!EncodeIdUtil.getKey:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "static getKey(value: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string | number | object"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": true,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "value",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  }
+                }
+              ],
+              "name": "getKey"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "tsbuffer-proto-generator!EncodeIdUtil.getSchemaEncodeIds:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "static getSchemaEncodeIds(schema?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "TSBufferSchema",
+                  "canonicalReference": "tsbuffer-schema!TSBufferSchema:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "EncodeIdItem",
+                  "canonicalReference": "tsbuffer-proto-generator!EncodeIdItem:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[] | undefined"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": true,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 5
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "schema",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  }
+                }
+              ],
+              "name": "getSchemaEncodeIds"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "tsbuffer-proto-generator!EncodeIdUtil.getSchemaEncodeKeys:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "static getSchemaEncodeKeys(schema: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "TSBufferSchema",
+                  "canonicalReference": "tsbuffer-schema!TSBufferSchema:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": true,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "schema",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  }
+                }
+              ],
+              "name": "getSchemaEncodeKeys"
+            }
+          ],
+          "implementsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "tsbuffer-proto-generator!ProtoGeneratorOptions:interface",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface ProtoGeneratorOptions "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "ProtoGeneratorOptions",
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "tsbuffer-proto-generator!ProtoGeneratorOptions#baseDir:member",
+              "docComment": "/**\n * Schema的根目录（路径在根目录以前的字符串会被相对掉）\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "baseDir: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "baseDir",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "tsbuffer-proto-generator!ProtoGeneratorOptions#readFile:member",
+              "docComment": "/**\n * 读取文件的方法（用于扩展自定义文件系统）\n *\n * @param path - 于baseDir的相对路径\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readFile: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "(path: string) => "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<string> | string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "readFile",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 4
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "tsbuffer-proto-generator!ProtoGeneratorOptions#resolveModule:member",
+              "docComment": "/**\n * 解析Module的路径\n *\n * @param importPath - 例如 import xx from 'abcd/efg' 则 importPath 为 'abcd/efg' import SchemaUtil from './SchemaUtil';  @return 返回于baseDir的相对路径\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "resolveModule?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "(importPath: string, baseDir: string) => string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "resolveModule",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "tsbuffer-proto-generator!ProtoGeneratorOptions#verbose:member",
+              "docComment": "/**\n * console.debug 打印调试信息\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "verbose: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "verbose",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "tsbuffer-proto-generator!TSBufferProtoGenerator:class",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class ProtoGenerator "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "TSBufferProtoGenerator",
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "tsbuffer-proto-generator!TSBufferProtoGenerator:constructor(1)",
+              "docComment": "/**\n * Constructs a new instance of the `ProtoGenerator` class\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(options?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Partial",
+                  "canonicalReference": "!Partial:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "ProtoGeneratorOptions",
+                  "canonicalReference": "tsbuffer-proto-generator!ProtoGeneratorOptions:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "options",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 5
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "tsbuffer-proto-generator!TSBufferProtoGenerator#generate:member(1)",
+              "docComment": "/**\n * 生成FileSchema 对modules（例如node_modules）的引用，也会全部转为相对路径引用\n *\n * @param paths - 于baseDir的相对路径\n *\n * @param options - \n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "generate(paths: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string | string[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", options?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "GenerateFileSchemaOptions",
+                  "canonicalReference": "tsbuffer-proto-generator!GenerateFileSchemaOptions:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "TSBufferProto",
+                  "canonicalReference": "tsbuffer-schema!TSBufferProto:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 9
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "paths",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  }
+                },
+                {
+                  "parameterName": "options",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  }
+                }
+              ],
+              "name": "generate"
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "tsbuffer-proto-generator!TSBufferProtoGenerator#options:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "protected readonly options: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "ProtoGeneratorOptions",
+                  "canonicalReference": "tsbuffer-proto-generator!ProtoGeneratorOptions:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "options",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            }
+          ],
+          "implementsTokenRanges": []
+        }
+      ]
+    }
+  ]
+}

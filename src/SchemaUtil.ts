@@ -1,5 +1,4 @@
-import { TSBufferSchema } from 'tsbuffer-schema';
-import { ReferenceTypeSchema } from 'tsbuffer-schema/src/schemas/ReferenceTypeSchema';
+import { ReferenceTypeSchema, TSBufferSchema } from 'tsbuffer-schema';
 
 export class SchemaUtil {
     /**

@@ -1,16 +1,10 @@
-import { TSBufferSchema, TSBufferProto } from 'tsbuffer-schema';
+import { TSBufferSchema, TSBufferProto, ArrayTypeSchema, IndexedAccessTypeSchema, InterfaceTypeSchema, IntersectionTypeSchema, TupleTypeSchema, UnionTypeSchema } from 'tsbuffer-schema';
 import * as fs from "fs";
 import * as path from "path";
 import { AstParser } from './AstParser';
 import { AstParserResult } from './AstParser';
 import { SchemaUtil } from './SchemaUtil';
 import { EncodeIdUtil } from './EncodeIdUtil';
-import { InterfaceTypeSchema } from 'tsbuffer-schema/src/schemas/InterfaceTypeSchema';
-import { IntersectionTypeSchema } from 'tsbuffer-schema/src/schemas/IntersectionTypeSchema';
-import { UnionTypeSchema } from 'tsbuffer-schema/src/schemas/UnionTypeSchema';
-import { ArrayTypeSchema } from 'tsbuffer-schema/src/schemas/ArrayTypeSchema';
-import { IndexedAccessTypeSchema } from 'tsbuffer-schema/src/schemas/IndexedAccessTypeSchema';
-import { TupleTypeSchema } from 'tsbuffer-schema/src/schemas/TupleTypeSchema';
 
 export interface ProtoGeneratorOptions {
     /** Schema的根目录（路径在根目录以前的字符串会被相对掉） */
