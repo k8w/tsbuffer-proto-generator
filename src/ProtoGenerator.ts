@@ -1,6 +1,6 @@
 import { TSBufferSchema, TSBufferProto, ArrayTypeSchema, IndexedAccessTypeSchema, InterfaceTypeSchema, IntersectionTypeSchema, TupleTypeSchema, UnionTypeSchema } from 'tsbuffer-schema';
-import * as fs from "fs";
-import * as path from "path";
+import fs from "fs";
+import path from "path";
 import { AstParser } from './AstParser';
 import { AstParserResult } from './AstParser';
 import { SchemaUtil } from './SchemaUtil';

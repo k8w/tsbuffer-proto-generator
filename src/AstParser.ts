@@ -1,5 +1,5 @@
 import { BufferTypeSchema, InterfaceReference, InterfaceTypeSchema, OmitTypeSchema, PickTypeSchema, ReferenceTypeSchema, TSBufferSchema, TupleTypeSchema, TypeReference } from "tsbuffer-schema";
-import * as ts from "typescript";
+import ts from "typescript";
 
 const SCALAR_TYPES = [
     'int' as const,
