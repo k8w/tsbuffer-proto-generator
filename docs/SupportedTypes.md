@@ -8,13 +8,14 @@ Supported Type List
     - TypedArray: `Uint8Array` ...
 - BooleanType
     - `boolean`
-- NonPrimitiveType
+- ObjectType
     - `object`
 - NumberType
     - `number`
-    - ExtraScalarTypes
-        - `[u]int8~64`
-        - `float32/64`
+    - specific scalar types
+        - `int`, `uint`
+        - `bigint64`, `biguint64`
+        - `double` (default)
 - StringType
     - `string`
 - ArrayType
@@ -44,10 +45,10 @@ Supported Type List
 - IntersectionType
     - `A & B`
 - PickType
-    - `Pick<A, 'a'|'b'>
+    - `Pick<A, 'a'|'b'>`
 - PartialType
     - `Partial<A>`
 - OmitType
-    - `OmitType<A, 'a'|'b'>`
+    - `Omit<A, 'a'|'b'>`
 - OverwriteType
-    - `OverwriteType<A, {a: string}>`
+    - `Overwrite<A, {a: string}>`

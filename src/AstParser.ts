@@ -289,10 +289,10 @@ export class AstParser {
             }
         }
 
-        // NonPrimitiveType
+        // ObjectType
         if (node.kind === ts.SyntaxKind.ObjectKeyword) {
             return {
-                type: 'NonPrimitive'
+                type: 'Object'
             }
         }
 
