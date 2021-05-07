@@ -10,6 +10,12 @@
 export declare class EncodeIdUtil 
 ```
 
+## Properties
+
+|  Property | Modifiers | Type | Description |
+|  --- | --- | --- | --- |
+|  [onGenCanOptimized?](./tsbuffer-proto-generator.encodeidutil.ongencanoptimized.md) | <code>static</code> | () =&gt; void | <i>(Optional)</i> 当 <code>genEncodeIds</code> 存在会增大编码大小的冗余时的事件 |
+
 ## Methods
 
 |  Method | Modifiers | Description |

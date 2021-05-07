@@ -1,7 +1,7 @@
 {
   "metadata": {
     "toolPackage": "@microsoft/api-extractor",
-    "toolVersion": "7.15.0",
+    "toolVersion": "7.15.1",
     "schemaVersion": 1004,
     "oldestForwardsCompatibleVersion": 1001,
     "tsdocConfig": {
@@ -185,7 +185,7 @@
             {
               "kind": "Method",
               "canonicalReference": "tsbuffer-proto-generator!EncodeIdUtil.genEncodeIds:member(1)",
-              "docComment": "/**\n * 将字符串映射为从0开始的自增数字，支持向后兼容\n *\n * @param values - object将视为 md5(JSON.stringify(obj))\n *\n * @param compatible - 需要向后兼容的结果集（新字段用新数字，旧字段ID不变）  @return 返回的顺序必定与values传入的顺序相同\n */\n",
+              "docComment": "/**\n * 将字符串映射为从0开始的自增数字，支持向后兼容\n *\n * @param values - object将视为 md5(JSON.stringify(obj))\n *\n * @param compatible - 需要向后兼容的结果集（新字段用新数字，旧字段ID不变）\n *\n * @returns 返回的顺序必定与values传入的顺序相同\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -393,6 +393,33 @@
                 }
               ],
               "name": "getSchemaEncodeKeys"
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "tsbuffer-proto-generator!EncodeIdUtil.onGenCanOptimized:member",
+              "docComment": "/**\n * 当 `genEncodeIds` 存在会增大编码大小的冗余时的事件\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "static onGenCanOptimized?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "() => void"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "onGenCanOptimized",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": true
             }
           ],
           "implementsTokenRanges": []
@@ -474,7 +501,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "tsbuffer-proto-generator!ProtoGeneratorOptions#resolveModule:member",
-              "docComment": "/**\n * 解析Module的路径\n *\n * @param importPath - 例如 import xx from 'abcd/efg' 则 importPath 为 'abcd/efg' import SchemaUtil from './SchemaUtil';  @return 返回于baseDir的相对路径\n */\n",
+              "docComment": "/**\n * 解析Module的路径\n *\n * @param importPath - 例如 import xx from 'abcd/efg' 则 importPath 为 'abcd/efg'\n *\n * @returns 返回于baseDir的相对路径\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",

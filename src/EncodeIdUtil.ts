@@ -10,7 +10,7 @@ export class EncodeIdUtil {
     * 将字符串映射为从0开始的自增数字，支持向后兼容
     * @param values object将视为 md5(JSON.stringify(obj))
     * @param compatible 需要向后兼容的结果集（新字段用新数字，旧字段ID不变）
-    * @return 返回的顺序必定与values传入的顺序相同
+    * @returns 返回的顺序必定与values传入的顺序相同
     */
     static genEncodeIds(values: (string | number | object)[], compatible?: EncodeIdItem[]): EncodeIdItem[] {
         // 新元素的起始ID，有compatible则从其下一个开始，全新模式从0开始

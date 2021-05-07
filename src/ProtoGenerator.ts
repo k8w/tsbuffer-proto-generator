@@ -22,8 +22,7 @@ export interface ProtoGeneratorOptions {
     /**
      * 解析Module的路径
      * @param importPath 例如 import xx from 'abcd/efg' 则 importPath 为 'abcd/efg'
-import SchemaUtil from './SchemaUtil';
-     * @return 返回于baseDir的相对路径
+     * @returns 返回于baseDir的相对路径
      */
     resolveModule?: (importPath: string, baseDir: string) => string;
 }

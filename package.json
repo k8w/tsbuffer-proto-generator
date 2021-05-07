@@ -1,6 +1,6 @@
 {
   "name": "tsbuffer-proto-generator",
-  "version": "1.4.1-dev.1",
+  "version": "1.4.1-dev.2",
   "description": "",
   "main": "index.cjs",
   "exports": {
