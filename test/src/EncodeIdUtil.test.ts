@@ -30,4 +30,25 @@ describe('EncodeIdUtil', function () {
             { key: 'j', id: 11 },
         ])
     })
+
+    it('onGenCanOptimized', function () {
+        let can = false;
+        EncodeIdUtil.onGenCanOptimized = () => {
+            can = true;
+        }
+
+        EncodeIdUtil.genEncodeIds(['d', 'e', 'f', 'a', 'b', 'c', 'h', 'i', 'j'], [
+            { key: 'd', id: 1 },
+            { key: 'a', id: 4 },
+            { key: 'b', id: 99 }
+        ]);
+        assert.strictEqual(can, false);
+
+        EncodeIdUtil.genEncodeIds(['d', 'e', 'f', 'a', 'b', 'c', 'h', 'i', 'j'], [
+            { key: 'd', id: 1 },
+            { key: 'a', id: 4 },
+            { key: 'b', id: 125 }
+        ]);
+        assert.strictEqual(can, true);
+    })
 })

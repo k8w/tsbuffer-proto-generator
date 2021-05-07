@@ -3,6 +3,9 @@ import { EnumTypeSchema, InterfaceTypeSchema, IntersectionTypeSchema, TSBufferSc
 
 export class EncodeIdUtil {
 
+    /** 当 `genEncodeIds` 存在会增大编码大小的冗余时的事件  */
+    static onGenCanOptimized?: () => void;
+
     /**
     * 将字符串映射为从0开始的自增数字，支持向后兼容
     * @param values object将视为 md5(JSON.stringify(obj))
@@ -24,6 +27,13 @@ export class EncodeIdUtil {
             existKeyId[key] = id;
             output.push({ key: key, id: id })
         }
+
+        // 可优化节点>=128,16384
+        let uniqueKeyLength = keys.distinct().length;
+        if (nextId >= 128 && uniqueKeyLength <= 128 || nextId >= 16384 && uniqueKeyLength <= 16384) {
+            this.onGenCanOptimized?.();
+        }
+
         return output;
     }
 
