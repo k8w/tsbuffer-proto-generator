@@ -31,14 +31,14 @@ describe('ProtoGenerator.compatible', function () {
 
         let sc = schemas['SimpleEnum/TestEnum'] as EnumTypeSchema;
         assert.deepStrictEqual(sc.members.map(v => [v.value, v.id]), [
-            [0, 0],
+            [0, 51],
             [1, 2],
-            [2, 1],
+            [2, 52],
             [100, 50],
-            [101, 3],
-            [102, 4],
-            ['GGG', 5],
-            ['HHH', 6]
+            [101, 53],
+            [102, 54],
+            ['GGG', 55],
+            ['HHH', 56]
         ]);
     })
 

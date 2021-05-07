@@ -20,14 +20,14 @@ describe('EncodeIdUtil', function () {
         ]);
         assert.deepStrictEqual(result1, [
             { key: 'd', id: 1 },
-            { key: 'e', id: 0 },
-            { key: 'f', id: 2 },
+            { key: 'e', id: 6 },
+            { key: 'f', id: 7 },
             { key: 'a', id: 4 },
             { key: 'b', id: 5 },
-            { key: 'c', id: 3 },
-            { key: 'h', id: 6 },
-            { key: 'i', id: 7 },
-            { key: 'j', id: 8 },
+            { key: 'c', id: 8 },
+            { key: 'h', id: 9 },
+            { key: 'i', id: 10 },
+            { key: 'j', id: 11 },
         ])
     })
 })

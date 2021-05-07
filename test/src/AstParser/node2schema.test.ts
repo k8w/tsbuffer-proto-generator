@@ -53,12 +53,12 @@ describe('AstParser.node2schema', function () {
         })
     });
 
-    it('NonPrimitiveType', function () {
+    it('ObjectType', function () {
         let src = CreateSource(`type Test = object;`);
         let nodes = AstParser.getFlattenNodes(src);
         let schema = AstParser.node2schema(nodes['Test'].node, {});
         assert.deepStrictEqual(schema, {
-            type: 'NonPrimitive'
+            type: 'Object'
         })
     });
 

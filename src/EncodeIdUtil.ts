@@ -10,56 +10,21 @@ export class EncodeIdUtil {
     * @return 返回的顺序必定与values传入的顺序相同
     */
     static genEncodeIds(values: (string | number | object)[], compatible?: EncodeIdItem[]): EncodeIdItem[] {
-        let strs = values.map(v => this.getKey(v));
-        // 无compatible 按传入顺序生成
-        if (!compatible) {
-            let keyId: { [key: string]: number } = {};
-            let output: EncodeIdItem[] = [];
-            let id = 0;
-            for (let str of strs) {
-                // 已有这个key
-                if (keyId[str] === undefined) {
-                    keyId[str] = id++;
-                }
-                output.push({ key: str, id: keyId[str] });
-            }
-            return output;
+        // 新元素的起始ID，有compatible则从其下一个开始，全新模式从0开始
+        let nextId = 0;
+        let existKeyId: { [key: string]: number } = compatible ? compatible.reduce((prev, next) => {
+            prev[next.key] = next.id;
+            nextId = Math.max(nextId, next.id + 1);
+            return prev;
+        }, {} as { [key: string]: number }) : {};
+        let output: EncodeIdItem[] = [];
+        let keys = values.map(v => this.getKey(v));
+        for (let key of keys) {
+            let id = existKeyId[key] ?? nextId++;
+            existKeyId[key] = id;
+            output.push({ key: key, id: id })
         }
-
-        // 有compatible
-        // 先生成可用最小ID列表
-        let existIds = compatible.map(v => v.id).orderBy(v => v);
-        let keyOrderedCp = compatible.orderBy(v => v.key);    // 按key排序，便于之后二分查找
-        let availableIds = Array.from({ length: existIds.last() + 1 }, (v, i) => i);
-        for (let i = 0; i < existIds.length; ++i) {
-            availableIds.removeOne(existIds[i]);
-        }
-        // 已有ID是顺序且严密的，直接从下一个开始编码
-        availableIds.push(existIds.last() + 1);
-
-        // 防止有重复的2个Key 用于去重的临时变量
-        let keyId: { [key: string]: number } = {};
-
-        return strs.map(str => {
-            // 除非Key重复 用已有结果
-            if (keyId[str] === undefined) {
-                // Compatible中已有，用已有的
-                let compatibleIndex = keyOrderedCp.binarySearch(str, v => v.key);
-                if (compatibleIndex > -1) {
-                    keyId[str] = keyOrderedCp[compatibleIndex].id;
-                }
-                // 否则 选择下一个最小可用ID
-                else {
-                    let id = availableIds.shift()!;
-                    if (availableIds.length === 0) {
-                        availableIds.push(id + 1)
-                    }
-                    keyId[str] = id;
-                }
-            }
-
-            return { key: str, id: keyId[str] };
-        });
+        return output;
     }
 
     static getSchemaEncodeKeys(schema: TSBufferSchema): string[] {
