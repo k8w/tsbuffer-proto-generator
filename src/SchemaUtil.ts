@@ -44,6 +44,7 @@ export class SchemaUtil {
                 case 'Pick':
                 case 'Omit':
                 case 'Partial':
+                case 'NonNullable':
                     output = output.concat(this.getUsedReferences(schema.target));
                     break;
                 case 'Overwrite':
