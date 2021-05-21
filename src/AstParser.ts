@@ -646,6 +646,22 @@ export class AstParser {
             };
         }
 
+        // DateType
+        if (ts.isTypeReferenceNode(node) && this._typeNameToString(node.typeName) === 'Date' && !imports['Date']) {
+            return {
+                type: 'Date'
+            }
+        }
+
+        // NonNullableType
+        if (ts.isTypeReferenceNode(node) && this._typeNameToString(node.typeName) === 'NonNullable' && !imports['NonNullable']) {
+            let target = this.node2schema(node.typeArguments![0], imports);
+            return {
+                type: 'NonNullable',
+                target: target
+            }
+        }
+
         // ReferenceType放最后（因为很多其它类型，如Pick等，都解析为ReferenceNode）
         if (ts.isTypeReferenceNode(node)) {
             return this._getReferenceTypeSchema(node.typeName, imports);

@@ -53,3 +53,15 @@ export namespace Ns1 {
         export type Tany = any;
     }
 }
+
+export type V1 = string | null | undefined;
+export interface V2 {
+    value1?: string;
+    value2?: string | null;
+}
+export interface TestNew {
+    time: Date,
+    value: NonNullable<V1>,
+    value1: NonNullable<V2['value1']>,
+    value2: NonNullable<V2['value2']>
+}

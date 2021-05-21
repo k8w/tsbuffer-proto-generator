@@ -122,47 +122,47 @@ describe('AstParser.node2schema', function () {
         assert.deepStrictEqual(AstParser.node2schema(
             AstParser.getFlattenNodes(src)['Test'].node, {}
         ), {
-                type: 'Tuple',
-                elementTypes: [
-                    { type: 'Number' },
-                    {
-                        type: 'Array',
-                        elementType: {
-                            type: 'Boolean'
-                        }
-                    },
-                    {
-                        type: 'Array',
-                        elementType: {
-                            type: 'Array',
-                            elementType: {
-                                type: 'String'
-                            }
-                        }
-                    },
-                    {
-                        type: 'Tuple',
-                        elementTypes: [
-                            { type: 'Number' },
-                            { type: 'Number' }
-                        ]
+            type: 'Tuple',
+            elementTypes: [
+                { type: 'Number' },
+                {
+                    type: 'Array',
+                    elementType: {
+                        type: 'Boolean'
                     }
-                ]
-            })
+                },
+                {
+                    type: 'Array',
+                    elementType: {
+                        type: 'Array',
+                        elementType: {
+                            type: 'String'
+                        }
+                    }
+                },
+                {
+                    type: 'Tuple',
+                    elementTypes: [
+                        { type: 'Number' },
+                        { type: 'Number' }
+                    ]
+                }
+            ]
+        })
 
         src = CreateSource(`type Test = [number, any, string?, boolean?]`);
         assert.deepStrictEqual(AstParser.node2schema(
             AstParser.getFlattenNodes(src)['Test'].node, {}
         ), {
-                type: 'Tuple',
-                elementTypes: [
-                    { type: 'Number' },
-                    { type: 'Any' },
-                    { type: 'String' },
-                    { type: 'Boolean' },
-                ],
-                optionalStartIndex: 2
-            })
+            type: 'Tuple',
+            elementTypes: [
+                { type: 'Number' },
+                { type: 'Any' },
+                { type: 'String' },
+                { type: 'Boolean' },
+            ],
+            optionalStartIndex: 2
+        })
     })
 
     it('LiteralType: String', function () {
@@ -973,5 +973,78 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
         //         isExport: true
         //     },
         // ])
+    })
+
+    it('Date', function () {
+        let src = CreateSource(`type Test = Date;`);
+        let nodes = AstParser.getFlattenNodes(src);
+        let schema = AstParser.node2schema(nodes['Test'].node, {});
+        assert.deepStrictEqual(schema, {
+            type: 'Date'
+        })
+    })
+
+    it('NonNullable', function () {
+        let src = CreateSource(`
+export type V1 = string | null | undefined;
+export interface V2 {
+    value1?: string;
+    value2?: string | null;
+}
+export interface NonNullableWrapper {
+    value: NonNullable<V1>,
+    value1: NonNullable<V2['value1']>,
+    value2: NonNullable<V2['value2']>
+}
+        `);
+        let imports = AstParser.getScriptImports(src);
+        let nodes = AstParser.getFlattenNodes(src);
+
+        assert.deepStrictEqual(AstParser.node2schema(nodes['NonNullableWrapper'].node, imports), {
+            type: 'Interface',
+            "properties": [
+                {
+                    "id": 0,
+                    "name": "value",
+                    "type": {
+                        "type": "NonNullable",
+                        "target": {
+                            "type": "Reference",
+                            "target": "V1"
+                        }
+                    }
+                },
+                {
+                    "id": 1,
+                    "name": "value1",
+                    "type": {
+                        "type": "NonNullable",
+                        "target": {
+                            "type": "IndexedAccess",
+                            "index": "value1",
+                            "objectType": {
+                                "type": "Reference",
+                                "target": "V2"
+                            }
+                        }
+                    }
+                },
+                {
+                    "id": 2,
+                    "name": "value2",
+                    "type": {
+                        "type": "NonNullable",
+                        "target": {
+                            "type": "IndexedAccess",
+                            "index": "value2",
+                            "objectType": {
+                                "type": "Reference",
+                                "target": "V2"
+                            }
+                        }
+                    }
+                }
+            ]
+        });
     })
 })

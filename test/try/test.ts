@@ -1,15 +1,17 @@
-import { AstParser } from '../../src/AstParser';
-import * as ts from "typescript";
 import * as fs from "fs";
+import 'k8w-extend-native';
+import * as path from "path";
+import * as ts from "typescript";
+import { AstParser } from '../../src/AstParser';
 
 let src = ts.createSourceFile(
-    'DemoFile.ts',
-    fs.readFileSync('DemoFile.ts').toString(),
+    path.resolve(__dirname, 'DemoFile.ts'),
+    fs.readFileSync(path.resolve(__dirname, 'DemoFile.ts')).toString(),
     ts.ScriptTarget.ES3,
     true,
     ts.ScriptKind.TS
 );
 
 let res = AstParser.getFlattenNodes(src);
-
-console.log(Object.keys(res))
+let schema = AstParser.node2schema(res['TestNew'].node, {});
+console.log(JSON.stringify(schema, null, 2))
