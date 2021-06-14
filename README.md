@@ -1,4 +1,6 @@
 TSBuffer Proto Generator
 ---
 
-See [TSBuffer](https://github.com/k8w/tsbuffer)
+Proto generator for [TSBuffer](https://github.com/k8w/tsbuffer).
+
+Read TypeScript source files, and generate TSBuffer Schemas automatically.
