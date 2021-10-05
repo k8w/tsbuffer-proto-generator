@@ -4,7 +4,7 @@
 
 ## ProtoGeneratorOptions.verbose property
 
-console.debug 打印调试信息
+logger?.debug 打印调试信息
 
 <b>Signature:</b>
 

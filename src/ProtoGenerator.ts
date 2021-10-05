@@ -1,16 +1,15 @@
-import { TSBufferSchema, TSBufferProto, ArrayTypeSchema, IndexedAccessTypeSchema, InterfaceTypeSchema, IntersectionTypeSchema, TupleTypeSchema, UnionTypeSchema } from 'tsbuffer-schema';
 import fs from "fs";
 import path from "path";
-import { AstParser } from './AstParser';
-import { AstParserResult } from './AstParser';
-import { SchemaUtil } from './SchemaUtil';
+import { ArrayTypeSchema, IndexedAccessTypeSchema, InterfaceTypeSchema, IntersectionTypeSchema, TSBufferProto, TSBufferSchema, TupleTypeSchema, UnionTypeSchema } from 'tsbuffer-schema';
+import { AstParser, AstParserResult } from './AstParser';
 import { EncodeIdUtil } from './EncodeIdUtil';
-
+import { Logger } from './Logger';
+import { SchemaUtil } from './SchemaUtil';
 export interface ProtoGeneratorOptions {
     /** Schema的根目录（路径在根目录以前的字符串会被相对掉） */
     baseDir: string;
 
-    /** console.debug 打印调试信息 */
+    /** logger?.debug 打印调试信息 */
     verbose: boolean;
 
     /** 
@@ -49,6 +48,7 @@ export class ProtoGenerator {
      */
     async generate(paths: string | string[], options: GenerateFileSchemaOptions = {}): Promise<TSBufferProto> {
         let output: TSBufferProto = {};
+        const logger = 'logger' in options ? options.logger : console;
 
         if (typeof paths === 'string') {
             paths = [paths];
@@ -58,8 +58,8 @@ export class ProtoGenerator {
         paths = paths.map(v => path.relative(this.options.baseDir, path.resolve(this.options.baseDir, v)));
 
         if (this.options.verbose) {
-            console.debug('[TSBuffer Schema Generator]', 'generate', `Ready to generate ${paths.length} file`);
-            console.debug('[TSBuffer Schema Generator]', 'generate', 'BaseDir=' + this.options.baseDir);
+            logger?.debug('[TSBuffer Schema Generator]', 'generate', `Ready to generate ${paths.length} file`);
+            logger?.debug('[TSBuffer Schema Generator]', 'generate', 'BaseDir=' + this.options.baseDir);
         }
 
         // AST CACHE
@@ -73,14 +73,14 @@ export class ProtoGenerator {
         // 生成这几个文件的AST CACHE
         for (let filepath of paths) {
             if (this.options.verbose) {
-                console.debug('[TSBuffer Schema Generator]', 'generate', 'FilePath=' + filepath)
+                logger?.debug('[TSBuffer Schema Generator]', 'generate', 'FilePath=' + filepath)
             }
 
             // 生成该文件的AST
-            let { ast, astKey } = await this._getAst(filepath, astCache);
+            let { ast, astKey } = await this._getAst(filepath, astCache, logger);
 
             if (this.options.verbose) {
-                console.debug('[TSBuffer Schema Generator]', 'generate', 'AstLoaded Key=' + astKey);
+                logger?.debug('[TSBuffer Schema Generator]', 'generate', 'AstLoaded Key=' + astKey);
             }
 
             // Filter出要被导出的
@@ -91,7 +91,7 @@ export class ProtoGenerator {
                     isExport: ast[name].isExport
                 })) {
                     if (this.options.verbose) {
-                        console.debug('[TSBuffer Schema Generator]', 'generate', `filter passed: ${name} at ${filepath}`);
+                        logger?.debug('[TSBuffer Schema Generator]', 'generate', `filter passed: ${name} at ${filepath}`);
                     }
 
                     // 记入exports
@@ -101,10 +101,10 @@ export class ProtoGenerator {
                     exports[filepath].push(name);
 
                     // 加入output
-                    await this._addToOutput(astKey, name, ast[name].schema, output, astCache);
+                    await this._addToOutput(astKey, name, ast[name].schema, output, astCache, logger);
                 }
                 else if (this.options.verbose) {
-                    console.debug('[TSBuffer Schema Generator]', 'generate', `filter not passed: ${name} at ${filepath}`);
+                    logger?.debug('[TSBuffer Schema Generator]', 'generate', `filter not passed: ${name} at ${filepath}`);
                 }
             }
         }
@@ -213,7 +213,7 @@ export class ProtoGenerator {
         }
     }
 
-    private async _getAst(pathOrKey: string, astCache: AstCache) {
+    private async _getAst(pathOrKey: string, astCache: AstCache, logger: Logger | undefined) {
         // GET AST KEY
         let astKey = pathOrKey.replace(/\\/g, '/').replace(/(\.d)?\.ts$/, '');
 
@@ -226,7 +226,7 @@ export class ProtoGenerator {
                     fileContent = await this.options.readFile(astKey + postfix);
                 }
                 // 出错 继续加载下一个
-                catch{
+                catch {
                     continue;
                 }
                 // 未出错 说明解析到文件
@@ -240,7 +240,7 @@ export class ProtoGenerator {
                 throw new Error(`Cannot resolve file: ` + path.resolve(this.options.baseDir, astKey))
             }
 
-            astCache[astKey] = AstParser.parseScript(fileContent);
+            astCache[astKey] = AstParser.parseScript(fileContent, logger);
         }
         return {
             ast: astCache[astKey],
@@ -248,9 +248,9 @@ export class ProtoGenerator {
         };
     }
 
-    private async _addToOutput(astKey: string, name: string, schema: TSBufferSchema, output: TSBufferProto, astCache: AstCache) {
+    private async _addToOutput(astKey: string, name: string, schema: TSBufferSchema, output: TSBufferProto, astCache: AstCache, logger: Logger | undefined) {
         if (this.options.verbose) {
-            console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`)
+            logger?.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`)
         }
 
         let schemaId = astKey + '/' + name;
@@ -264,11 +264,11 @@ export class ProtoGenerator {
         // 递归加入引用
         let refs = SchemaUtil.getUsedReferences(schema);
         if (this.options.verbose) {
-            console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `refs.length=${refs.length}`)
+            logger?.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `refs.length=${refs.length}`)
         }
         for (let ref of refs) {
             if (this.options.verbose) {
-                console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `target=${ref.target}`)
+                logger?.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `target=${ref.target}`)
             }
 
             let refPath: string;
@@ -292,14 +292,14 @@ export class ProtoGenerator {
             }
 
             if (this.options.verbose) {
-                console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `AST "${refPath}" loading`);
+                logger?.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `AST "${refPath}" loading`);
             }
 
             // load ast
-            let refAst = await this._getAst(refPath, astCache);
+            let refAst = await this._getAst(refPath, astCache, logger);
 
             if (this.options.verbose) {
-                console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `AST "${refPath}" loaded`);
+                logger?.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `AST "${refPath}" loaded`);
             }
 
             // 将要挨个寻找的refTarget
@@ -335,19 +335,19 @@ export class ProtoGenerator {
             }
 
             if (this.options.verbose) {
-                console.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `refTargetName=${certainRefTargetName}`);
+                logger?.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `refTargetName=${certainRefTargetName}`);
             }
 
             if (certainRefTargetName) {
                 // 修改源reference的target
                 ref.target = refAst.astKey + '/' + certainRefTargetName;
                 // 将ref加入output
-                await this._addToOutput(refAst.astKey, certainRefTargetName, refAst.ast[certainRefTargetName].schema, output, astCache);
+                await this._addToOutput(refAst.astKey, certainRefTargetName, refAst.ast[certainRefTargetName].schema, output, astCache, logger);
             }
             else {
-                console.debug('current', astKey, name);
-                console.debug('ref', ref);
-                console.debug('schema', schema);
+                logger?.debug('current', astKey, name);
+                logger?.debug('ref', ref);
+                logger?.debug('schema', schema);
                 throw new Error(`Cannot find reference target "${ref.target}"`);
             }
         }
@@ -373,4 +373,10 @@ export interface GenerateFileSchemaOptions {
      * 兼容方式：旧字段ID不变，新字段换新ID
      */
     compatibleResult?: TSBufferProto;
+
+    /**
+     * logger to log
+     * @defaultValue console
+     */
+    logger?: Logger | undefined;
 }

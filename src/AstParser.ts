@@ -1,5 +1,6 @@
 import { BufferTypeSchema, InterfaceReference, InterfaceTypeSchema, OmitTypeSchema, PickTypeSchema, ReferenceTypeSchema, TSBufferSchema, TupleTypeSchema, TypeReference } from "tsbuffer-schema";
 import ts from "typescript";
+import { Logger } from "./Logger";
 
 const SCALAR_TYPES = [
     'int' as const,
@@ -33,7 +34,7 @@ export class AstParser {
      * 解析整个文件
      * @param content 
      */
-    static parseScript(content: string): AstParserResult {
+    static parseScript(content: string, logger?: Logger | undefined): AstParserResult {
         let output: AstParserResult = {};
 
         // 1. get flatten nodes
@@ -53,7 +54,7 @@ export class AstParser {
         for (let name in nodes) {
             output[name] = {
                 isExport: nodes[name].isExport,
-                schema: this.node2schema(nodes[name].node, imports)
+                schema: this.node2schema(nodes[name].node, imports, logger)
             }
         }
 
@@ -252,7 +253,7 @@ export class AstParser {
         return output;
     }
 
-    static node2schema(node: ts.Node, imports: ScriptImports): TSBufferSchema {
+    static node2schema(node: ts.Node, imports: ScriptImports, logger?: Logger | undefined): TSBufferSchema {
         // 去除外层括弧
         while (ts.isParenthesizedTypeNode(node)) {
             node = node.type;
@@ -325,14 +326,14 @@ export class AstParser {
         if (ts.isArrayTypeNode(node)) {
             return {
                 type: 'Array',
-                elementType: this.node2schema(node.elementType, imports)
+                elementType: this.node2schema(node.elementType, imports, logger)
             }
         }
         // ArrayType: Array<T>
         if (this._isLocalReference(node, imports, 'Array') && node.typeArguments) {
             return {
                 type: 'Array',
-                elementType: this.node2schema(node.typeArguments[0], imports)
+                elementType: this.node2schema(node.typeArguments[0], imports, logger)
             }
         }
 
@@ -346,10 +347,10 @@ export class AstParser {
                         if (optionalStartIndex === undefined) {
                             optionalStartIndex = i;
                         }
-                        return this.node2schema((v as ts.OptionalTypeNode).type, imports)
+                        return this.node2schema((v as ts.OptionalTypeNode).type, imports, logger)
                     }
                     else {
-                        return this.node2schema(v, imports)
+                        return this.node2schema(v, imports, logger)
                     }
                 })
             }
@@ -431,7 +432,7 @@ export class AstParser {
                             }
                         }
                         else {
-                            console.log('initializer', v.initializer);
+                            logger?.log('initializer', v.initializer);
                             throw new Error('Enum initializer type error: ' + ts.SyntaxKind[v.initializer.kind]);
                         }
                     }
@@ -474,7 +475,7 @@ export class AstParser {
                     let property: NonNullable<InterfaceTypeSchema['properties']>[number] = {
                         id: i,
                         name: member.name.text,
-                        type: this.node2schema(member.type, imports)
+                        type: this.node2schema(member.type, imports, logger)
                     }
 
                     // optional
@@ -500,7 +501,7 @@ export class AstParser {
 
                     indexSignature = {
                         keyType: keyType,
-                        type: this.node2schema(member.type, imports)
+                        type: this.node2schema(member.type, imports, logger)
                     }
                 }
             })
@@ -543,7 +544,7 @@ export class AstParser {
                     throw new Error(`Error indexType literal: ${node.getText()}`)
                 }
 
-                let objectType = this.node2schema(node.objectType, imports);
+                let objectType = this.node2schema(node.objectType, imports, logger);
                 if (!this._isInterfaceReference(objectType)) {
                     throw new Error(`ObjectType for IndexedAccess must be interface or interface reference`);
                 }
@@ -569,7 +570,7 @@ export class AstParser {
                 type: 'Union',
                 members: node.types.map((v, i) => ({
                     id: i,
-                    type: this.node2schema(v, imports)
+                    type: this.node2schema(v, imports, logger)
                 }))
             }
         }
@@ -580,7 +581,7 @@ export class AstParser {
                 type: 'Intersection',
                 members: node.types.map((v, i) => ({
                     id: i,
-                    type: this.node2schema(v, imports)
+                    type: this.node2schema(v, imports, logger)
                 }))
             }
         }
@@ -593,14 +594,14 @@ export class AstParser {
                 throw new Error(`Illeagle ${nodeName}Type: ` + node.getText());
             }
 
-            let target = this.node2schema(node.typeArguments[0], imports);
+            let target = this.node2schema(node.typeArguments[0], imports, logger);
             if (!this._isInterfaceReference(target)) {
                 throw new Error(`Illeagle ${nodeName}Type: ` + node.getText())
             }
 
             let output: PickTypeSchema | OmitTypeSchema = Object.assign({
                 target: target,
-                keys: this._getPickKeys(this.node2schema(node.typeArguments[1], imports))
+                keys: this._getPickKeys(this.node2schema(node.typeArguments[1], imports, logger), logger)
             }, nodeName === 'Pick' ? { type: 'Pick' as const } : { type: 'Omit' as const })
 
             return output;
@@ -612,7 +613,7 @@ export class AstParser {
                 throw new Error('Illeagle PartialType: ' + node.getText());
             }
 
-            let target = this.node2schema(node.typeArguments[0], imports);
+            let target = this.node2schema(node.typeArguments[0], imports, logger);
             if (!this._isInterfaceReference(target)) {
                 throw new Error('Illeagle PartialType: ' + node.getText())
             }
@@ -629,12 +630,12 @@ export class AstParser {
                 throw new Error(`Illeagle OverwriteType: ` + node.getText());
             }
 
-            let target = this.node2schema(node.typeArguments[0], imports);
+            let target = this.node2schema(node.typeArguments[0], imports, logger);
             if (!this._isInterfaceReference(target)) {
                 throw new Error(`Illeagle OverwriteType: ` + node.getText())
             }
 
-            let overwrite = this.node2schema(node.typeArguments[1], imports);
+            let overwrite = this.node2schema(node.typeArguments[1], imports, logger);
             if (!this._isInterfaceReference(overwrite)) {
                 throw new Error(`Illeagle OverwriteType: ` + node.getText())
             }
@@ -655,7 +656,7 @@ export class AstParser {
 
         // NonNullableType
         if (ts.isTypeReferenceNode(node) && this._typeNameToString(node.typeName) === 'NonNullable' && !imports['NonNullable']) {
-            let target = this.node2schema(node.typeArguments![0], imports);
+            let target = this.node2schema(node.typeArguments![0], imports, logger);
             return {
                 type: 'NonNullable',
                 target: target
@@ -667,7 +668,7 @@ export class AstParser {
             return this._getReferenceTypeSchema(node.typeName, imports);
         }
 
-        console.debug(node)
+        logger?.debug(node)
         throw new Error('Cannot resolve type: ' + node.getText());
     }
 
@@ -729,18 +730,18 @@ export class AstParser {
         return false;
     }
 
-    private static _getPickKeys(schema: TSBufferSchema): string[] {
+    private static _getPickKeys(schema: TSBufferSchema, logger: Logger | undefined): string[] {
         if (schema.type === 'Union') {
-            return schema.members.map(v => this._getPickKeys(v.type)).reduce((prev, next) => prev.concat(next), []).distinct();
+            return schema.members.map(v => this._getPickKeys(v.type, logger)).reduce((prev, next) => prev.concat(next), []).distinct();
         }
         else if (schema.type === 'Intersection') {
-            return schema.members.map(v => this._getPickKeys(v.type)).reduce((prev, next) => prev.filter(v => next.indexOf(v) > -1));
+            return schema.members.map(v => this._getPickKeys(v.type, logger)).reduce((prev, next) => prev.filter(v => next.indexOf(v) > -1));
         }
         else if (schema.type === 'Literal') {
             return ['' + schema.literal];
         }
         else {
-            console.log('Illeagle Pick keys:', schema);
+            logger?.log('Illeagle Pick keys:', schema);
             throw new Error('Illeagle Pick keys: ' + JSON.stringify(schema, null, 2));
         }
     }

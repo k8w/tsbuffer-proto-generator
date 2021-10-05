@@ -17,5 +17,5 @@ export interface ProtoGeneratorOptions
 |  [baseDir](./tsbuffer-proto-generator.protogeneratoroptions.basedir.md) | string | Schema的根目录（路径在根目录以前的字符串会被相对掉） |
 |  [readFile](./tsbuffer-proto-generator.protogeneratoroptions.readfile.md) | (path: string) =&gt; Promise&lt;string&gt; \| string | 读取文件的方法（用于扩展自定义文件系统） |
 |  [resolveModule?](./tsbuffer-proto-generator.protogeneratoroptions.resolvemodule.md) | (importPath: string, baseDir: string) =&gt; string | <i>(Optional)</i> 解析Module的路径 |
-|  [verbose](./tsbuffer-proto-generator.protogeneratoroptions.verbose.md) | boolean | console.debug 打印调试信息 |
+|  [verbose](./tsbuffer-proto-generator.protogeneratoroptions.verbose.md) | boolean | logger?.debug 打印调试信息 |
 

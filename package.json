@@ -1,6 +1,6 @@
 {
   "name": "tsbuffer-proto-generator",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "",
   "main": "index.cjs",
   "exports": {
@@ -34,19 +34,19 @@
     "k8w-crypto": "^0.2.0",
     "k8w-extend-native": "^1.4.5",
     "tsbuffer-schema": "^2.0.2",
-    "typescript": "^4.3.2",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.1",
+    "typescript": "^4.4.3"
   },
   "devDependencies": {
-    "@microsoft/api-documenter": "^7.13.20",
-    "@microsoft/api-extractor": "^7.16.1",
-    "@types/mocha": "^8.2.2",
-    "@types/node": "^15.12.2",
-    "mocha": "^9.0.0",
+    "@microsoft/api-documenter": "^7.13.55",
+    "@microsoft/api-extractor": "^7.18.12",
+    "@types/mocha": "^8.2.3",
+    "@types/node": "^15.14.9",
+    "mocha": "^9.1.2",
     "nyc": "^15.1.0",
-    "rollup": "^2.52.0",
+    "rollup": "^2.58.0",
     "rollup-plugin-typescript2": "^0.30.0",
-    "ts-node": "^10.0.0"
+    "ts-node": "^10.2.1"
   },
   "nyc": {
     "extension": [
