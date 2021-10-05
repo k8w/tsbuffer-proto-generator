@@ -356,7 +356,7 @@ export class ProtoGenerator {
                 logger?.debug('current', astKey, name);
                 logger?.debug('ref', ref);
                 logger?.debug('schema', schema);
-                throw new Error(`Cannot find reference target '${ref.target}'\n    at ${astKey}/${name}`);
+                throw new Error(`Cannot find reference target '${ref.target}'\n    at ${name}\n    at ${astKey}`);
             }
         }
     }
