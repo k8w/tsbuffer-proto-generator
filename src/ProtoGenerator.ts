@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from 'fs';
+import path from 'path';
 import { ArrayTypeSchema, IndexedAccessTypeSchema, InterfaceTypeSchema, IntersectionTypeSchema, TSBufferProto, TSBufferSchema, TupleTypeSchema, UnionTypeSchema } from 'tsbuffer-schema';
 import { AstParser, AstParserResult } from './AstParser';
 import { EncodeIdUtil } from './EncodeIdUtil';
@@ -289,7 +289,7 @@ export class ProtoGenerator {
                 // 绝对路径引用 resolveModule
                 else {
                     if (!this.options.resolveModule) {
-                        throw new Error(`Must specific a resolveModule handler for resolve "${pathMatch[1]}"`);
+                        throw new Error(`Must specific a resolveModule handler for resolve '${pathMatch[1]}'`);
                     }
                     refPath = this.options.resolveModule(pathMatch[1], this.options.baseDir);
                 }
@@ -300,14 +300,14 @@ export class ProtoGenerator {
             }
 
             if (this.options.verbose) {
-                logger?.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `AST "${refPath}" loading`);
+                logger?.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `AST '${refPath}' loading`);
             }
 
             // load ast
             let refAst = await this._getAst(refPath, astCache, logger);
 
             if (this.options.verbose) {
-                logger?.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `AST "${refPath}" loaded`);
+                logger?.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `AST '${refPath}' loaded`);
             }
 
             // 将要挨个寻找的refTarget
@@ -356,7 +356,7 @@ export class ProtoGenerator {
                 logger?.debug('current', astKey, name);
                 logger?.debug('ref', ref);
                 logger?.debug('schema', schema);
-                throw new Error(`Cannot find reference target "${ref.target}"\n    at ${astKey}/${name}`);
+                throw new Error(`Cannot find reference target '${ref.target}'\n    at ${astKey}/${name}`);
             }
         }
     }

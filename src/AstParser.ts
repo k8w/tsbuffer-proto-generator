@@ -1,6 +1,6 @@
-import { BufferTypeSchema, InterfaceReference, InterfaceTypeSchema, OmitTypeSchema, PickTypeSchema, ReferenceTypeSchema, TSBufferSchema, TupleTypeSchema, TypeReference } from "tsbuffer-schema";
-import ts from "typescript";
-import { Logger } from "./Logger";
+import { BufferTypeSchema, InterfaceReference, InterfaceTypeSchema, OmitTypeSchema, PickTypeSchema, ReferenceTypeSchema, TSBufferSchema, TupleTypeSchema, TypeReference } from 'tsbuffer-schema';
+import ts from 'typescript';
+import { Logger } from './Logger';
 
 const SCALAR_TYPES = [
     'int' as const,
