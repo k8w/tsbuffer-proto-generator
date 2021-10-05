@@ -240,7 +240,15 @@ export class ProtoGenerator {
                 throw new Error(`Cannot resolve file: ` + path.resolve(this.options.baseDir, astKey))
             }
 
-            astCache[astKey] = AstParser.parseScript(fileContent, logger);
+            try {
+                astCache[astKey] = AstParser.parseScript(fileContent, logger);
+            }
+            catch (e) {
+                if (e instanceof Error) {
+                    e.message += `\n    at ${astKey}`
+                }
+                throw e;
+            }
         }
         return {
             ast: astCache[astKey],
@@ -348,7 +356,7 @@ export class ProtoGenerator {
                 logger?.debug('current', astKey, name);
                 logger?.debug('ref', ref);
                 logger?.debug('schema', schema);
-                throw new Error(`Cannot find reference target "${ref.target}"`);
+                throw new Error(`Cannot find reference target "${ref.target}"\n    at ${astKey}/${name}`);
             }
         }
     }
