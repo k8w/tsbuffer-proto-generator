@@ -1,6 +1,6 @@
 {
   "name": "tsbuffer-proto-generator",
-  "version": "1.4.9-dev.2",
+  "version": "1.4.9",
   "description": "",
   "main": "index.js",
   "exports": {
@@ -33,7 +33,7 @@
   "dependencies": {
     "k8w-crypto": "^0.2.0",
     "k8w-extend-native": "^1.4.6",
-    "tsbuffer-schema": "^2.0.6-dev.0",
+    "tsbuffer-schema": "~2.0.6",
     "tslib": "^2.3.1",
     "typescript": "^4.4.4"
   },

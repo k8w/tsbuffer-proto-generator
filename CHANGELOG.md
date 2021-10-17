@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## [1.4.9-dev.0] - 2021-10-17
+## [1.4.9] - 2021-10-17
 ### Added
 - Support change global reference by using `resolveModule` and `astCache` together.
 - Add `customSchemaIds`.
