@@ -4,8 +4,6 @@
 ### Added
 - Support change global reference by using `resolveModule` and `astCache` together.
 - Add `customSchemaIds`.
-### Fixed
-- `resolveModule` 考虑 `baseDir` 的值。
 
 ## [1.4.8] - 2021-10-17
 ### Fixed

@@ -41,7 +41,7 @@ export class ProtoGenerator {
         baseDir: '.',
         verbose: false,
         readFile: (v => fs.readFileSync(path.resolve(this.options.baseDir, v)).toString()),
-        /** 默认将module解析为baseDir下的node_modules */
+        /** 默认将 module 解析为 chdir 下的node_modules */
         resolveModule: defaultResolveModule
     };
 
@@ -406,4 +406,4 @@ export interface GenerateFileSchemaOptions {
     logger?: Logger | undefined;
 }
 
-export const defaultResolveModule: NonNullable<ProtoGeneratorOptions['resolveModule']> = (importPath: string, baseDir) => path.relative(baseDir, path.join(baseDir, 'node_modules', importPath));
+export const defaultResolveModule: NonNullable<ProtoGeneratorOptions['resolveModule']> = (importPath, baseDir) => path.join('node_modules', importPath);
