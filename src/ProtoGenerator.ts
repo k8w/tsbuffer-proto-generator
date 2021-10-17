@@ -33,7 +33,7 @@ export class ProtoGenerator {
         verbose: false,
         readFile: (v => fs.readFileSync(path.resolve(this.options.baseDir, v)).toString()),
         /** 默认将module解析为baseDir下的node_modules */
-        resolveModule: (importPath: string) => path.join('node_modules', importPath)
+        resolveModule: defaultResolveModule
     };
 
     constructor(options: Partial<ProtoGeneratorOptions> = {}) {
@@ -63,7 +63,7 @@ export class ProtoGenerator {
         }
 
         // AST CACHE
-        let astCache: AstCache = {};
+        let astCache: AstCache = options.astCache ?? {};
 
         // 默认filter是导出所有export项
         let filter = options.filter || (v => v.isExport);
@@ -387,4 +387,8 @@ export interface GenerateFileSchemaOptions {
      * @defaultValue console
      */
     logger?: Logger | undefined;
+
+    astCache?: AstCache;
 }
+
+export const defaultResolveModule: NonNullable<ProtoGeneratorOptions['resolveModule']> = (importPath: string, baseDir) => path.relative(baseDir, path.join(baseDir, 'node_modules', importPath));

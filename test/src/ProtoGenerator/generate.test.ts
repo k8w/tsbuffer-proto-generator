@@ -430,6 +430,67 @@ describe('ProtoGenerator.generate', function () {
         })
     })
 
+    it('custom astCache', async function () {
+        let generator = new ProtoGenerator({
+            baseDir: path.resolve(__dirname, 'sources', 'nodeModule'),
+            resolveModule: (importPath, baseDir) => {
+                console.log('asdfasdf', importPath);
+                if (importPath === 'test-nm') {
+                    return '##aabbcc';
+                }
+                else {
+                    throw new Error('xxx')
+                    // return defaultResolveModule(importPath, baseDir);
+                }
+            }
+        });
+
+        let schemas = await generator.generate('Test.ts', {
+            astCache: {
+                '##aabbcc': {
+                    'TestNodeModule': {
+                        isExport: true,
+                        schema: {
+                            type: 'Interface',
+                            properties: [{
+                                id: 0,
+                                name: 'aaaaa',
+                                type: {
+                                    type: 'String'
+                                }
+                            }]
+                        }
+                    }
+                }
+            }
+        });
+
+        assert.deepStrictEqual(schemas, {
+            'Test/Test': {
+                type: 'Interface',
+                extends: [
+                    {
+                        id: 0,
+                        type: {
+                            type: 'Reference',
+                            target: '##aabbcc/TestNodeModule'
+                        }
+                    }
+                ]
+            },
+            '##aabbcc/TestNodeModule': {
+                type: 'Interface',
+                properties: [{
+                    id: 0,
+                    name: 'aaaaa',
+                    type: {
+                        type: 'String'
+                    }
+                }]
+            }
+        })
+    })
+
     it('empty', async function () {
         let generator = new ProtoGenerator({
             baseDir: path.resolve(__dirname)
