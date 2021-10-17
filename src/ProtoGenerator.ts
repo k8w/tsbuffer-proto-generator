@@ -24,6 +24,14 @@ export interface ProtoGeneratorOptions {
      * @returns 返回于baseDir的相对路径
      */
     resolveModule?: (importPath: string, baseDir: string) => string;
+
+    astCache?: AstCache;
+
+    /**
+     * Do not parse this reference targets.
+     * To implement the real reference target at runtime.
+     */
+    ignoredReferenceTargets?: string[];
 }
 
 export class ProtoGenerator {
@@ -63,7 +71,7 @@ export class ProtoGenerator {
         }
 
         // AST CACHE
-        let astCache: AstCache = options.astCache ?? {};
+        let astCache: AstCache = this.options.astCache ?? {};
 
         // 默认filter是导出所有export项
         let filter = options.filter || (v => v.isExport);
@@ -279,6 +287,13 @@ export class ProtoGenerator {
                 logger?.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `target=${ref.target}`)
             }
 
+            if (this.options.ignoredReferenceTargets?.includes(ref.target)) {
+                if (this.options.verbose) {
+                    logger?.debug('[TSBuffer Schema Generator]', `Ignored Reference Target '${ref.target}'`);
+                }
+                continue;
+            }
+
             let refPath: string;
             let pathMatch = ref.target.match(/(.*)\/(.*)$/);
             if (pathMatch) {
@@ -387,8 +402,6 @@ export interface GenerateFileSchemaOptions {
      * @defaultValue console
      */
     logger?: Logger | undefined;
-
-    astCache?: AstCache;
 }
 
 export const defaultResolveModule: NonNullable<ProtoGeneratorOptions['resolveModule']> = (importPath: string, baseDir) => path.relative(baseDir, path.join(baseDir, 'node_modules', importPath));

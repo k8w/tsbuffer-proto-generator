@@ -8,6 +8,8 @@ module.exports = {
     'preserve-symlinks': true,
     spec: [
         './test/**/*.test.ts',
+        // './test/src/ProtoGenerator/generate.test.ts'
     ],
+    // fgrep: 'ignoredReferenceTargets',
     parallel: false
 }

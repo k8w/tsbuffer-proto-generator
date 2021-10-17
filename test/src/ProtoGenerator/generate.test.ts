@@ -439,13 +439,9 @@ describe('ProtoGenerator.generate', function () {
                     return '##aabbcc';
                 }
                 else {
-                    throw new Error('xxx')
-                    // return defaultResolveModule(importPath, baseDir);
+                    throw new Error('NO!')
                 }
-            }
-        });
-
-        let schemas = await generator.generate('Test.ts', {
+            },
             astCache: {
                 '##aabbcc': {
                     'TestNodeModule': {
@@ -464,6 +460,8 @@ describe('ProtoGenerator.generate', function () {
                 }
             }
         });
+
+        let schemas = await generator.generate('Test.ts');
 
         assert.deepStrictEqual(schemas, {
             'Test/Test': {
@@ -487,6 +485,30 @@ describe('ProtoGenerator.generate', function () {
                         type: 'String'
                     }
                 }]
+            }
+        })
+    })
+
+    it('ignoredReferenceTargets', async function () {
+        let generator = new ProtoGenerator({
+            baseDir: path.resolve(__dirname, 'sources', 'nodeModule'),
+            ignoredReferenceTargets: ['test-nm/TestNodeModule']
+        });
+
+        let schemas = await generator.generate('Test.ts');
+
+        assert.deepStrictEqual(schemas, {
+            'Test/Test': {
+                type: 'Interface',
+                extends: [
+                    {
+                        id: 0,
+                        type: {
+                            type: 'Reference',
+                            target: 'test-nm/TestNodeModule'
+                        }
+                    }
+                ]
             }
         })
     })

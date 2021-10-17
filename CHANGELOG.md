@@ -2,7 +2,8 @@
 
 ## [1.4.9-dev.0] - 2021-10-17
 ### Added
-- 支持通过 `resolveModule` 和 `astCache` 自定义全局引用解析方式。
+- Support change global reference by using `resolveModule` and `astCache` together.
+- Add `ignoredReferenceTargets`.
 ### Fixed
 - `resolveModule` 考虑 `baseDir` 的值。
 
