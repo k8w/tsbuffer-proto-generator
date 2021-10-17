@@ -28,10 +28,11 @@ export interface ProtoGeneratorOptions {
     astCache?: AstCache;
 
     /**
-     * Do not parse this reference targets.
-     * To implement the real reference target at runtime.
+     * Do not parse this reference targets, to implement the real reference target at runtime.
+     * The schemaId would auto prepend '?'
+     * For example, reference 'mongodb/ObjectId' would be converted to '?mongodb/ObjectId'.
      */
-    ignoredReferenceTargets?: string[];
+    customSchemaIds?: string[];
 }
 
 export class ProtoGenerator {
@@ -287,10 +288,11 @@ export class ProtoGenerator {
                 logger?.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `target=${ref.target}`)
             }
 
-            if (this.options.ignoredReferenceTargets?.includes(ref.target)) {
+            if (this.options.customSchemaIds?.includes(ref.target)) {
                 if (this.options.verbose) {
                     logger?.debug('[TSBuffer Schema Generator]', `Ignored Reference Target '${ref.target}'`);
                 }
+                ref.target = '?' + ref.target;
                 continue;
             }
 

@@ -3,7 +3,7 @@
 ## [1.4.9-dev.0] - 2021-10-17
 ### Added
 - Support change global reference by using `resolveModule` and `astCache` together.
-- Add `ignoredReferenceTargets`.
+- Add `customSchemaIds`.
 ### Fixed
 - `resolveModule` 考虑 `baseDir` 的值。
 

@@ -489,10 +489,10 @@ describe('ProtoGenerator.generate', function () {
         })
     })
 
-    it('ignoredReferenceTargets', async function () {
+    it('customSchemaIds', async function () {
         let generator = new ProtoGenerator({
             baseDir: path.resolve(__dirname, 'sources', 'nodeModule'),
-            ignoredReferenceTargets: ['test-nm/TestNodeModule']
+            customSchemaIds: ['test-nm/TestNodeModule']
         });
 
         let schemas = await generator.generate('Test.ts');
@@ -505,7 +505,7 @@ describe('ProtoGenerator.generate', function () {
                         id: 0,
                         type: {
                             type: 'Reference',
-                            target: 'test-nm/TestNodeModule'
+                            target: '?test-nm/TestNodeModule'
                         }
                     }
                 ]
