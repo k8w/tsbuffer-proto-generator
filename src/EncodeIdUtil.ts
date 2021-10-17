@@ -28,9 +28,9 @@ export class EncodeIdUtil {
             output.push({ key: key, id: id })
         }
 
-        // 可优化节点>=128,16384
+        // 可优化节点>=32,4096
         let uniqueKeyLength = keys.distinct().length;
-        if (nextId >= 128 && uniqueKeyLength <= 128 || nextId >= 16384 && uniqueKeyLength <= 16384) {
+        if (nextId > 32 && uniqueKeyLength <= 32 || nextId > 4096 && uniqueKeyLength <= 4096) {
             this.onGenCanOptimized?.();
         }
 

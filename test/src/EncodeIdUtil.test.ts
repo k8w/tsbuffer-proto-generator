@@ -40,14 +40,14 @@ describe('EncodeIdUtil', function () {
         EncodeIdUtil.genEncodeIds(['d', 'e', 'f', 'a', 'b', 'c', 'h', 'i', 'j'], [
             { key: 'd', id: 1 },
             { key: 'a', id: 4 },
-            { key: 'b', id: 99 }
+            { key: 'b', id: 25 }
         ]);
         assert.strictEqual(can, false);
 
         EncodeIdUtil.genEncodeIds(['d', 'e', 'f', 'a', 'b', 'c', 'h', 'i', 'j'], [
             { key: 'd', id: 1 },
             { key: 'a', id: 4 },
-            { key: 'b', id: 125 }
+            { key: 'b', id: 26 }
         ]);
         assert.strictEqual(can, true);
     })
