@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## [1.5.0] - 2021-11-08
+### Changed
+- Update dependencies
+
 ## [1.4.9] - 2021-10-17
 ### Added
 - Support change global reference by using `resolveModule` and `astCache` together.
