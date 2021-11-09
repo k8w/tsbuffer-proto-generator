@@ -2,7 +2,9 @@ import * as assert from 'assert';
 import * as ts from "typescript";
 import { AstParser } from '../../../src/AstParser';
 
-describe('AstParser.getScriptImports', function () {
+describe('astParser.getScriptImports', function () {
+    const astParser = new AstParser();
+
     it('import A', function () {
         let src = ts.createSourceFile(
             'xxx.ts',
@@ -12,7 +14,7 @@ describe('AstParser.getScriptImports', function () {
             ts.ScriptKind.TS
         );
 
-        assert.deepStrictEqual(AstParser.getScriptImports(src), {
+        assert.deepStrictEqual(astParser.getScriptImports(src), {
             A: {
                 path: 'xxxx',
                 targetName: 'default'
@@ -29,7 +31,7 @@ describe('AstParser.getScriptImports', function () {
             ts.ScriptKind.TS
         );
 
-        assert.deepStrictEqual(AstParser.getScriptImports(src), {
+        assert.deepStrictEqual(astParser.getScriptImports(src), {
             A: {
                 path: 'asdf',
                 targetName: 'A'
@@ -50,7 +52,7 @@ describe('AstParser.getScriptImports', function () {
             ts.ScriptKind.TS
         );
 
-        assert.deepStrictEqual(AstParser.getScriptImports(src), {
+        assert.deepStrictEqual(astParser.getScriptImports(src), {
             B: {
                 path: 'asdf',
                 targetName: 'A'
@@ -79,7 +81,7 @@ describe('AstParser.getScriptImports', function () {
             ts.ScriptKind.TS
         );
 
-        assert.deepStrictEqual(AstParser.getScriptImports(src), {
+        assert.deepStrictEqual(astParser.getScriptImports(src), {
             A: {
                 path: 'asdf',
                 targetName: 'default'

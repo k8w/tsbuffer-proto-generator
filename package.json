@@ -1,6 +1,6 @@
 {
   "name": "tsbuffer-proto-generator",
-  "version": "1.5.0",
+  "version": "1.6.0-dev.0",
   "description": "",
   "main": "index.js",
   "exports": {

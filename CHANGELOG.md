@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## [1.6.0-dev.0]
+- Add `keepRemark` option for generate proto.
+
 ## [1.5.0] - 2021-11-08
 ### Changed
 - Update dependencies

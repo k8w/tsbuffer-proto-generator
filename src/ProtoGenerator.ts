@@ -33,6 +33,11 @@ export interface ProtoGeneratorOptions {
      * For example, reference 'mongodb/ObjectId' would be converted to '?mongodb/ObjectId'.
      */
     customSchemaIds?: string[];
+
+    /**
+     * Keep comment in the output proto
+     */
+    keepComment?: boolean;
 }
 
 export class ProtoGenerator {
@@ -45,8 +50,11 @@ export class ProtoGenerator {
         resolveModule: defaultResolveModule
     };
 
+    protected _astParser: AstParser;
+
     constructor(options: Partial<ProtoGeneratorOptions> = {}) {
         Object.assign(this.options, options);
+        this._astParser = new AstParser(options);
     }
 
     /**
@@ -250,7 +258,7 @@ export class ProtoGenerator {
             }
 
             try {
-                astCache[astKey] = AstParser.parseScript(fileContent, logger);
+                astCache[astKey] = this._astParser.parseScript(fileContent, logger);
             }
             catch (e) {
                 if (e instanceof Error) {

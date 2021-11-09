@@ -3,9 +3,10 @@ import { AstParser } from '../../../src/AstParser';
 import GetSourceFile from './GetSourceFile';
 import * as ts from "typescript";
 
-describe('AstParser.getFlattenNodes', function () {
+describe('astParser.getFlattenNodes', function () {
+    const astParser = new AstParser();
     it('normal', function () {
-        let res = AstParser.getFlattenNodes(GetSourceFile('normal.ts'), true);
+        let res = astParser.getFlattenNodes(GetSourceFile('normal.ts'), true);
         assert.deepStrictEqual(Object.entries(res).map(v => ({
             name: v[0],
             isExport: v[1].isExport
@@ -34,7 +35,7 @@ describe('AstParser.getFlattenNodes', function () {
     })
 
     it('normal top non export', function () {
-        let res = AstParser.getFlattenNodes(GetSourceFile('normal.ts'), false);
+        let res = astParser.getFlattenNodes(GetSourceFile('normal.ts'), false);
         assert.deepStrictEqual(Object.entries(res).map(v => ({
             name: v[0],
             isExport: v[1].isExport
@@ -70,7 +71,7 @@ export default TestName;
             ts.ScriptKind.TS
         );
 
-        let res = AstParser.getFlattenNodes(src, true);
+        let res = astParser.getFlattenNodes(src, true);
         assert.deepStrictEqual(Object.entries(res).map(v => ({
             name: v[0],
             isExport: v[1].isExport
@@ -98,7 +99,7 @@ export { TestName };
             ts.ScriptKind.TS
         );
 
-        let res = AstParser.getFlattenNodes(src, true);
+        let res = astParser.getFlattenNodes(src, true);
         assert.deepStrictEqual(Object.entries(res).map(v => ({
             name: v[0],
             isExport: v[1].isExport
@@ -122,7 +123,7 @@ export { TestName };
             ts.ScriptKind.TS
         );
 
-        let res = AstParser.getFlattenNodes(src, true);
+        let res = astParser.getFlattenNodes(src, true);
         assert.deepStrictEqual(Object.entries(res).map(v => ({
             name: v[0],
             isExport: v[1].isExport
@@ -177,7 +178,7 @@ export {Out3};
             ts.ScriptKind.TS
         );
 
-        let res = AstParser.getFlattenNodes(src, true);
+        let res = astParser.getFlattenNodes(src, true);
         assert.deepStrictEqual(Object.entries(res).map(v => ({
             name: v[0],
             isExport: v[1].isExport
@@ -225,7 +226,7 @@ export {Out3};
             ts.ScriptKind.TS
         );
 
-        let res = AstParser.getFlattenNodes(src, true);
+        let res = astParser.getFlattenNodes(src, true);
         assert.deepStrictEqual(Object.entries(res).map(v => ({
             name: v[0],
             isExport: v[1].isExport
@@ -261,7 +262,7 @@ export {Out3};
             ts.ScriptKind.TS
         );
 
-        let res = AstParser.getFlattenNodes(src, true);
+        let res = astParser.getFlattenNodes(src, true);
         assert.deepStrictEqual(Object.entries(res).map(v => ({
             name: v[0],
             isExport: v[1].isExport

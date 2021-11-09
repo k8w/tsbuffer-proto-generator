@@ -30,11 +30,17 @@ const BUFFER_TYPES = [
  */
 export class AstParser {
 
+    keepComment: boolean = false;
+
+    constructor(options?: AstParserOptions) {
+        this.keepComment = options?.keepComment ?? false;
+    }
+
     /**
      * 解析整个文件
      * @param content 
      */
-    static parseScript(content: string, logger?: Logger | undefined): AstParserResult {
+    parseScript(content: string, logger?: Logger | undefined): AstParserResult {
         let output: AstParserResult = {};
 
         // 1. get flatten nodes
@@ -62,7 +68,7 @@ export class AstParser {
     }
 
     /** 解析顶层imports */
-    static getScriptImports(src: ts.SourceFile): ScriptImports {
+    getScriptImports(src: ts.SourceFile): ScriptImports {
         let output: ScriptImports = {};
 
         src.forEachChild(v => {
@@ -121,13 +127,13 @@ export class AstParser {
      * @param node 
      * @param isExport 当node是Namespace时，其外层是否处于export
      */
-    static getFlattenNodes(node: ts.Node, isExport: boolean = false): {
+    getFlattenNodes(node: ts.Node, isExport: boolean = false): {
         [name: string]: {
             node: ts.Node,
             isExport: boolean
         }
     } {
-        let output: ReturnType<typeof AstParser.getFlattenNodes> = {};
+        let output: ReturnType<AstParser['getFlattenNodes']> = {};
 
         // 检测到ExportDeclaration的项目，会在最后统一设为isExport
         let exportNames: { [name: string]: true } = {};
@@ -170,7 +176,7 @@ export class AstParser {
                     let _isExport = Boolean(isExport && v.modifiers && v.modifiers.findIndex(v1 => v1.kind === ts.SyntaxKind.ExportKeyword) > -1);
 
                     // 递归生成子树
-                    let children = AstParser.getFlattenNodes(v.body, true);
+                    let children = this.getFlattenNodes(v.body, true);
 
                     namespaceExports[v.name.text] = {};
                     for (let item of Object.entries(children)) {
@@ -253,7 +259,27 @@ export class AstParser {
         return output;
     }
 
-    static node2schema(node: ts.Node, imports: ScriptImports, logger?: Logger | undefined): TSBufferSchema {
+    node2schema(node: ts.Node, imports: ScriptImports, logger?: Logger, fullText?: string): TSBufferSchema & { remark?: string } {
+        let schema: TSBufferSchema & { comment?: string } = this._node2schema(node, imports, logger);
+
+        if (this.keepComment) {
+            if (fullText === undefined) {
+                fullText = node.getFullText();
+            }
+            fullText = fullText.trim();
+            if (fullText.startsWith('/**')) {
+                let endPos = fullText.indexOf('*/');
+                if (endPos > -1) {
+                    let comment = fullText.substr(3, endPos - 3).trim().split('\n')
+                        .map(v => v.trim().replace(/^\*\s+/, '')).filter(v => !!v).join('\n');
+                    schema.comment = comment;
+                }
+            }
+        }
+
+        return schema;
+    }
+    protected _node2schema(node: ts.Node, imports: ScriptImports, logger?: Logger | undefined): TSBufferSchema {
         // 去除外层括弧
         while (ts.isParenthesizedTypeNode(node)) {
             node = node.type;
@@ -326,14 +352,14 @@ export class AstParser {
         if (ts.isArrayTypeNode(node)) {
             return {
                 type: 'Array',
-                elementType: this.node2schema(node.elementType, imports, logger)
+                elementType: this.node2schema(node.elementType, imports, logger, node.getFullText())
             }
         }
         // ArrayType: Array<T>
         if (this._isLocalReference(node, imports, 'Array') && node.typeArguments) {
             return {
                 type: 'Array',
-                elementType: this.node2schema(node.typeArguments[0], imports, logger)
+                elementType: this.node2schema(node.typeArguments[0], imports, logger, node.getFullText())
             }
         }
 
@@ -347,10 +373,10 @@ export class AstParser {
                         if (optionalStartIndex === undefined) {
                             optionalStartIndex = i;
                         }
-                        return this.node2schema((v as ts.OptionalTypeNode).type, imports, logger)
+                        return this.node2schema((v as ts.OptionalTypeNode).type, imports, logger, v.getFullText())
                     }
                     else {
-                        return this.node2schema(v, imports, logger)
+                        return this.node2schema(v, imports, logger, v.getFullText())
                     }
                 })
             }
@@ -475,7 +501,7 @@ export class AstParser {
                     let property: NonNullable<InterfaceTypeSchema['properties']>[number] = {
                         id: i,
                         name: member.name.text,
-                        type: this.node2schema(member.type, imports, logger)
+                        type: this.node2schema(member.type, imports, logger, member.getFullText())
                     }
 
                     // optional
@@ -501,7 +527,7 @@ export class AstParser {
 
                     indexSignature = {
                         keyType: keyType,
-                        type: this.node2schema(member.type, imports, logger)
+                        type: this.node2schema(member.type, imports, logger, member.getFullText())
                     }
                 }
             })
@@ -544,7 +570,7 @@ export class AstParser {
                     throw new Error(`Error indexType literal: ${node.getText()}`)
                 }
 
-                let objectType = this.node2schema(node.objectType, imports, logger);
+                let objectType = this.node2schema(node.objectType, imports, logger, node.getFullText());
                 if (!this._isInterfaceReference(objectType)) {
                     throw new Error(`ObjectType for IndexedAccess must be interface or interface reference`);
                 }
@@ -570,7 +596,7 @@ export class AstParser {
                 type: 'Union',
                 members: node.types.map((v, i) => ({
                     id: i,
-                    type: this.node2schema(v, imports, logger)
+                    type: this.node2schema(v, imports, logger, v.getFullText())
                 }))
             }
         }
@@ -581,7 +607,7 @@ export class AstParser {
                 type: 'Intersection',
                 members: node.types.map((v, i) => ({
                     id: i,
-                    type: this.node2schema(v, imports, logger)
+                    type: this.node2schema(v, imports, logger, v.getFullText())
                 }))
             }
         }
@@ -594,14 +620,14 @@ export class AstParser {
                 throw new Error(`Illeagle ${nodeName}Type: ` + node.getText());
             }
 
-            let target = this.node2schema(node.typeArguments[0], imports, logger);
+            let target = this.node2schema(node.typeArguments[0], imports, logger, node.getFullText());
             if (!this._isInterfaceReference(target)) {
                 throw new Error(`Illeagle ${nodeName}Type: ` + node.getText())
             }
 
             let output: PickTypeSchema | OmitTypeSchema = Object.assign({
                 target: target,
-                keys: this._getPickKeys(this.node2schema(node.typeArguments[1], imports, logger), logger)
+                keys: this._getPickKeys(this.node2schema(node.typeArguments[1], imports, logger, node.getFullText()), logger)
             }, nodeName === 'Pick' ? { type: 'Pick' as const } : { type: 'Omit' as const })
 
             return output;
@@ -613,7 +639,7 @@ export class AstParser {
                 throw new Error('Illeagle PartialType: ' + node.getText());
             }
 
-            let target = this.node2schema(node.typeArguments[0], imports, logger);
+            let target = this.node2schema(node.typeArguments[0], imports, logger, node.getFullText());
             if (!this._isInterfaceReference(target)) {
                 throw new Error('Illeagle PartialType: ' + node.getText())
             }
@@ -630,12 +656,12 @@ export class AstParser {
                 throw new Error(`Illeagle OverwriteType: ` + node.getText());
             }
 
-            let target = this.node2schema(node.typeArguments[0], imports, logger);
+            let target = this.node2schema(node.typeArguments[0], imports, logger, node.getFullText());
             if (!this._isInterfaceReference(target)) {
                 throw new Error(`Illeagle OverwriteType: ` + node.getText())
             }
 
-            let overwrite = this.node2schema(node.typeArguments[1], imports, logger);
+            let overwrite = this.node2schema(node.typeArguments[1], imports, logger, node.getFullText());
             if (!this._isInterfaceReference(overwrite)) {
                 throw new Error(`Illeagle OverwriteType: ` + node.getText())
             }
@@ -656,7 +682,7 @@ export class AstParser {
 
         // NonNullableType
         if (ts.isTypeReferenceNode(node) && this._typeNameToString(node.typeName) === 'NonNullable' && !imports['NonNullable']) {
-            let target = this.node2schema(node.typeArguments![0], imports, logger);
+            let target = this.node2schema(node.typeArguments![0], imports, logger, node.getFullText());
             return {
                 type: 'NonNullable',
                 target: target
@@ -677,7 +703,7 @@ export class AstParser {
      * A.B -> A.B
      * @param name 
      */
-    private static _typeNameToString(name: ts.Identifier | ts.QualifiedName): string {
+    private _typeNameToString(name: ts.Identifier | ts.QualifiedName): string {
         if (ts.isIdentifier(name)) {
             return name.text;
         }
@@ -687,7 +713,7 @@ export class AstParser {
         }
     }
 
-    private static _getReferenceTypeSchema(name: string | ts.Identifier | ts.QualifiedName, imports: ScriptImports): ReferenceTypeSchema {
+    private _getReferenceTypeSchema(name: string | ts.Identifier | ts.QualifiedName, imports: ScriptImports): ReferenceTypeSchema {
         if (typeof name !== 'string') {
             name = this._typeNameToString(name);
         }
@@ -711,7 +737,7 @@ export class AstParser {
         }
     }
 
-    private static _isLocalReference(node: ts.Node, imports: ScriptImports, referenceName: string | string[]): node is ts.TypeReferenceNode {
+    private _isLocalReference(node: ts.Node, imports: ScriptImports, referenceName: string | string[]): node is ts.TypeReferenceNode {
         if (!ts.isTypeReferenceNode(node)) {
             return false;
         }
@@ -730,7 +756,7 @@ export class AstParser {
         return false;
     }
 
-    private static _getPickKeys(schema: TSBufferSchema, logger: Logger | undefined): string[] {
+    private _getPickKeys(schema: TSBufferSchema, logger: Logger | undefined): string[] {
         if (schema.type === 'Union') {
             return schema.members.map(v => this._getPickKeys(v.type, logger)).reduce((prev, next) => prev.concat(next), []).distinct();
         }
@@ -746,7 +772,7 @@ export class AstParser {
         }
     }
 
-    private static _isInterfaceReference(schema: TSBufferSchema): schema is InterfaceReference {
+    private _isInterfaceReference(schema: TSBufferSchema): schema is InterfaceReference {
         return this._isTypeReference(schema) ||
             schema.type === 'Interface' ||
             schema.type === 'Pick' ||
@@ -755,9 +781,13 @@ export class AstParser {
             schema.type === 'Overwrite';
     }
 
-    private static _isTypeReference(schema: TSBufferSchema): schema is TypeReference {
+    private _isTypeReference(schema: TSBufferSchema): schema is TypeReference {
         return schema.type === 'Reference' || schema.type === 'IndexedAccess';
     }
+}
+
+export interface AstParserOptions {
+    keepComment?: boolean;
 }
 
 export interface ScriptImports {

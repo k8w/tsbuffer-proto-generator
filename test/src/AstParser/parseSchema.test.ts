@@ -3,10 +3,12 @@ import * as fs from "fs";
 import * as path from "path";
 import { AstParser } from '../../../src/AstParser';
 
-describe('AstParser.parseSchema', function () {
+describe('astParser.parseSchema', function () {
+    const astParser = new AstParser();
+
     it('normal', function () {
         let content = fs.readFileSync(path.resolve(__dirname, 'sourceFiles/normal.ts')).toString();
-        let schema = AstParser.parseScript(content);
+        let schema = astParser.parseScript(content);
         assert.deepStrictEqual(schema, {
             Test1: {
                 isExport: true,
@@ -149,7 +151,7 @@ describe('AstParser.parseSchema', function () {
 
     it('namespace', function () {
         let content = fs.readFileSync(path.resolve(__dirname, 'sourceFiles/namespace.ts')).toString();
-        let schema = AstParser.parseScript(content);
+        let schema = astParser.parseScript(content);
         assert.deepStrictEqual(schema, {
             Test1: {
                 isExport: true,
@@ -269,7 +271,7 @@ describe('AstParser.parseSchema', function () {
     })
 
     it('export default namespace', function () {
-        let schema = AstParser.parseScript(
+        let schema = astParser.parseScript(
             `namespace NSTest {
                 export type Test = string;
                 export type Test1 = Test;

@@ -3,11 +3,13 @@ import { InterfaceTypeSchema, IndexedAccessTypeSchema, UnionTypeSchema, Intersec
 import { AstParser } from '../../../src/AstParser';
 import { CreateSource } from './GetSourceFile';
 
-describe('AstParser.node2schema', function () {
+describe('astParser.node2schema', function () {
+    const astParser = new AstParser();
+
     it('AnyType', function () {
         let src = CreateSource(`type Test = any;`);
-        let nodes = AstParser.getFlattenNodes(src);
-        let schema = AstParser.node2schema(nodes['Test'].node, {});
+        let nodes = astParser.getFlattenNodes(src);
+        let schema = astParser.node2schema(nodes['Test'].node, {});
         assert.deepStrictEqual(schema, {
             type: 'Any'
         })
@@ -28,8 +30,8 @@ describe('AstParser.node2schema', function () {
             'Float64Array',
         ].forEach(v => {
             let src = CreateSource(`type Test = ${v};`);
-            let nodes = AstParser.getFlattenNodes(src);
-            let schema = AstParser.node2schema(nodes['Test'].node, {});
+            let nodes = astParser.getFlattenNodes(src);
+            let schema = astParser.node2schema(nodes['Test'].node, {});
             if (v === 'ArrayBuffer') {
                 assert.deepStrictEqual(schema, {
                     type: 'Buffer'
@@ -46,8 +48,8 @@ describe('AstParser.node2schema', function () {
 
     it('BooleanType', function () {
         let src = CreateSource(`type Test = boolean;`);
-        let nodes = AstParser.getFlattenNodes(src);
-        let schema = AstParser.node2schema(nodes['Test'].node, {});
+        let nodes = astParser.getFlattenNodes(src);
+        let schema = astParser.node2schema(nodes['Test'].node, {});
         assert.deepStrictEqual(schema, {
             type: 'Boolean'
         })
@@ -55,8 +57,8 @@ describe('AstParser.node2schema', function () {
 
     it('ObjectType', function () {
         let src = CreateSource(`type Test = object;`);
-        let nodes = AstParser.getFlattenNodes(src);
-        let schema = AstParser.node2schema(nodes['Test'].node, {});
+        let nodes = astParser.getFlattenNodes(src);
+        let schema = astParser.node2schema(nodes['Test'].node, {});
         assert.deepStrictEqual(schema, {
             type: 'Object'
         })
@@ -64,8 +66,8 @@ describe('AstParser.node2schema', function () {
 
     it('NumberType: number', function () {
         let src = CreateSource(`type Test = number;`);
-        let nodes = AstParser.getFlattenNodes(src);
-        let schema = AstParser.node2schema(nodes['Test'].node, {});
+        let nodes = astParser.getFlattenNodes(src);
+        let schema = astParser.node2schema(nodes['Test'].node, {});
         assert.deepStrictEqual(schema, {
             type: 'Number'
         })
@@ -74,8 +76,8 @@ describe('AstParser.node2schema', function () {
     it('NumberType: ScalarValueType', function () {
         ['int', 'uint', 'double', 'bigint', 'bigint64', 'biguint64'].forEach(v => {
             let src = CreateSource(`type Test = ${v};`);
-            let nodes = AstParser.getFlattenNodes(src);
-            let schema = AstParser.node2schema(nodes['Test'].node, {});
+            let nodes = astParser.getFlattenNodes(src);
+            let schema = astParser.node2schema(nodes['Test'].node, {});
             assert.deepStrictEqual(schema, {
                 type: 'Number',
                 scalarType: v
@@ -85,8 +87,8 @@ describe('AstParser.node2schema', function () {
 
     it('StringType', function () {
         let src = CreateSource(`type Test = string;`);
-        let nodes = AstParser.getFlattenNodes(src);
-        let schema = AstParser.node2schema(nodes['Test'].node, {});
+        let nodes = astParser.getFlattenNodes(src);
+        let schema = astParser.node2schema(nodes['Test'].node, {});
         assert.deepStrictEqual(schema, {
             type: 'String'
         })
@@ -94,8 +96,8 @@ describe('AstParser.node2schema', function () {
 
     it('ArrayType: string[]', function () {
         let src = CreateSource(`type Test = string[];`);
-        let nodes = AstParser.getFlattenNodes(src);
-        let schema = AstParser.node2schema(nodes['Test'].node, {});
+        let nodes = astParser.getFlattenNodes(src);
+        let schema = astParser.node2schema(nodes['Test'].node, {});
         assert.deepStrictEqual(schema, {
             type: 'Array',
             elementType: {
@@ -106,8 +108,8 @@ describe('AstParser.node2schema', function () {
 
     it('ArrayType: Array<uint>', function () {
         let src = CreateSource(`type Test = Array<uint>;`);
-        let nodes = AstParser.getFlattenNodes(src);
-        let schema = AstParser.node2schema(nodes['Test'].node, {});
+        let nodes = astParser.getFlattenNodes(src);
+        let schema = astParser.node2schema(nodes['Test'].node, {});
         assert.deepStrictEqual(schema, {
             type: 'Array',
             elementType: {
@@ -119,8 +121,8 @@ describe('AstParser.node2schema', function () {
 
     it('TupleType', function () {
         let src = CreateSource(`type Test = [number,  boolean[], Array<string[]>, [number, number]]`);
-        assert.deepStrictEqual(AstParser.node2schema(
-            AstParser.getFlattenNodes(src)['Test'].node, {}
+        assert.deepStrictEqual(astParser.node2schema(
+            astParser.getFlattenNodes(src)['Test'].node, {}
         ), {
             type: 'Tuple',
             elementTypes: [
@@ -151,8 +153,8 @@ describe('AstParser.node2schema', function () {
         })
 
         src = CreateSource(`type Test = [number, any, string?, boolean?]`);
-        assert.deepStrictEqual(AstParser.node2schema(
-            AstParser.getFlattenNodes(src)['Test'].node, {}
+        assert.deepStrictEqual(astParser.node2schema(
+            astParser.getFlattenNodes(src)['Test'].node, {}
         ), {
             type: 'Tuple',
             elementTypes: [
@@ -168,13 +170,13 @@ describe('AstParser.node2schema', function () {
     it('LiteralType: String', function () {
         let src = CreateSource(`type Test = 'Hahaha';
         type Test1 = "haha111";`);
-        let nodes = AstParser.getFlattenNodes(src);
+        let nodes = astParser.getFlattenNodes(src);
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test'].node, {}), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test'].node, {}), {
             type: 'Literal',
             literal: 'Hahaha'
         })
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, {}), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test1'].node, {}), {
             type: 'Literal',
             literal: 'haha111'
         })
@@ -184,17 +186,17 @@ describe('AstParser.node2schema', function () {
         let src = CreateSource(`type Test = 123;
         type Test1 = 1.234;
         type Test2 = 1e23`);
-        let nodes = AstParser.getFlattenNodes(src);
+        let nodes = astParser.getFlattenNodes(src);
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test'].node, {}), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test'].node, {}), {
             type: 'Literal',
             literal: 123
         })
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, {}), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test1'].node, {}), {
             type: 'Literal',
             literal: 1.234
         })
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test2'].node, {}), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test2'].node, {}), {
             type: 'Literal',
             literal: 1e23
         })
@@ -203,13 +205,13 @@ describe('AstParser.node2schema', function () {
     it('LiteralType: Boolean', function () {
         let src = CreateSource(`type Test = true;
         type Test1 = false;`);
-        let nodes = AstParser.getFlattenNodes(src);
+        let nodes = astParser.getFlattenNodes(src);
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test'].node, {}), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test'].node, {}), {
             type: 'Literal',
             literal: true
         })
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, {}), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test1'].node, {}), {
             type: 'Literal',
             literal: false
         })
@@ -218,13 +220,13 @@ describe('AstParser.node2schema', function () {
     it('LiteralType: null/undefined', function () {
         let src = CreateSource(`type Test = null;
         type Test1 = undefined;`);
-        let nodes = AstParser.getFlattenNodes(src);
+        let nodes = astParser.getFlattenNodes(src);
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test'].node, {}), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test'].node, {}), {
             type: 'Literal',
             literal: null
         })
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, {}), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test1'].node, {}), {
             type: 'Literal',
             literal: undefined
         })
@@ -236,9 +238,9 @@ enum Test1 { a,b,c}
 enum Test2 {a='AA',b='BB',c='CC'}
 enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
         `);
-        let nodes = AstParser.getFlattenNodes(src);
+        let nodes = astParser.getFlattenNodes(src);
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, {}), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test1'].node, {}), {
             type: 'Enum',
             members: [
                 { id: 0, value: 0 },
@@ -246,7 +248,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
                 { id: 2, value: 2 },
             ]
         });
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test2'].node, {}), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test2'].node, {}), {
             type: 'Enum',
             members: [
                 { id: 0, value: 'AA' },
@@ -254,7 +256,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
                 { id: 2, value: 'CC' },
             ]
         });
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test3'].node, {}), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test3'].node, {}), {
             type: 'Enum',
             members: [
                 { id: 0, value: 1 },
@@ -283,38 +285,38 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
         type Inside = TestA;
         type Inside2 = TestA.TestB;
         `);
-        let imports = AstParser.getScriptImports(src);
-        let nodes = AstParser.getFlattenNodes(src);
+        let imports = astParser.getScriptImports(src);
+        let nodes = astParser.getFlattenNodes(src);
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['TestA'].node, imports), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['TestA'].node, imports), {
             type: 'Reference',
             target: 'abcd/default'
         });
-        assert.deepStrictEqual(AstParser.node2schema(nodes['TestAA'].node, imports), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['TestAA'].node, imports), {
             type: 'Reference',
             target: 'abcd/default.A'
         });
-        assert.deepStrictEqual(AstParser.node2schema(nodes['TestB'].node, imports), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['TestB'].node, imports), {
             type: 'Reference',
             target: 'abcd/B'
         });
-        assert.deepStrictEqual(AstParser.node2schema(nodes['TestD'].node, imports), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['TestD'].node, imports), {
             type: 'Reference',
             target: 'abcd/C'
         });
-        assert.deepStrictEqual(AstParser.node2schema(nodes['TestDD'].node, imports), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['TestDD'].node, imports), {
             type: 'Reference',
             target: 'abcd/C.D'
         });
-        assert.deepStrictEqual(AstParser.node2schema(nodes['TestE'].node, imports), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['TestE'].node, imports), {
             type: 'Reference',
             target: './eee/E'
         });
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Inside'].node, imports), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Inside'].node, imports), {
             type: 'Reference',
             target: 'TestA'
         });
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Inside2'].node, imports), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Inside2'].node, imports), {
             type: 'Reference',
             target: 'TestA.TestB'
         });
@@ -345,10 +347,10 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
 
         type Empty2 = {};
         `);
-        let imports = AstParser.getScriptImports(src);
-        let nodes = AstParser.getFlattenNodes(src);
+        let imports = astParser.getScriptImports(src);
+        let nodes = astParser.getFlattenNodes(src);
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['XXPtl'].node, imports), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['XXPtl'].node, imports), {
             type: 'Interface',
             extends: [{
                 id: 0,
@@ -359,7 +361,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
             }]
         });
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['BaseReq'].node, imports), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['BaseReq'].node, imports), {
             type: 'Interface',
             extends: [
                 {
@@ -386,7 +388,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
             }]
         });
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['XXReq'].node, imports), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['XXReq'].node, imports), {
             type: 'Interface',
             extends: [{
                 id: 0,
@@ -445,11 +447,11 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
             }]
         });
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Empty'].node, imports), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Empty'].node, imports), {
             type: 'Interface'
         });
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Empty2'].node, imports), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Empty2'].node, imports), {
             type: 'Interface'
         });
     })
@@ -463,10 +465,10 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
             }
         };
         `);
-        let imports = AstParser.getScriptImports(src);
-        let nodes = AstParser.getFlattenNodes(src);
+        let imports = astParser.getScriptImports(src);
+        let nodes = astParser.getFlattenNodes(src);
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test'].node, imports), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test'].node, imports), {
             type: 'Interface',
             properties: [{
                 id: 0,
@@ -504,10 +506,10 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
             [key: string]: {valueA?: string, valueB?: string}
         }
         `);
-        let imports = AstParser.getScriptImports(src);
-        let nodes = AstParser.getFlattenNodes(src);
+        let imports = astParser.getScriptImports(src);
+        let nodes = astParser.getFlattenNodes(src);
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test'].node, imports), <InterfaceTypeSchema>{
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test'].node, imports), <InterfaceTypeSchema>{
             type: 'Interface',
             indexSignature: {
                 keyType: 'String',
@@ -517,7 +519,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
             }
         });
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test2'].node, imports), <InterfaceTypeSchema>{
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test2'].node, imports), <InterfaceTypeSchema>{
             type: 'Interface',
             properties: [{
                 id: 0,
@@ -577,10 +579,10 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
         type Test2 = A['B']['C'];
         type Test3 = {a:string}['a'];
         `);
-        let imports = AstParser.getScriptImports(src);
-        let nodes = AstParser.getFlattenNodes(src);
+        let imports = astParser.getScriptImports(src);
+        let nodes = astParser.getFlattenNodes(src);
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, imports), <IndexedAccessTypeSchema>{
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test1'].node, imports), <IndexedAccessTypeSchema>{
             type: 'IndexedAccess',
             objectType: {
                 type: 'Reference',
@@ -589,7 +591,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
             index: 'B'
         });
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test2'].node, imports), <IndexedAccessTypeSchema>{
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test2'].node, imports), <IndexedAccessTypeSchema>{
             type: 'IndexedAccess',
             objectType: {
                 type: 'IndexedAccess',
@@ -602,7 +604,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
             index: 'C'
         });
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test3'].node, imports), <IndexedAccessTypeSchema>{
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test3'].node, imports), <IndexedAccessTypeSchema>{
             type: 'IndexedAccess',
             objectType: {
                 type: 'Interface',
@@ -623,10 +625,10 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
         type Test1 = A | B;
         type Test2 = string | number | boolean;
         `);
-        let imports = AstParser.getScriptImports(src);
-        let nodes = AstParser.getFlattenNodes(src);
+        let imports = astParser.getScriptImports(src);
+        let nodes = astParser.getFlattenNodes(src);
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, imports), <UnionTypeSchema>{
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test1'].node, imports), <UnionTypeSchema>{
             type: 'Union',
             members: [
                 {
@@ -646,7 +648,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
             ]
         });
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test2'].node, imports), <UnionTypeSchema>{
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test2'].node, imports), <UnionTypeSchema>{
             type: 'Union',
             members: [
                 {
@@ -676,10 +678,10 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
         type Test1 = A & B;
         type Test2 = string & number & boolean;
         `);
-        let imports = AstParser.getScriptImports(src);
-        let nodes = AstParser.getFlattenNodes(src);
+        let imports = astParser.getScriptImports(src);
+        let nodes = astParser.getFlattenNodes(src);
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, imports), <IntersectionTypeSchema>{
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test1'].node, imports), <IntersectionTypeSchema>{
             type: 'Intersection',
             members: [
                 {
@@ -699,7 +701,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
             ]
         });
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test2'].node, imports), <IntersectionTypeSchema>{
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test2'].node, imports), <IntersectionTypeSchema>{
             type: 'Intersection',
             members: [
                 {
@@ -729,10 +731,10 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
         type Test1 = A & B | C & D;
         type Test2 = (A | B) & (C | D);
         `);
-        let imports = AstParser.getScriptImports(src);
-        let nodes = AstParser.getFlattenNodes(src);
+        let imports = astParser.getScriptImports(src);
+        let nodes = astParser.getFlattenNodes(src);
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, imports), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test1'].node, imports), {
             type: 'Union',
             members: [
                 {
@@ -776,7 +778,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
             ]
         });
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test2'].node, imports), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test2'].node, imports), {
             type: 'Intersection',
             members: [
                 {
@@ -827,10 +829,10 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
         type Test1 = ${v}<AA, 'a'|'b'|'c'>;
         type Test2 = ${v}<{}, ('a'|'b'|'c') & ('b'|'c'|'d');
         `);
-            let imports = AstParser.getScriptImports(src);
-            let nodes = AstParser.getFlattenNodes(src);
+            let imports = astParser.getScriptImports(src);
+            let nodes = astParser.getFlattenNodes(src);
 
-            assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, imports), {
+            assert.deepStrictEqual(astParser.node2schema(nodes['Test1'].node, imports), {
                 type: v,
                 target: {
                     type: 'Reference',
@@ -839,7 +841,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
                 keys: ['a', 'b', 'c']
             });
 
-            assert.deepStrictEqual(AstParser.node2schema(nodes['Test2'].node, imports), {
+            assert.deepStrictEqual(astParser.node2schema(nodes['Test2'].node, imports), {
                 type: v,
                 target: {
                     type: 'Interface'
@@ -854,10 +856,10 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
         type Test1 = Partial<AA>;
         type Test2 = Partial<{}>;
         `);
-        let imports = AstParser.getScriptImports(src);
-        let nodes = AstParser.getFlattenNodes(src);
+        let imports = astParser.getScriptImports(src);
+        let nodes = astParser.getFlattenNodes(src);
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, imports), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test1'].node, imports), {
             type: 'Partial',
             target: {
                 type: 'Reference',
@@ -865,7 +867,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
             }
         });
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test2'].node, imports), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test2'].node, imports), {
             type: 'Partial',
             target: {
                 type: 'Interface'
@@ -878,10 +880,10 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
         import {Overwrite} from 'k8w-extend-native';
         type Test1 = Overwrite<AA, {a: string}>;
         `);
-        let imports = AstParser.getScriptImports(src);
-        let nodes = AstParser.getFlattenNodes(src);
+        let imports = astParser.getScriptImports(src);
+        let nodes = astParser.getFlattenNodes(src);
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, imports), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test1'].node, imports), {
             type: 'Overwrite',
             target: {
                 type: 'Reference',
@@ -904,10 +906,10 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
         let src = CreateSource(`
         type Test1 = Overwrite<Pick<AA, 'a'|'b'>, Omit<BB, 'b'|'c'>>;
         `);
-        let imports = AstParser.getScriptImports(src);
-        let nodes = AstParser.getFlattenNodes(src);
+        let imports = astParser.getScriptImports(src);
+        let nodes = astParser.getFlattenNodes(src);
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test1'].node, imports), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test1'].node, imports), {
             type: 'Overwrite',
             target: {
                 type: 'Pick',
@@ -930,10 +932,10 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
 
     it('{value: boolean|null}', function () {
         let src = CreateSource(`export type Test5 = {value: boolean|null};`);
-        let imports = AstParser.getScriptImports(src);
-        let nodes = AstParser.getFlattenNodes(src);
-        console.log('xxxxxxxxxxxxx', JSON.stringify(AstParser.node2schema(nodes['Test5'].node, imports), null, 2))
-        assert.deepStrictEqual(AstParser.node2schema(nodes['Test5'].node, imports), {
+        let imports = astParser.getScriptImports(src);
+        let nodes = astParser.getFlattenNodes(src);
+        console.log('xxxxxxxxxxxxx', JSON.stringify(astParser.node2schema(nodes['Test5'].node, imports), null, 2))
+        assert.deepStrictEqual(astParser.node2schema(nodes['Test5'].node, imports), {
             "type": "Interface",
             "properties": [
                 {
@@ -977,8 +979,8 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
 
     it('Date', function () {
         let src = CreateSource(`type Test = Date;`);
-        let nodes = AstParser.getFlattenNodes(src);
-        let schema = AstParser.node2schema(nodes['Test'].node, {});
+        let nodes = astParser.getFlattenNodes(src);
+        let schema = astParser.node2schema(nodes['Test'].node, {});
         assert.deepStrictEqual(schema, {
             type: 'Date'
         })
@@ -997,10 +999,10 @@ export interface NonNullableWrapper {
     value2: NonNullable<V2['value2']>
 }
         `);
-        let imports = AstParser.getScriptImports(src);
-        let nodes = AstParser.getFlattenNodes(src);
+        let imports = astParser.getScriptImports(src);
+        let nodes = astParser.getFlattenNodes(src);
 
-        assert.deepStrictEqual(AstParser.node2schema(nodes['NonNullableWrapper'].node, imports), {
+        assert.deepStrictEqual(astParser.node2schema(nodes['NonNullableWrapper'].node, imports), {
             type: 'Interface',
             "properties": [
                 {
