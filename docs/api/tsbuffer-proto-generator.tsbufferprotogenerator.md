@@ -20,6 +20,7 @@ export declare class ProtoGenerator
 
 |  Property | Modifiers | Type | Description |
 |  --- | --- | --- | --- |
+|  [\_astParser](./tsbuffer-proto-generator.tsbufferprotogenerator._astparser.md) |  | AstParser |  |
 |  [options](./tsbuffer-proto-generator.tsbufferprotogenerator.options.md) |  | [ProtoGeneratorOptions](./tsbuffer-proto-generator.protogeneratoroptions.md) |  |
 
 ## Methods

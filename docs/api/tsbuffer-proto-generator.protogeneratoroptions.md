@@ -17,6 +17,7 @@ export interface ProtoGeneratorOptions
 |  [astCache?](./tsbuffer-proto-generator.protogeneratoroptions.astcache.md) | AstCache | <i>(Optional)</i> |
 |  [baseDir](./tsbuffer-proto-generator.protogeneratoroptions.basedir.md) | string | Schema的根目录（路径在根目录以前的字符串会被相对掉） |
 |  [customSchemaIds?](./tsbuffer-proto-generator.protogeneratoroptions.customschemaids.md) | string\[\] | <i>(Optional)</i> Do not parse this reference targets, to implement the real reference target at runtime. The schemaId would auto prepend '?' For example, reference 'mongodb/ObjectId' would be converted to '?mongodb/ObjectId'. |
+|  [keepComment?](./tsbuffer-proto-generator.protogeneratoroptions.keepcomment.md) | boolean | <i>(Optional)</i> Keep comment in the output proto |
 |  [readFile](./tsbuffer-proto-generator.protogeneratoroptions.readfile.md) | (path: string) =&gt; Promise&lt;string&gt; \| string | 读取文件的方法（用于扩展自定义文件系统） |
 |  [resolveModule?](./tsbuffer-proto-generator.protogeneratoroptions.resolvemodule.md) | (importPath: string, baseDir: string) =&gt; string | <i>(Optional)</i> 解析Module的路径 |
 |  [verbose](./tsbuffer-proto-generator.protogeneratoroptions.verbose.md) | boolean | logger?.debug 打印调试信息 |
