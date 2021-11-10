@@ -271,7 +271,7 @@ export class AstParser {
                 let endPos = fullText.indexOf('*/');
                 if (endPos > -1) {
                     let comment = fullText.substr(3, endPos - 3).trim().split('\n')
-                        .map(v => v.trim().replace(/^\*\s+/, '')).filter(v => !!v).join('\n');
+                        .map(v => v.trim().replace(/^\* ?/, '')).filter(v => !!v).join('\n');
                     schema.comment = comment;
                 }
             }
