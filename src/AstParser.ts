@@ -60,7 +60,7 @@ export class AstParser {
         for (let name in nodes) {
             output[name] = {
                 isExport: nodes[name].isExport,
-                schema: this.node2schema(nodes[name].node, imports, logger)
+                schema: this.node2schema(nodes[name].node, imports, logger, undefined, nodes[name].comment)
             }
         }
 
@@ -130,6 +130,7 @@ export class AstParser {
     getFlattenNodes(node: ts.Node, isExport: boolean = false): {
         [name: string]: {
             node: ts.Node,
+            comment?: string,
             isExport: boolean
         }
     } {
@@ -157,6 +158,7 @@ export class AstParser {
 
                 output[v.name.text] = {
                     node: v.kind === ts.SyntaxKind.TypeAliasDeclaration ? (v as ts.TypeAliasDeclaration).type : v,
+                    comment: (v as any).jsDoc?.[0]?.comment,
                     // export default的情况，本体作为不isExport，取而代之生成一个名为default的TypeReference来export
                     isExport: _isExport && !_isExportDefault
                 };
@@ -259,20 +261,25 @@ export class AstParser {
         return output;
     }
 
-    node2schema(node: ts.Node, imports: ScriptImports, logger?: Logger, fullText?: string): TSBufferSchema & { remark?: string } {
+    node2schema(node: ts.Node, imports: ScriptImports, logger?: Logger, fullText?: string, comment?: string): TSBufferSchema {
         let schema: TSBufferSchema & { comment?: string } = this._node2schema(node, imports, logger);
 
         if (this.keepComment) {
-            if (fullText === undefined) {
-                fullText = node.getFullText();
+            if (comment) {
+                schema.comment = comment;
             }
-            fullText = fullText.trim();
-            if (fullText.startsWith('/**')) {
-                let endPos = fullText.indexOf('*/');
-                if (endPos > -1) {
-                    let comment = fullText.substr(3, endPos - 3).trim().split('\n')
-                        .map(v => v.trim().replace(/^\* ?/, '')).filter(v => !!v).join('\n');
-                    schema.comment = comment;
+            else {
+                if (fullText === undefined) {
+                    fullText = node.getFullText();
+                }
+                fullText = fullText.trim();
+                if (fullText.startsWith('/**')) {
+                    let endPos = fullText.indexOf('*/');
+                    if (endPos > -1) {
+                        let comment = fullText.substr(3, endPos - 3).trim().split('\n')
+                            .map(v => v.trim().replace(/^\* ?/, '')).filter(v => !!v).join('\n');
+                        schema.comment = comment;
+                    }
                 }
             }
         }

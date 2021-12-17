@@ -42,9 +42,17 @@ type DDD =
     /** 情况 A */
     { type: 'A', valueA: string } |
     /** 情况 B */
-    { type: 'B', valueB: number }
+    { type: 'B', valueB: number } |
     /** 其它情况 */
-    | string[];
+    string[];
 
 /** EE哈哈哈哈 */
 type EEE = 'AAA' | 'BBB' | 'CCC';
+
+/**
+ * 这应该是可见的注释
+ * AAA
+ * BBB
+ * CCC
+ */
+export type ReqUsingType = {}
