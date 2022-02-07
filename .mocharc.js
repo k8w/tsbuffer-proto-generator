@@ -9,5 +9,6 @@ module.exports = {
     spec: [
         './test/**/*.test.ts',
     ],
+    // fgrep: 'Keyof',
     parallel: false
 }

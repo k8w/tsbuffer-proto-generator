@@ -627,4 +627,199 @@ describe('ProtoGenerator.generate', function () {
             }
         });
     })
+
+    it('Keyof', async function () {
+        let generator = new ProtoGenerator({
+            baseDir: path.resolve(__dirname)
+        });
+
+        let schemas = await generator.generate('sources/Keyof.ts');
+        assert.deepStrictEqual(schemas, {
+            "sources/Keyof/Obj1": {
+                "type": "Interface",
+                "properties": [
+                    {
+                        "id": 0,
+                        "name": "aa",
+                        "type": {
+                            "type": "String"
+                        }
+                    },
+                    {
+                        "id": 1,
+                        "name": "bb",
+                        "type": {
+                            "type": "Number"
+                        }
+                    },
+                    {
+                        "id": 2,
+                        "name": "cc",
+                        "type": {
+                            "type": "Interface",
+                            "properties": [
+                                {
+                                    "id": 0,
+                                    "name": "c1",
+                                    "type": {
+                                        "type": "String"
+                                    }
+                                },
+                                {
+                                    "id": 1,
+                                    "name": "c2",
+                                    "type": {
+                                        "type": "Array",
+                                        "elementType": {
+                                            "type": "Boolean"
+                                        }
+                                    }
+                                },
+                                {
+                                    "id": 2,
+                                    "name": "c3",
+                                    "type": {
+                                        "type": "Boolean"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "sources/Keyof/Obj2": {
+                "type": "Interface",
+                "properties": [
+                    {
+                        "id": 0,
+                        "name": "bb",
+                        "type": {
+                            "type": "String"
+                        }
+                    },
+                    {
+                        "id": 1,
+                        "name": "cc",
+                        "type": {
+                            "type": "Array",
+                            "elementType": {
+                                "type": "Any"
+                            }
+                        }
+                    },
+                    {
+                        "id": 2,
+                        "name": "dd",
+                        "type": {
+                            "type": "String"
+                        }
+                    }
+                ]
+            },
+            "sources/Keyof/key1": {
+                "type": "Keyof",
+                "target": {
+                    "type": "Reference",
+                    "target": "sources/Keyof/Obj1"
+                }
+            },
+            "sources/Keyof/key2": {
+                "type": "Keyof",
+                "target": {
+                    "type": "Reference",
+                    "target": "sources/Keyof/Obj2"
+                }
+            },
+            "sources/Keyof/key3": {
+                "type": "Union",
+                "members": [
+                    {
+                        "id": 0,
+                        "type": {
+                            "type": "Literal",
+                            "literal": "bb"
+                        }
+                    },
+                    {
+                        "id": 1,
+                        "type": {
+                            "type": "Literal",
+                            "literal": "cc"
+                        }
+                    }
+                ]
+            },
+            "sources/Keyof/keyUnion": {
+                "type": "Union",
+                "members": [
+                    {
+                        "id": 0,
+                        "type": {
+                            "type": "Reference",
+                            "target": "sources/Keyof/key1"
+                        }
+                    },
+                    {
+                        "id": 1,
+                        "type": {
+                            "type": "Reference",
+                            "target": "sources/Keyof/key2"
+                        }
+                    }
+                ]
+            },
+            "sources/Keyof/keyIntersection": {
+                "type": "Intersection",
+                "members": [
+                    {
+                        "id": 0,
+                        "type": {
+                            "type": "Reference",
+                            "target": "sources/Keyof/key1"
+                        }
+                    },
+                    {
+                        "id": 1,
+                        "type": {
+                            "type": "Reference",
+                            "target": "sources/Keyof/key2"
+                        }
+                    }
+                ]
+            },
+            "sources/Keyof/Pick1": {
+                "target": {
+                    "type": "Reference",
+                    "target": "sources/Keyof/Obj1"
+                },
+                "keys": [
+                    "bb",
+                    "cc"
+                ],
+                "type": "Pick"
+            },
+            "sources/Keyof/Pick2": {
+                "target": {
+                    "type": "Reference",
+                    "target": "sources/Keyof/Obj2"
+                },
+                "keys": [
+                    "bb",
+                    "cc"
+                ],
+                "type": "Pick"
+            },
+            "sources/Keyof/Omit3": {
+                "target": {
+                    "type": "Reference",
+                    "target": "sources/Keyof/Obj1"
+                },
+                "keys": [
+                    "bb",
+                    "cc"
+                ],
+                "type": "Omit"
+            }
+        });
+    })
 })

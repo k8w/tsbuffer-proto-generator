@@ -1,4 +1,5 @@
-import { ReferenceTypeSchema, TSBufferSchema } from 'tsbuffer-schema';
+import { ReferenceTypeSchema, SchemaType, TSBufferSchema } from 'tsbuffer-schema';
+import { PrePickOmitSchema } from './AstParser';
 
 export class SchemaUtil {
     /**
@@ -14,13 +15,13 @@ export class SchemaUtil {
 
         for (let schema of schemas) {
             switch (schema.type) {
-                case 'Array':
+                case SchemaType.Array:
                     output = output.concat(this.getUsedReferences(schema.elementType));
                     break;
-                case 'Tuple':
+                case SchemaType.Tuple:
                     output = output.concat(this.getUsedReferences(schema.elementTypes));
                     break;
-                case 'Interface':
+                case SchemaType.Interface:
                     if (schema.extends) {
                         output = output.concat(this.getUsedReferences(schema.extends.map(v => v.type)));
                     }
@@ -31,23 +32,29 @@ export class SchemaUtil {
                         output = output.concat(this.getUsedReferences(schema.indexSignature.type));
                     }
                     break;
-                case 'IndexedAccess':
+                case SchemaType.IndexedAccess:
                     output = output.concat(this.getUsedReferences(schema.objectType));
                     break;
-                case 'Reference':
+                case SchemaType.Reference:
                     output.push(schema);
                     break;
-                case 'Union':
-                case 'Intersection':
+                case SchemaType.Union:
+                case SchemaType.Intersection:
                     output = output.concat(this.getUsedReferences(schema.members.map(v => v.type)));
                     break;
-                case 'Pick':
-                case 'Omit':
-                case 'Partial':
-                case 'NonNullable':
+                case SchemaType.Pick:
+                case SchemaType.Omit:
+                    output = output.concat(this.getUsedReferences(schema.target));
+                    if ((schema as PrePickOmitSchema).pre?.key) {
+                        output = output.concat(this.getUsedReferences((schema as PrePickOmitSchema).pre.key));
+                    }
+                    break;
+                case SchemaType.Partial:
+                case SchemaType.NonNullable:
+                case SchemaType.Keyof:
                     output = output.concat(this.getUsedReferences(schema.target));
                     break;
-                case 'Overwrite':
+                case SchemaType.Overwrite:
                     output = output.concat(this.getUsedReferences(schema.target));
                     output = output.concat(this.getUsedReferences(schema.overwrite));
                     break;

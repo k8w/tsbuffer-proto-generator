@@ -1,4 +1,4 @@
-import { BufferTypeSchema, InterfaceReference, InterfaceTypeSchema, OmitTypeSchema, PickTypeSchema, ReferenceTypeSchema, TSBufferSchema, TupleTypeSchema, TypeReference } from 'tsbuffer-schema';
+import { BufferTypeSchema, InterfaceReference, InterfaceTypeSchema, IntersectionTypeSchema, LiteralTypeSchema, OmitTypeSchema, PickTypeSchema, ReferenceTypeSchema, SchemaType, TSBufferSchema, TupleTypeSchema, TypeReference, UnionTypeSchema } from 'tsbuffer-schema';
 import ts from 'typescript';
 import { Logger } from './Logger';
 
@@ -31,6 +31,7 @@ const BUFFER_TYPES = [
 export class AstParser {
 
     keepComment: boolean = false;
+    prePickOmitSchemas?: PrePickOmitSchema[];
 
     constructor(options?: AstParserOptions) {
         this.keepComment = options?.keepComment ?? false;
@@ -261,8 +262,8 @@ export class AstParser {
         return output;
     }
 
-    node2schema(node: ts.Node, imports: ScriptImports, logger?: Logger, fullText?: string, comment?: string): TSBufferSchema {
-        let schema: TSBufferSchema & { comment?: string } = this._node2schema(node, imports, logger);
+    node2schema(node: ts.Node, imports: ScriptImports, logger?: Logger, fullText?: string, comment?: string): PreSchema {
+        let schema: PreSchema = this._node2schema(node, imports, logger);
 
         if (this.keepComment) {
             if (comment) {
@@ -286,7 +287,7 @@ export class AstParser {
 
         return schema;
     }
-    protected _node2schema(node: ts.Node, imports: ScriptImports, logger?: Logger | undefined): TSBufferSchema {
+    protected _node2schema(node: ts.Node, imports: ScriptImports, logger?: Logger | undefined): PreSchema {
         // 去除外层括弧
         while (ts.isParenthesizedTypeNode(node)) {
             node = node.type;
@@ -632,10 +633,14 @@ export class AstParser {
                 throw new Error(`Illeagle ${nodeName}Type: ` + node.getText())
             }
 
-            let output: PickTypeSchema | OmitTypeSchema = Object.assign({
+            let preKey = this._getPreKey(this.node2schema(node.typeArguments[1], imports, logger, node.getFullText()), logger);
+            let output: PrePickOmitSchema = Object.assign({
                 target: target,
-                keys: this._getPickKeys(this.node2schema(node.typeArguments[1], imports, logger, node.getFullText()), logger)
+                keys: [],
+                pre: { key: preKey }
             }, nodeName === 'Pick' ? { type: 'Pick' as const } : { type: 'Omit' as const })
+
+            this.prePickOmitSchemas?.push(output);
 
             return output;
         }
@@ -693,6 +698,14 @@ export class AstParser {
             return {
                 type: 'NonNullable',
                 target: target
+            }
+        }
+
+        // Keyof
+        if (ts.isTypeOperatorNode(node) && node.operator === ts.SyntaxKind.KeyOfKeyword) {
+            return {
+                type: SchemaType.Keyof,
+                target: this.node2schema(node.type, imports, logger) as InterfaceReference,
             }
         }
 
@@ -763,15 +776,9 @@ export class AstParser {
         return false;
     }
 
-    private _getPickKeys(schema: TSBufferSchema, logger: Logger | undefined): string[] {
-        if (schema.type === 'Union') {
-            return schema.members.map(v => this._getPickKeys(v.type, logger)).reduce((prev, next) => prev.concat(next), []).distinct();
-        }
-        else if (schema.type === 'Intersection') {
-            return schema.members.map(v => this._getPickKeys(v.type, logger)).reduce((prev, next) => prev.filter(v => next.indexOf(v) > -1));
-        }
-        else if (schema.type === 'Literal') {
-            return ['' + schema.literal];
+    private _getPreKey(schema: TSBufferSchema, logger: Logger | undefined): PreKey {
+        if (schema.type === 'Union' || schema.type === 'Intersection' || schema.type === 'Literal' || this._isTypeReference(schema)) {
+            return schema;
         }
         else {
             logger?.log('Illeagle Pick keys:', schema);
@@ -789,7 +796,7 @@ export class AstParser {
     }
 
     private _isTypeReference(schema: TSBufferSchema): schema is TypeReference {
-        return schema.type === 'Reference' || schema.type === 'IndexedAccess';
+        return schema.type === 'Reference' || schema.type === 'IndexedAccess' || schema.type === 'Keyof';
     }
 }
 
@@ -809,6 +816,11 @@ export interface ScriptImports {
 export interface AstParserResult {
     [name: string]: {
         isExport: boolean,
-        schema: TSBufferSchema
+        schema: PreSchema
     }
 }
+
+/** node2Schema 第一阶段的初级 Schema */
+export type PreSchema = Exclude<TSBufferSchema, PickTypeSchema | OmitTypeSchema> | PrePickOmitSchema;
+export type PrePickOmitSchema = (PickTypeSchema | OmitTypeSchema) & { pre: { key: PreKey }, comment?: string };
+export type PreKey = LiteralTypeSchema | TypeReference | UnionTypeSchema | IntersectionTypeSchema;

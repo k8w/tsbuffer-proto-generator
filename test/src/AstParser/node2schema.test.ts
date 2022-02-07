@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { InterfaceTypeSchema, IndexedAccessTypeSchema, UnionTypeSchema, IntersectionTypeSchema } from 'tsbuffer-schema';
+import { IndexedAccessTypeSchema, InterfaceTypeSchema, IntersectionTypeSchema, UnionTypeSchema } from 'tsbuffer-schema';
 import { AstParser } from '../../../src/AstParser';
 import { CreateSource } from './GetSourceFile';
 
@@ -826,9 +826,9 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
     it('PickType & OmitType', function () {
         ['Pick', 'Omit'].forEach(v => {
             let src = CreateSource(`
-        type Test1 = ${v}<AA, 'a'|'b'|'c'>;
-        type Test2 = ${v}<{}, ('a'|'b'|'c') & ('b'|'c'|'d');
-        `);
+                type Test1 = ${v}<AA, 'a'|'b'|'c'>;
+                type Test2 = ${v}<{}, ('a'|'b'|'c') & ('b'|'c'|'d');
+            `);
             let imports = astParser.getScriptImports(src);
             let nodes = astParser.getFlattenNodes(src);
 
@@ -838,7 +838,35 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
                     type: 'Reference',
                     target: 'AA'
                 },
-                keys: ['a', 'b', 'c']
+                keys: [],
+                pre: {
+                    key: {
+                        members: [
+                            {
+                                id: 0,
+                                type: {
+                                    literal: 'a',
+                                    type: 'Literal'
+                                }
+                            },
+                            {
+                                id: 1,
+                                type: {
+                                    literal: 'b',
+                                    type: 'Literal'
+                                }
+                            },
+                            {
+                                id: 2,
+                                type: {
+                                    literal: 'c',
+                                    type: 'Literal'
+                                }
+                            }
+                        ],
+                        type: 'Union'
+                    }
+                }
             });
 
             assert.deepStrictEqual(astParser.node2schema(nodes['Test2'].node, imports), {
@@ -846,9 +874,120 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
                 target: {
                     type: 'Interface'
                 },
-                keys: ['b', 'c']
+                keys: [],
+                pre: {
+                    key: {
+                        members: [
+                            {
+                                id: 0,
+                                type: {
+                                    members: [
+                                        {
+                                            id: 0,
+                                            type: {
+                                                literal: 'a',
+                                                type: 'Literal'
+                                            }
+                                        },
+                                        {
+                                            id: 1,
+                                            type: {
+                                                literal: 'b',
+                                                type: 'Literal'
+                                            }
+                                        },
+                                        {
+                                            id: 2,
+                                            type: {
+                                                literal: 'c',
+                                                type: 'Literal'
+                                            }
+                                        }
+                                    ],
+                                    type: 'Union'
+                                }
+                            },
+                            {
+                                id: 1,
+                                type: {
+                                    members: [
+                                        {
+                                            id: 0,
+                                            type: {
+                                                literal: 'b',
+                                                type: 'Literal'
+                                            }
+                                        },
+                                        {
+                                            id: 1,
+                                            type: {
+                                                literal: 'c',
+                                                type: 'Literal'
+                                            }
+                                        },
+                                        {
+                                            id: 2,
+                                            type: {
+                                                literal: 'd',
+                                                type: 'Literal'
+                                            }
+                                        }
+                                    ],
+                                    type: 'Union'
+                                }
+                            }
+                        ],
+                        type: 'Intersection'
+                    }
+                }
             });
         });
+    })
+
+    it('getKeys', function () {
+        let src = CreateSource(`
+        type Test1 = Pick<AA, 'a'|'b'|'c'>;
+        type keys = 'd' | 'e' | 'f';
+        type Test2 = Pick<AA, keys>;
+        interface Obj {
+            a: string,
+            a1: number,
+            b: boolean
+        }
+        type key2 = keyof Obj;
+        type Test3 = Pick<AA, key2>;
+        type Test4 = Pick<AA, keyof Obj>;
+        type Test5 = Pick<AA, 'xx' | 'xxx' | keyof Obj>;
+        `);
+        let imports = astParser.getScriptImports(src);
+        let nodes = astParser.getFlattenNodes(src);
+
+        let node1 = astParser.node2schema(nodes['Test1'].node, imports);
+        let node2 = astParser.node2schema(nodes['Test2'].node, imports);
+        let node3 = astParser.node2schema(nodes['Test3'].node, imports);
+        let node4 = astParser.node2schema(nodes['Test4'].node, imports);
+
+        console.log('1', node1);
+        console.log('2', node2);
+        console.log('3', node3);
+        console.log('4', node4);
+
+        // asser4.deepStrictEqual(astParser.node2schema(nodes['Test1'].node, imports), {
+        //     type: v,
+        //     target: {
+        //         type: 'Reference',
+        //         target: 'AA'
+        //     },
+        //     keys: ['a', 'b', 'c']
+        // });
+
+        // assert.deepStrictEqual(astParser.node2schema(nodes['Test2'].node, imports), {
+        //     type: v,
+        //     target: {
+        //         type: 'Interface'
+        //     },
+        //     keys: ['b', 'c']
+        // });
     })
 
     it('PartialType', function () {
@@ -917,7 +1056,28 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
                     type: 'Reference',
                     target: 'AA'
                 },
-                keys: ['a', 'b']
+                keys: [],
+                pre: {
+                    key: {
+                        members: [
+                            {
+                                id: 0,
+                                type: {
+                                    literal: 'a',
+                                    type: 'Literal'
+                                }
+                            },
+                            {
+                                id: 1,
+                                type: {
+                                    literal: 'b',
+                                    type: 'Literal'
+                                }
+                            }
+                        ],
+                        type: 'Union'
+                    }
+                }
             },
             overwrite: {
                 type: 'Omit',
@@ -925,7 +1085,28 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
                     type: 'Reference',
                     target: 'BB'
                 },
-                keys: ['b', 'c']
+                keys: [],
+                pre: {
+                    key: {
+                        members: [
+                            {
+                                id: 0,
+                                type: {
+                                    literal: 'b',
+                                    type: 'Literal'
+                                }
+                            },
+                            {
+                                id: 1,
+                                type: {
+                                    literal: 'c',
+                                    type: 'Literal'
+                                }
+                            }
+                        ],
+                        type: 'Union'
+                    }
+                }
             }
         });
     })
@@ -934,7 +1115,7 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
         let src = CreateSource(`export type Test5 = {value: boolean|null};`);
         let imports = astParser.getScriptImports(src);
         let nodes = astParser.getFlattenNodes(src);
-        console.log('xxxxxxxxxxxxx', JSON.stringify(astParser.node2schema(nodes['Test5'].node, imports), null, 2))
+
         assert.deepStrictEqual(astParser.node2schema(nodes['Test5'].node, imports), {
             "type": "Interface",
             "properties": [
@@ -1047,6 +1228,28 @@ export interface NonNullableWrapper {
                     }
                 }
             ]
+        });
+    })
+
+    it('Keyof', function () {
+        let src = CreateSource(`
+export interface Obj {
+    aaa: string;
+    bbb: number;
+    ccc?: boolean;
+}
+export type keys = keyof Obj;
+}
+        `);
+        let imports = astParser.getScriptImports(src);
+        let nodes = astParser.getFlattenNodes(src);
+
+        assert.deepStrictEqual(astParser.node2schema(nodes['keys'].node, imports), {
+            type: 'Keyof',
+            target: {
+                type: 'Reference',
+                target: 'Obj'
+            }
         });
     })
 })

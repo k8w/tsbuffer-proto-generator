@@ -1,9 +1,10 @@
 import fs from 'fs';
 import path from 'path';
-import { ArrayTypeSchema, IndexedAccessTypeSchema, InterfaceTypeSchema, IntersectionTypeSchema, TSBufferProto, TSBufferSchema, TupleTypeSchema, UnionTypeSchema } from 'tsbuffer-schema';
-import { AstParser, AstParserResult } from './AstParser';
+import { ArrayTypeSchema, IndexedAccessTypeSchema, InterfaceTypeSchema, IntersectionTypeSchema, SchemaType, TSBufferProto, TSBufferSchema, TupleTypeSchema, UnionTypeSchema } from 'tsbuffer-schema';
+import { AstParser, AstParserResult, PrePickOmitSchema, PreSchema } from './AstParser';
 import { EncodeIdUtil } from './EncodeIdUtil';
 import { Logger } from './Logger';
+import { ProtoHelper } from './ProtoHelper';
 import { SchemaUtil } from './SchemaUtil';
 export interface ProtoGeneratorOptions {
     /** Schema的根目录（路径在根目录以前的字符串会被相对掉） */
@@ -51,6 +52,7 @@ export class ProtoGenerator {
     };
 
     protected _astParser: AstParser;
+    private _postHelper!: ProtoHelper;
 
     constructor(options: Partial<ProtoGeneratorOptions> = {}) {
         Object.assign(this.options, options);
@@ -81,6 +83,9 @@ export class ProtoGenerator {
 
         // AST CACHE
         let astCache: AstCache = this.options.astCache ?? {};
+
+        // Init Post
+        this._astParser.prePickOmitSchemas = [];
 
         // 默认filter是导出所有export项
         let filter = options.filter || (v => v.isExport);
@@ -126,7 +131,12 @@ export class ProtoGenerator {
             }
         }
 
-        // flatten
+        // Post process
+        this._postHelper = new ProtoHelper(output);
+        // Pre Pick/Omit keys
+        this._astParser.prePickOmitSchemas.forEach(v => {
+            this._postPreKeys(v, options.logger)
+        })
 
         // 重新生成EncodeId
         this._regenResultEncodeIds(output, options.compatibleResult);
@@ -305,6 +315,7 @@ export class ProtoGenerator {
             }
 
             let refPath: string;
+            // 外部引用
             let pathMatch = ref.target.match(/(.*)\/(.*)$/);
             if (pathMatch) {
                 // 相对路径引用
@@ -384,6 +395,34 @@ export class ProtoGenerator {
                 throw new Error(`Cannot find reference target '${ref.target}'\n    at ${name}\n    at ${astKey}`);
             }
         }
+    }
+
+    private _postPreKeys(schema: PrePickOmitSchema, logger: Logger | undefined) {
+        schema.keys = this._calcPreKey(schema.pre.key, logger);
+        delete (schema as any).pre;
+    }
+    private _calcPreKey(schema: PreSchema, logger: Logger | undefined): string[] {
+        // Nested pre key
+        if ((schema.type === SchemaType.Pick || schema.type === SchemaType.Omit) && schema.pre) {
+            return this._calcPreKey(schema.pre.key, logger);
+        }
+
+        // Type Reference
+        if (this._astParser['_isTypeReference'](schema)) {
+            return this._calcPreKey(this._postHelper.parseReference(schema) as PreSchema, logger);
+        }
+
+        switch (schema.type) {
+            case SchemaType.Union:
+                return schema.members.map(v => this._calcPreKey(v.type as PreSchema, logger)).reduce((prev, next) => prev.concat(next), []).distinct();
+            case SchemaType.Intersection:
+                return schema.members.map(v => this._calcPreKey(v.type as PreSchema, logger)).reduce((prev, next) => prev.filter(v => next.indexOf(v) > -1));
+            case SchemaType.Literal:
+                return ['' + schema.literal];
+        }
+
+        logger?.log('Illeagle type of key:', schema);
+        throw new Error('Illeagle type of key: ' + JSON.stringify(schema, null, 2));
     }
 }
 

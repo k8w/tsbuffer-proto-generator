@@ -1,6 +1,13 @@
 # CHANGELOG
 
+## [1.7.0-dev.0] - 2022-02-08
+### Added
+- Support `keyof`
+- Support `Pick<XXX, keyof XXX>`
+- Support `Pick<XXX, TypeReference>`
+
 ## [1.6.0] - 2021-12-18
+### Added
 - Add `keepRemark` option for generate proto.
 
 ## [1.5.0] - 2021-11-08
