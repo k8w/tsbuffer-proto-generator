@@ -1,10 +1,11 @@
 # CHANGELOG
 
-## [1.7.0-dev.0] - 2022-02-08
+## [1.7.0-dev.2] - 2022-02-08
 ### Added
 - Support `keyof`
 - Support `Pick<XXX, keyof XXX>`
 - Support `Pick<XXX, TypeReference>`
+- Support `Pick<UnionType>` and `Pick<IntersectionType>`, the same to `Omit`
 
 ## [1.6.0] - 2021-12-18
 ### Added

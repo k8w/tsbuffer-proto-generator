@@ -629,7 +629,7 @@ export class AstParser {
             }
 
             let target = this.node2schema(node.typeArguments[0], imports, logger, node.getFullText());
-            if (!this._isInterfaceReference(target)) {
+            if (!this._isInterfaceReference(target) && target.type !== SchemaType.Union && target.type !== SchemaType.Intersection) {
                 throw new Error(`Illeagle ${nodeName}Type: ` + node.getText())
             }
 
