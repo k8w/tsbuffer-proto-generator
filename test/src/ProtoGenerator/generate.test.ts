@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import * as path from "path";
+import { SchemaType } from 'tsbuffer-schema';
 import { ProtoGenerator } from '../../../src/ProtoGenerator';
 
 describe('ProtoGenerator.generate', function () {
@@ -447,12 +448,12 @@ describe('ProtoGenerator.generate', function () {
                     'TestNodeModule': {
                         isExport: true,
                         schema: {
-                            type: 'Interface',
+                            type: SchemaType.Interface,
                             properties: [{
                                 id: 0,
                                 name: 'aaaaa',
                                 type: {
-                                    type: 'String'
+                                    type: SchemaType.String
                                 }
                             }]
                         }

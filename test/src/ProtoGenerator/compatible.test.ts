@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import { ProtoGenerator } from '../../../src/ProtoGenerator';
 import * as path from "path";
-import { EnumTypeSchema, InterfaceTypeSchema, IntersectionTypeSchema, TSBufferProto, UnionTypeSchema } from 'tsbuffer-schema';
+import { EnumTypeSchema, InterfaceTypeSchema, IntersectionTypeSchema, SchemaType, TSBufferProto, UnionTypeSchema } from 'tsbuffer-schema';
 
 describe('ProtoGenerator.compatible', function () {
     it('simple enum', async function () {
@@ -11,7 +11,7 @@ describe('ProtoGenerator.compatible', function () {
 
         let cp: TSBufferProto = {
             "SimpleEnum/TestEnum": {
-                "type": "Enum",
+                "type": SchemaType.Enum,
                 "members": [
                     {
                         "id": 2,

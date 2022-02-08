@@ -296,7 +296,7 @@ export class AstParser {
         // AnyType
         if (node.kind === ts.SyntaxKind.AnyKeyword) {
             return {
-                type: 'Any'
+                type: SchemaType.Any
             }
         }
 
@@ -305,7 +305,7 @@ export class AstParser {
             let ref = this._getReferenceTypeSchema(node.typeName, imports);
             if (BUFFER_TYPES.binarySearch(ref.target) > -1) {
                 let output: BufferTypeSchema = {
-                    type: 'Buffer'
+                    type: SchemaType.Buffer
                 };
 
                 let target = ref.target as (typeof BUFFER_TYPES)[number];
@@ -320,53 +320,53 @@ export class AstParser {
         // BooleanType
         if (node.kind === ts.SyntaxKind.BooleanKeyword) {
             return {
-                type: 'Boolean'
+                type: SchemaType.Boolean
             }
         }
 
         // ObjectType
         if (node.kind === ts.SyntaxKind.ObjectKeyword) {
             return {
-                type: 'Object'
+                type: SchemaType.Object
             }
         }
 
         // NumberType
         if (node.kind === ts.SyntaxKind.NumberKeyword) {
             return {
-                type: 'Number'
+                type: SchemaType.Number
             }
         }
         else if (node.kind === ts.SyntaxKind.BigIntKeyword) {
             return {
-                type: 'Number',
+                type: SchemaType.Number,
                 scalarType: 'bigint'
             }
         }
         // Scalar value types
         if (ts.isTypeReferenceNode(node) && ts.isIdentifier(node.typeName) && SCALAR_TYPES.binarySearch(node.typeName.text) > -1) {
             return {
-                type: 'Number',
+                type: SchemaType.Number,
                 scalarType: node.typeName.text as typeof SCALAR_TYPES[number]
             }
         }
 
         // StringType
         if (node.kind === ts.SyntaxKind.StringKeyword) {
-            return { type: 'String' }
+            return { type: SchemaType.String }
         }
 
         // ArrayType: xxx[]
         if (ts.isArrayTypeNode(node)) {
             return {
-                type: 'Array',
+                type: SchemaType.Array,
                 elementType: this.node2schema(node.elementType, imports, logger, node.getFullText())
             }
         }
         // ArrayType: Array<T>
         if (this._isLocalReference(node, imports, 'Array') && node.typeArguments) {
             return {
-                type: 'Array',
+                type: SchemaType.Array,
                 elementType: this.node2schema(node.typeArguments[0], imports, logger, node.getFullText())
             }
         }
@@ -375,7 +375,7 @@ export class AstParser {
         if (ts.isTupleTypeNode(node)) {
             let optionalStartIndex: number | undefined;
             let output: TupleTypeSchema = {
-                type: 'Tuple',
+                type: SchemaType.Tuple,
                 elementTypes: node.elements.map((v, i) => {
                     if (v.kind === ts.SyntaxKind.OptionalType) {
                         if (optionalStartIndex === undefined) {
@@ -399,31 +399,31 @@ export class AstParser {
         if (ts.isLiteralTypeNode(node)) {
             if (ts.isStringLiteral(node.literal)) {
                 return {
-                    type: 'Literal',
+                    type: SchemaType.Literal,
                     literal: node.literal.text
                 }
             }
             else if (ts.isNumericLiteral(node.literal)) {
                 return {
-                    type: 'Literal',
+                    type: SchemaType.Literal,
                     literal: parseFloat(node.literal.text)
                 }
             }
             else if (node.literal.kind === ts.SyntaxKind.TrueKeyword) {
                 return {
-                    type: 'Literal',
+                    type: SchemaType.Literal,
                     literal: true
                 }
             }
             else if (node.literal.kind === ts.SyntaxKind.FalseKeyword) {
                 return {
-                    type: 'Literal',
+                    type: SchemaType.Literal,
                     literal: false
                 }
             }
             else if (node.literal.kind === ts.SyntaxKind.NullKeyword) {
                 return {
-                    type: 'Literal',
+                    type: SchemaType.Literal,
                     literal: null
                 }
             }
@@ -431,7 +431,7 @@ export class AstParser {
         // Literal: undefined
         else if (node.kind === ts.SyntaxKind.UndefinedKeyword) {
             return {
-                type: 'Literal',
+                type: SchemaType.Literal,
                 literal: undefined
             }
         }
@@ -440,7 +440,7 @@ export class AstParser {
         if (ts.isEnumDeclaration(node)) {
             let initializer = 0;
             return {
-                type: 'Enum',
+                type: SchemaType.Enum,
                 members: node.members.map((v, i) => {
                     if (v.initializer) {
                         if (ts.isStringLiteral(v.initializer)) {
@@ -542,7 +542,7 @@ export class AstParser {
 
             // output
             let output: InterfaceTypeSchema = {
-                type: 'Interface'
+                type: SchemaType.Interface
             };
             if (extendsInterface) {
                 output.extends = extendsInterface.map((v, i) => ({
@@ -584,7 +584,7 @@ export class AstParser {
                 }
 
                 return {
-                    type: 'IndexedAccess',
+                    type: SchemaType.IndexedAccess,
                     index: index,
                     objectType: objectType
                 }
@@ -601,7 +601,7 @@ export class AstParser {
         // UnionType
         if (ts.isUnionTypeNode(node)) {
             return {
-                type: 'Union',
+                type: SchemaType.Union,
                 members: node.types.map((v, i) => ({
                     id: i,
                     type: this.node2schema(v, imports, logger, v.getFullText())
@@ -612,7 +612,7 @@ export class AstParser {
         // IntersectionType
         if (ts.isIntersectionTypeNode(node)) {
             return {
-                type: 'Intersection',
+                type: SchemaType.Intersection,
                 members: node.types.map((v, i) => ({
                     id: i,
                     type: this.node2schema(v, imports, logger, v.getFullText())
@@ -638,7 +638,7 @@ export class AstParser {
                 target: target,
                 keys: [],
                 pre: { key: preKey }
-            }, nodeName === 'Pick' ? { type: 'Pick' as const } : { type: 'Omit' as const })
+            }, nodeName === 'Pick' ? { type: SchemaType.Pick as const } : { type: SchemaType.Omit as const })
 
             this.prePickOmitSchemas?.push(output);
 
@@ -657,7 +657,7 @@ export class AstParser {
             }
 
             return {
-                type: 'Partial',
+                type: SchemaType.Partial,
                 target: target
             }
         }
@@ -679,7 +679,7 @@ export class AstParser {
             }
 
             return {
-                type: 'Overwrite',
+                type: SchemaType.Overwrite,
                 target: target,
                 overwrite: overwrite
             };
@@ -688,7 +688,7 @@ export class AstParser {
         // DateType
         if (ts.isTypeReferenceNode(node) && this._typeNameToString(node.typeName) === 'Date' && !imports['Date']) {
             return {
-                type: 'Date'
+                type: SchemaType.Date
             }
         }
 
@@ -696,7 +696,7 @@ export class AstParser {
         if (ts.isTypeReferenceNode(node) && this._typeNameToString(node.typeName) === 'NonNullable' && !imports['NonNullable']) {
             let target = this.node2schema(node.typeArguments![0], imports, logger, node.getFullText());
             return {
-                type: 'NonNullable',
+                type: SchemaType.NonNullable,
                 target: target
             }
         }
@@ -744,13 +744,13 @@ export class AstParser {
             let importName = arrName.slice();
             importName[0] = importItem.targetName;
             return {
-                type: 'Reference',
+                type: SchemaType.Reference,
                 target: importItem.path + '/' + importName.join('.')
             }
         }
         else {
             let ref: Omit<ReferenceTypeSchema, 'path'> = {
-                type: 'Reference',
+                type: SchemaType.Reference,
                 target: name
             };
             return ref as any;

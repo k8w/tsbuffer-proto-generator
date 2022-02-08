@@ -74,7 +74,7 @@ export class ProtoHelper {
             }
             let flatInterface = this.getFlatInterfaceSchema(schema.target);
             return {
-                type: 'Union',
+                type: SchemaType.Union,
                 members: flatInterface.properties.map((v, i) => ({
                     id: i,
                     type: {
