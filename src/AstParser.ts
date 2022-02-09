@@ -488,7 +488,8 @@ export class AstParser {
                 extendsInterface = [];
                 node.heritageClauses.forEach(v => {
                     v.types.forEach(type => {
-                        extendsInterface!.push(this._getReferenceTypeSchema(type.getText(), imports));
+                        let extendsType = this._node2schema(type, imports, logger) as InterfaceReference;
+                        extendsInterface!.push(extendsType);
                     })
                 })
             }
@@ -622,7 +623,17 @@ export class AstParser {
 
         // PickType & OmitType
         if (this._isLocalReference(node, imports, ['Pick', 'Omit'])) {
-            let nodeName = node.typeName.getText();
+            let nodeName: string;
+            if (ts.isTypeReferenceNode(node)) {
+                nodeName = node.typeName.getText();
+            }
+            else if (ts.isExpressionWithTypeArguments(node)) {
+                nodeName = node.expression.getText();
+            }
+            else {
+                // @ts-expect-error
+                throw new Error(`Invalid ts.Node kind for Pick/Omit: ${node.kind}`)
+            }
 
             if (!node.typeArguments || node.typeArguments.length != 2) {
                 throw new Error(`Illeagle ${nodeName}Type: ` + node.getText());
@@ -713,6 +724,9 @@ export class AstParser {
         if (ts.isTypeReferenceNode(node)) {
             return this._getReferenceTypeSchema(node.typeName, imports);
         }
+        if (ts.isExpressionWithTypeArguments(node)) {
+            return this._getReferenceTypeSchema(node.expression.getText(), imports);
+        }
 
         logger?.debug(node)
         throw new Error('Cannot resolve type: ' + node.getText());
@@ -757,8 +771,15 @@ export class AstParser {
         }
     }
 
-    private _isLocalReference(node: ts.Node, imports: ScriptImports, referenceName: string | string[]): node is ts.TypeReferenceNode {
-        if (!ts.isTypeReferenceNode(node)) {
+    private _isLocalReference(node: ts.Node, imports: ScriptImports, referenceName: string | string[]): node is ts.TypeReferenceNode | ts.ExpressionWithTypeArguments {
+        let ref: ReferenceTypeSchema;
+        if (ts.isTypeReferenceNode(node)) {
+            ref = this._getReferenceTypeSchema(node.typeName, imports);
+        }
+        else if (ts.isExpressionWithTypeArguments(node)) {
+            ref = this._getReferenceTypeSchema(node.expression.getText(), imports);
+        }
+        else {
             return false;
         }
 
@@ -766,7 +787,6 @@ export class AstParser {
             referenceName = [referenceName];
         }
 
-        let ref = this._getReferenceTypeSchema(node.typeName, imports);
         for (let name of referenceName) {
             if (ref.target.indexOf('/') === -1 && ref.target === name) {
                 return name as any;

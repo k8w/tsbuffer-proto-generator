@@ -823,4 +823,185 @@ describe('ProtoGenerator.generate', function () {
             }
         });
     })
+
+    it('ExtendMappedType', async function () {
+        let generator = new ProtoGenerator({
+            baseDir: path.resolve(__dirname)
+        });
+
+        let schemas = await generator.generate('sources/ExtendMappedType.ts');
+        assert.deepStrictEqual(schemas, {
+            "sources/ExtendMappedType/A": {
+                "type": "Interface",
+                "properties": [
+                    {
+                        "id": 0,
+                        "name": "common1",
+                        "type": {
+                            "type": "String"
+                        }
+                    },
+                    {
+                        "id": 1,
+                        "name": "common2",
+                        "type": {
+                            "type": "String"
+                        }
+                    },
+                    {
+                        "id": 2,
+                        "name": "a1",
+                        "type": {
+                            "type": "String"
+                        }
+                    },
+                    {
+                        "id": 3,
+                        "name": "a2",
+                        "type": {
+                            "type": "String"
+                        }
+                    }
+                ]
+            },
+            "sources/ExtendMappedType/B": {
+                "type": "Interface",
+                "properties": [
+                    {
+                        "id": 0,
+                        "name": "common1",
+                        "type": {
+                            "type": "String"
+                        }
+                    },
+                    {
+                        "id": 1,
+                        "name": "common2",
+                        "type": {
+                            "type": "String"
+                        }
+                    },
+                    {
+                        "id": 2,
+                        "name": "b1",
+                        "type": {
+                            "type": "String"
+                        }
+                    },
+                    {
+                        "id": 3,
+                        "name": "b2",
+                        "type": {
+                            "type": "String"
+                        }
+                    }
+                ]
+            },
+            "sources/ExtendMappedType/C1": {
+                "type": "Interface",
+                "extends": [
+                    {
+                        "id": 0,
+                        "type": {
+                            "target": {
+                                "type": "Reference",
+                                "target": "sources/ExtendMappedType/A"
+                            },
+                            "keys": [
+                                "common1",
+                                "common2"
+                            ],
+                            "type": "Pick"
+                        }
+                    }
+                ]
+            },
+            "sources/ExtendMappedType/C2": {
+                "type": "Interface",
+                "extends": [
+                    {
+                        "id": 0,
+                        "type": {
+                            "target": {
+                                "type": "Intersection",
+                                "members": [
+                                    {
+                                        "id": 0,
+                                        "type": {
+                                            "type": "Reference",
+                                            "target": "sources/ExtendMappedType/A"
+                                        }
+                                    },
+                                    {
+                                        "id": 1,
+                                        "type": {
+                                            "type": "Reference",
+                                            "target": "sources/ExtendMappedType/B"
+                                        }
+                                    }
+                                ]
+                            },
+                            "keys": [
+                                "a1",
+                                "common2"
+                            ],
+                            "type": "Pick"
+                        }
+                    }
+                ],
+                "properties": [
+                    {
+                        "id": 0,
+                        "name": "c",
+                        "type": {
+                            "type": "String"
+                        }
+                    }
+                ]
+            },
+            "sources/ExtendMappedType/C3": {
+                "type": "Interface",
+                "extends": [
+                    {
+                        "id": 0,
+                        "type": {
+                            "target": {
+                                "type": "Union",
+                                "members": [
+                                    {
+                                        "id": 0,
+                                        "type": {
+                                            "type": "Reference",
+                                            "target": "sources/ExtendMappedType/A"
+                                        }
+                                    },
+                                    {
+                                        "id": 1,
+                                        "type": {
+                                            "type": "Reference",
+                                            "target": "sources/ExtendMappedType/B"
+                                        }
+                                    }
+                                ]
+                            },
+                            "keys": [
+                                "common1",
+                                "common2"
+                            ],
+                            "type": "Pick"
+                        }
+                    }
+                ],
+                "properties": [
+                    {
+                        "id": 0,
+                        "name": "c",
+                        "type": {
+                            "type": "String"
+                        }
+                    }
+                ]
+            }
+        });
+    })
 })
