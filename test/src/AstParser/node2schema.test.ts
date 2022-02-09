@@ -243,31 +243,31 @@ enum Test3 {a=1,b,c,d=100,e,f,g=-100,g1,g2}
         assert.deepStrictEqual(astParser.node2schema(nodes['Test1'].node, {}), {
             type: 'Enum',
             members: [
-                { id: 0, value: 0 },
-                { id: 1, value: 1 },
-                { id: 2, value: 2 },
+                { id: 0, name: 'a', value: 0 },
+                { id: 1, name: 'b', value: 1 },
+                { id: 2, name: 'c', value: 2 },
             ]
         });
         assert.deepStrictEqual(astParser.node2schema(nodes['Test2'].node, {}), {
             type: 'Enum',
             members: [
-                { id: 0, value: 'AA' },
-                { id: 1, value: 'BB' },
-                { id: 2, value: 'CC' },
+                { id: 0, name: 'a', value: 'AA' },
+                { id: 1, name: 'b', value: 'BB' },
+                { id: 2, name: 'c', value: 'CC' },
             ]
         });
         assert.deepStrictEqual(astParser.node2schema(nodes['Test3'].node, {}), {
             type: 'Enum',
             members: [
-                { id: 0, value: 1 },
-                { id: 1, value: 2 },
-                { id: 2, value: 3 },
-                { id: 3, value: 100 },
-                { id: 4, value: 101 },
-                { id: 5, value: 102 },
-                { id: 6, value: -100 },
-                { id: 7, value: -99 },
-                { id: 8, value: -98 },
+                { id: 0, name: 'a', value: 1 },
+                { id: 1, name: 'b', value: 2 },
+                { id: 2, name: 'c', value: 3 },
+                { id: 3, name: 'd', value: 100 },
+                { id: 4, name: 'e', value: 101 },
+                { id: 5, name: 'f', value: 102 },
+                { id: 6, name: 'g', value: -100 },
+                { id: 7, name: 'g1', value: -99 },
+                { id: 8, name: 'g2', value: -98 },
             ]
         });
     })

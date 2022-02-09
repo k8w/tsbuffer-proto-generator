@@ -1,12 +1,23 @@
 # CHANGELOG
 
-## [1.7.0-dev.3] - 2022-02-08
+## [1.7.0-dev.4] - 2022-02-08
 ### Added
 - Support `keyof`
 - Support `Pick<XXX, keyof XXX>`
 - Support `Pick<XXX, TypeReference>`
 - Support `Pick<UnionType>` and `Pick<IntersectionType>`, the same to `Omit`
 - Support `interface` extends Mapped Type, like `Pick` `Omit`
+- Support reference enum value as literal type,like:
+    ```ts
+    export enum Types {
+        Type1,
+        Type2
+    }
+    export interface Obj {
+        type: Types.Type1,
+        value: string
+    }
+    ```
 
 ## [1.6.0] - 2021-12-18
 ### Added

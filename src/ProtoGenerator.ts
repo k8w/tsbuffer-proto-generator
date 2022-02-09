@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { ArrayTypeSchema, IndexedAccessTypeSchema, InterfaceTypeSchema, IntersectionTypeSchema, SchemaType, TSBufferProto, TSBufferSchema, TupleTypeSchema, UnionTypeSchema } from 'tsbuffer-schema';
+import { ArrayTypeSchema, IndexedAccessTypeSchema, InterfaceTypeSchema, IntersectionTypeSchema, LiteralTypeSchema, ReferenceTypeSchema, SchemaType, TSBufferProto, TSBufferSchema, TupleTypeSchema, UnionTypeSchema } from 'tsbuffer-schema';
 import { AstParser, AstParserResult, PrePickOmitSchema, PreSchema } from './AstParser';
 import { EncodeIdUtil } from './EncodeIdUtil';
 import { Logger } from './Logger';
@@ -85,7 +85,10 @@ export class ProtoGenerator {
         let astCache: AstCache = this.options.astCache ?? {};
 
         // Init Post
-        this._astParser.prePickOmitSchemas = [];
+        this._astParser.pre = {
+            prePickOmitSchemas: [],
+            preEnumSchemas: []
+        };
 
         // 默认filter是导出所有export项
         let filter = options.filter || (v => v.isExport);
@@ -134,8 +137,13 @@ export class ProtoGenerator {
         // Post process
         this._postHelper = new ProtoHelper(output);
         // Pre Pick/Omit keys
-        this._astParser.prePickOmitSchemas.forEach(v => {
+        this._astParser.pre.prePickOmitSchemas.forEach(v => {
             this._postPreKeys(v, options.logger)
+        });
+        this._astParser.pre.preEnumSchemas.forEach(v => {
+            v.members.forEach(m => {
+                delete (m as any).name;
+            })
         })
 
         // 重新生成EncodeId
@@ -302,99 +310,136 @@ export class ProtoGenerator {
             logger?.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `refs.length=${refs.length}`)
         }
         for (let ref of refs) {
+            await this._addRefToOutput(ref, astKey, name, output, astCache, logger)
+        }
+    }
+
+    /**
+     * 追加引用到的依赖
+     * @param ref 被依赖的 Schema
+     * @param astKey 依赖主的 astKey
+     * @param name 依赖主的 name
+     * @param output 输出的 Proto
+     * @param astCache AST Cache
+     * @param logger Logger
+     * @returns 
+     */
+    private async _addRefToOutput(ref: ReferenceTypeSchema, astKey: string, name: string, output: TSBufferProto, astCache: AstCache, logger: Logger | undefined) {
+        if (this.options.customSchemaIds?.includes(ref.target)) {
             if (this.options.verbose) {
-                logger?.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `target=${ref.target}`)
+                logger?.debug('[TSBuffer Schema Generator]', `Ignored Reference Target '${ref.target}'`);
             }
+            ref.target = '?' + ref.target;
+            return;
+        }
 
-            if (this.options.customSchemaIds?.includes(ref.target)) {
-                if (this.options.verbose) {
-                    logger?.debug('[TSBuffer Schema Generator]', `Ignored Reference Target '${ref.target}'`);
-                }
-                ref.target = '?' + ref.target;
-                continue;
+        let refPath: string;
+        // 外部引用
+        let pathMatch = ref.target.match(/(.*)\/(.*)$/);
+        if (pathMatch) {
+            // 相对路径引用
+            if (ref.target.startsWith('.')) {
+                refPath = path.join(astKey, '..', pathMatch[1])
             }
-
-            let refPath: string;
-            // 外部引用
-            let pathMatch = ref.target.match(/(.*)\/(.*)$/);
-            if (pathMatch) {
-                // 相对路径引用
-                if (ref.target.startsWith('.')) {
-                    refPath = path.join(astKey, '..', pathMatch[1])
-                }
-                // 绝对路径引用 resolveModule
-                else {
-                    if (!this.options.resolveModule) {
-                        throw new Error(`Must specific a resolveModule handler for resolve '${pathMatch[1]}'`);
-                    }
-                    refPath = this.options.resolveModule(pathMatch[1], this.options.baseDir);
-                }
-            }
-            // 当前文件内引用
+            // 绝对路径引用 resolveModule
             else {
-                refPath = astKey;
-            }
-
-            if (this.options.verbose) {
-                logger?.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `AST '${refPath}' loading`);
-            }
-
-            // load ast
-            let refAst = await this._getAst(refPath, astCache, logger);
-
-            if (this.options.verbose) {
-                logger?.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `AST '${refPath}' loaded`);
-            }
-
-            // 将要挨个寻找的refTarget
-            let refTargetNames: string[] = [];
-            // 文件内&Namespace内引用，从Namespace向外部 逐级寻找
-            if (!pathMatch && name.indexOf('.') > 0) {
-                // name: A.B.C.D
-                // refTarget: E
-                // A.B.C.E
-                // A.B.E
-                // A.E
-                // E
-                let nameArr = name.split('.');
-                for (let i = nameArr.length - 1; i >= 1; --i) {
-                    let refName = '';
-                    for (let j = 0; j < i; ++j) {
-                        refName += `${nameArr[j]}.`
-                    }
-                    refTargetNames.push(refName + ref.target);
+                if (!this.options.resolveModule) {
+                    throw new Error(`Must specific a resolveModule handler for resolve '${pathMatch[1]}'`);
                 }
-            }
-
-            let refTargetName = pathMatch ? pathMatch[2] : ref.target;
-            refTargetNames.push(refTargetName);
-
-            // 确认的 refTargetName
-            let certainRefTargetName: string | undefined;
-            for (let refTargetName of refTargetNames) {
-                if (refAst.ast[refTargetName]) {
-                    certainRefTargetName = refTargetName;
-                    break;
-                }
-            }
-
-            if (this.options.verbose) {
-                logger?.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `refTargetName=${certainRefTargetName}`);
-            }
-
-            if (certainRefTargetName) {
-                // 修改源reference的target
-                ref.target = refAst.astKey + '/' + certainRefTargetName;
-                // 将ref加入output
-                await this._addToOutput(refAst.astKey, certainRefTargetName, refAst.ast[certainRefTargetName].schema, output, astCache, logger);
-            }
-            else {
-                logger?.debug('current', astKey, name);
-                logger?.debug('ref', ref);
-                logger?.debug('schema', schema);
-                throw new Error(`Cannot find reference target '${ref.target}'\n    at ${name}\n    at ${astKey}`);
+                refPath = this.options.resolveModule(pathMatch[1], this.options.baseDir);
             }
         }
+        // 当前文件内引用
+        else {
+            refPath = astKey;
+        }
+
+        if (this.options.verbose) {
+            logger?.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `AST '${refPath}' loading`);
+        }
+
+        // load ast
+        let refAst = await this._getAst(refPath, astCache, logger);
+
+        if (this.options.verbose) {
+            logger?.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `AST '${refPath}' loaded`);
+        }
+
+        // 将要挨个寻找的refTarget
+        let refTargetNames: string[] = [];
+        // 文件内&Namespace内引用，从Namespace向外部 逐级寻找
+        if (!pathMatch && name.indexOf('.') > 0) {
+            // name: A.B.C.D
+            // refTarget: E
+            // A.B.C.E
+            // A.B.E
+            // A.E
+            // E
+            let nameArr = name.split('.');
+            for (let i = nameArr.length - 1; i >= 1; --i) {
+                let refName = '';
+                for (let j = 0; j < i; ++j) {
+                    refName += `${nameArr[j]}.`
+                }
+                refTargetNames.push(refName + ref.target);
+            }
+        }
+
+        let refTargetName = pathMatch ? pathMatch[2] : ref.target;
+        refTargetNames.push(refTargetName);
+
+        // 确认的 refTargetName
+        let certainRefTargetName: string | undefined;
+        for (let refTargetName of refTargetNames) {
+            if (refAst.ast[refTargetName]) {
+                certainRefTargetName = refTargetName;
+                break;
+            }
+        }
+
+        if (this.options.verbose) {
+            logger?.debug('[TSBuffer Schema Generator]', `addToOutput(${astKey}, ${name}})`, `refTargetName=${certainRefTargetName}`);
+        }
+
+        if (certainRefTargetName) {
+            // 修改源reference的target
+            ref.target = refAst.astKey + '/' + certainRefTargetName;
+            // 将ref加入output
+            await this._addToOutput(refAst.astKey, certainRefTargetName, refAst.ast[certainRefTargetName].schema, output, astCache, logger);
+            return;
+        }
+
+        // TODO 可能是enum引用？
+        let rMatch = refTargetName.match(/^(\w+)\.(\w+)$/);
+        if (rMatch && refAst.ast[rMatch[1]]) {
+            // enum schema
+            let enumSchema = refAst.ast[rMatch[1]].schema;
+            if (enumSchema.type === SchemaType.Enum) {
+                // add enum to output
+                await this._addRefToOutput({
+                    type: SchemaType.Reference,
+                    target: ref.target.substr(0, ref.target.length - rMatch[2].length - 1)
+                }, astKey, name, output, astCache, logger);
+
+                // replace ref to LiteralTypeSchema
+                for (let key in ref) {
+                    delete (ref as any)[key];
+                }
+                let member = enumSchema.members.find(v => v.name === rMatch![2]);
+                if (!member) {
+                    throw new Error('Referenced an unexisted enum key: ' + rMatch![2]);
+                }
+                Object.assign(ref, <LiteralTypeSchema>{
+                    type: SchemaType.Literal,
+                    literal: member.value
+                })
+                return;
+            }
+        }
+
+        logger?.debug('current', astKey, name);
+        logger?.debug('ref', ref);
+        throw new Error(`Cannot find reference target '${ref.target}'\n    at ${name}\n    at ${astKey}`);
     }
 
     private _postPreKeys(schema: PrePickOmitSchema, logger: Logger | undefined) {

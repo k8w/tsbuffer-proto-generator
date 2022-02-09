@@ -1004,4 +1004,116 @@ describe('ProtoGenerator.generate', function () {
             }
         });
     })
+
+    it('EnumAsLiteral', async function () {
+        let generator = new ProtoGenerator({
+            baseDir: path.resolve(__dirname)
+        });
+
+        let schemas = await generator.generate('sources/EnumAsLiteral.ts');
+        assert.deepStrictEqual(schemas, {
+            "sources/EnumAsLiteral/A": {
+                "type": "Interface",
+                "properties": [
+                    {
+                        "id": 0,
+                        "name": "type",
+                        "type": {
+                            "type": "Literal",
+                            "literal": 0
+                        }
+                    }
+                ]
+            },
+            "sources/SimpleEnum/TestEnum": {
+                "type": "Enum",
+                "members": [
+                    {
+                        "id": 0,
+                        "value": 0
+                    },
+                    {
+                        "id": 1,
+                        "value": 1
+                    },
+                    {
+                        "id": 2,
+                        "value": 2
+                    },
+                    {
+                        "id": 3,
+                        "value": 100
+                    },
+                    {
+                        "id": 4,
+                        "value": 101
+                    },
+                    {
+                        "id": 5,
+                        "value": 102
+                    },
+                    {
+                        "id": 6,
+                        "value": "GGG"
+                    },
+                    {
+                        "id": 7,
+                        "value": "HHH"
+                    }
+                ]
+            },
+            "sources/EnumAsLiteral/C": {
+                "type": "Interface",
+                "properties": [
+                    {
+                        "id": 0,
+                        "name": "type",
+                        "type": {
+                            "type": "Literal",
+                            "literal": 2
+                        }
+                    }
+                ]
+            },
+            "sources/EnumAsLiteral/D": {
+                "type": "Interface",
+                "properties": [
+                    {
+                        "id": 0,
+                        "name": "type",
+                        "type": {
+                            "type": "Literal",
+                            "literal": 100
+                        }
+                    }
+                ]
+            },
+            "sources/EnumAsLiteral/G": {
+                "type": "Interface",
+                "properties": [
+                    {
+                        "id": 0,
+                        "name": "type",
+                        "type": {
+                            "type": "Literal",
+                            "literal": "GGG"
+                        }
+                    }
+                ]
+            },
+            "sources/EnumAsLiteral/H": {
+                "type": "Interface",
+                "properties": [
+                    {
+                        "id": 0,
+                        "name": "type",
+                        "type": {
+                            "type": "Literal",
+                            "literal": "HHH"
+                        }
+                    }
+                ]
+            }
+        });
+    })
 })

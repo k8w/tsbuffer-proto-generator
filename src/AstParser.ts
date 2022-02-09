@@ -1,4 +1,4 @@
-import { BufferTypeSchema, InterfaceReference, InterfaceTypeSchema, IntersectionTypeSchema, LiteralTypeSchema, OmitTypeSchema, PickTypeSchema, ReferenceTypeSchema, SchemaType, TSBufferSchema, TupleTypeSchema, TypeReference, UnionTypeSchema } from 'tsbuffer-schema';
+import { BufferTypeSchema, EnumTypeSchema, InterfaceReference, InterfaceTypeSchema, IntersectionTypeSchema, LiteralTypeSchema, OmitTypeSchema, PickTypeSchema, ReferenceTypeSchema, SchemaType, TSBufferSchema, TupleTypeSchema, TypeReference, UnionTypeSchema } from 'tsbuffer-schema';
 import ts from 'typescript';
 import { Logger } from './Logger';
 
@@ -31,7 +31,10 @@ const BUFFER_TYPES = [
 export class AstParser {
 
     keepComment: boolean = false;
-    prePickOmitSchemas?: PrePickOmitSchema[];
+    pre?: {
+        prePickOmitSchemas: PrePickOmitSchema[];
+        preEnumSchemas: PreEnumSchema[];
+    }
 
     constructor(options?: AstParserOptions) {
         this.keepComment = options?.keepComment ?? false;
@@ -439,7 +442,7 @@ export class AstParser {
         // EnumType
         if (ts.isEnumDeclaration(node)) {
             let initializer = 0;
-            return {
+            let schema: PreEnumSchema = {
                 type: SchemaType.Enum,
                 members: node.members.map((v, i) => {
                     if (v.initializer) {
@@ -447,6 +450,7 @@ export class AstParser {
                             initializer = NaN;
                             return {
                                 id: i,
+                                name: v.name.getText(),
                                 value: v.initializer.text
                             }
                         }
@@ -454,6 +458,7 @@ export class AstParser {
                             initializer = parseFloat(v.initializer.text);
                             return {
                                 id: i,
+                                name: v.name.getText(),
                                 value: initializer++
                             }
                         }
@@ -462,6 +467,7 @@ export class AstParser {
                             initializer = parseFloat(v.initializer.operand.getText()) * -1;
                             return {
                                 id: i,
+                                name: v.name.getText(),
                                 value: initializer++
                             }
                         }
@@ -473,11 +479,14 @@ export class AstParser {
                     else {
                         return {
                             id: i,
+                            name: v.name.getText(),
                             value: initializer++
                         }
                     }
                 })
             }
+            this.pre?.preEnumSchemas.push(schema);
+            return schema;
         }
 
         // InterfaceType
@@ -651,7 +660,7 @@ export class AstParser {
                 pre: { key: preKey }
             }, nodeName === 'Pick' ? { type: SchemaType.Pick as const } : { type: SchemaType.Omit as const })
 
-            this.prePickOmitSchemas?.push(output);
+            this.pre?.prePickOmitSchemas.push(output);
 
             return output;
         }
@@ -841,6 +850,16 @@ export interface AstParserResult {
 }
 
 /** node2Schema 第一阶段的初级 Schema */
-export type PreSchema = Exclude<TSBufferSchema, PickTypeSchema | OmitTypeSchema> | PrePickOmitSchema;
+export type PreSchema = Exclude<TSBufferSchema, PickTypeSchema | OmitTypeSchema | EnumTypeSchema> | PrePickOmitSchema | PreEnumSchema;
 export type PrePickOmitSchema = (PickTypeSchema | OmitTypeSchema) & { pre: { key: PreKey }, comment?: string };
+export type PreEnumSchema = {
+    type: SchemaType.Enum;
+    members: {
+        /** Encoding identifier, generated according to the order */
+        id: number;
+        name: string;
+        value: string | number;
+    }[];
+    comment?: string;
+};
 export type PreKey = LiteralTypeSchema | TypeReference | UnionTypeSchema | IntersectionTypeSchema;
