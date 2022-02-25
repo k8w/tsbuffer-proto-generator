@@ -658,7 +658,7 @@ export class AstParser {
                 target: target,
                 keys: [],
                 pre: { key: preKey }
-            }, nodeName === 'Pick' ? { type: SchemaType.Pick as const } : { type: SchemaType.Omit as const })
+            }, nodeName === 'Pick' ? { type: SchemaType.Pick } : { type: SchemaType.Omit })
 
             this.pre?.prePickOmitSchemas.push(output);
 
@@ -853,7 +853,7 @@ export interface AstParserResult {
 export type PreSchema = Exclude<TSBufferSchema, PickTypeSchema | OmitTypeSchema | EnumTypeSchema> | PrePickOmitSchema | PreEnumSchema;
 export type PrePickOmitSchema = (PickTypeSchema | OmitTypeSchema) & { pre: { key: PreKey }, comment?: string };
 export type PreEnumSchema = {
-    type: SchemaType.Enum;
+    type: 'Enum';
     members: {
         /** Encoding identifier, generated according to the order */
         id: number;
