@@ -6,12 +6,21 @@ import { CreateSource } from './GetSourceFile';
 describe('astParser.node2schema', function () {
     const astParser = new AstParser();
 
-    it('AnyType', function () {
+    it('AnyType-any', function () {
         let src = CreateSource(`type Test = any;`);
         let nodes = astParser.getFlattenNodes(src);
         let schema = astParser.node2schema(nodes['Test'].node, {});
         assert.deepStrictEqual(schema, {
             type: 'Any'
+        })
+    });
+
+    it('AnyType-unknown', function () {
+        let src = CreateSource(`type Test = unknown;`);
+        let nodes = astParser.getFlattenNodes(src);
+        let schema = astParser.node2schema(nodes['Test'].node, {});
+        assert.deepStrictEqual(schema, {
+            type: 'unknown'
         })
     });
 
