@@ -20,7 +20,7 @@ describe('astParser.node2schema', function () {
         let nodes = astParser.getFlattenNodes(src);
         let schema = astParser.node2schema(nodes['Test'].node, {});
         assert.deepStrictEqual(schema, {
-            type: 'unknown'
+            type: 'Any'
         })
     });
 
