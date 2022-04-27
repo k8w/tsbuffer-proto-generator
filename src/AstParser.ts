@@ -297,7 +297,7 @@ export class AstParser {
         }
 
         // AnyType
-        if (node.kind === ts.SyntaxKind.AnyKeyword) {
+        if (node.kind === ts.SyntaxKind.AnyKeyword || node.kind === ts.SyntaxKind.UnknownKeyword) {
             return {
                 type: SchemaType.Any
             }
