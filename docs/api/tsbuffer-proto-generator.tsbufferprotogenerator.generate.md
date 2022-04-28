@@ -17,7 +17,7 @@ generate(paths: string | string[], options?: GenerateFileSchemaOptions): Promise
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  paths | string \| string\[\] | 于baseDir的相对路径 |
-|  options | GenerateFileSchemaOptions |  |
+|  options | GenerateFileSchemaOptions | <i>(Optional)</i> |
 
 <b>Returns:</b>
 

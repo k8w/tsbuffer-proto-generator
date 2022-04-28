@@ -16,5 +16,5 @@ constructor(options?: Partial<ProtoGeneratorOptions>);
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  options | Partial&lt;[ProtoGeneratorOptions](./tsbuffer-proto-generator.protogeneratoroptions.md)<!-- -->&gt; |  |
+|  options | Partial&lt;[ProtoGeneratorOptions](./tsbuffer-proto-generator.protogeneratoroptions.md)<!-- -->&gt; | <i>(Optional)</i> |
 

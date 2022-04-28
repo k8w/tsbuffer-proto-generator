@@ -14,7 +14,7 @@ static getSchemaEncodeIds(schema?: TSBufferSchema): EncodeIdItem[] | undefined;
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  schema | TSBufferSchema |  |
+|  schema | TSBufferSchema | <i>(Optional)</i> |
 
 <b>Returns:</b>
 

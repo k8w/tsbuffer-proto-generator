@@ -17,7 +17,7 @@ static genEncodeIds(values: (string | number | object)[], compatible?: EncodeIdI
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  values | (string \| number \| object)\[\] | object将视为 md5(JSON.stringify(obj)) |
-|  compatible | EncodeIdItem\[\] | 需要向后兼容的结果集（新字段用新数字，旧字段ID不变） |
+|  compatible | EncodeIdItem\[\] | <i>(Optional)</i> 需要向后兼容的结果集（新字段用新数字，旧字段ID不变） |
 
 <b>Returns:</b>
 

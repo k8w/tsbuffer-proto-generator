@@ -1,6 +1,10 @@
 # CHANGELOG
 
-## [1.7.0-dev.4] - 2022-02-08
+## [1.7.1] - 2022-04-28
+### Added
+- Support `unknown`, treated as `any` (Contributed by @seho)
+
+## [1.7.0] - 2022-02-08
 ### Added
 - Support `keyof`
 - Support `Pick<XXX, keyof XXX>`
