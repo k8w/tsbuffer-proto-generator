@@ -22,9 +22,9 @@ export interface ProtoGeneratorOptions {
     /**
      * 解析Module的路径
      * @param importPath 例如 import xx from 'abcd/efg' 则 importPath 为 'abcd/efg'
-     * @returns 返回于baseDir的相对路径
+     * @returns 返回 module 文件的绝对路径（不含扩展名）
      */
-    resolveModule?: (importPath: string, baseDir: string) => string;
+    resolveModule?: (importPath: string) => string;
 
     astCache?: AstCache;
 
@@ -346,7 +346,7 @@ export class ProtoGenerator {
                 if (!this.options.resolveModule) {
                     throw new Error(`Must specific a resolveModule handler for resolve '${pathMatch[1]}'`);
                 }
-                refPath = this.options.resolveModule(pathMatch[1], this.options.baseDir);
+                refPath = path.relative(this.options.baseDir, this.options.resolveModule(pathMatch[1]));
             }
         }
         // 当前文件内引用
@@ -498,4 +498,4 @@ export interface GenerateFileSchemaOptions {
     logger?: Logger | undefined;
 }
 
-export const defaultResolveModule: NonNullable<ProtoGeneratorOptions['resolveModule']> = (importPath, baseDir) => path.join('node_modules', importPath);
+export const defaultResolveModule: NonNullable<ProtoGeneratorOptions['resolveModule']> = importPath => path.join('node_modules', importPath);

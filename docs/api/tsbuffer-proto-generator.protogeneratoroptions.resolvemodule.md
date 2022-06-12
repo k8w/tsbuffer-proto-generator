@@ -9,5 +9,5 @@
 <b>Signature:</b>
 
 ```typescript
-resolveModule?: (importPath: string, baseDir: string) => string;
+resolveModule?: (importPath: string) => string;
 ```

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## [1.7.2-dev.1] - 2022-06-12
+### Changed
+- `resolveModule` changed to return absolute path
+
 ## [1.7.1] - 2022-04-28
 ### Added
 - Support `unknown`, treated as `any` (Contributed by @seho)
